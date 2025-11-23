@@ -1,0 +1,97 @@
+{
+  "users": [
+    {
+      "id": "llm1",
+      "email": "gpt4@example.com",
+      "password_hash": "580061e31c4aea81",
+      "name": "GPT-4",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=GPT4",
+      "isLLM": true,
+      "status": "online",
+      "createdAt": 1763884028689
+    },
+    {
+      "id": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
+      "email": "zengyuzhi2002@gmail.com",
+      "password_hash": "$2a$10$9WKbk0yTP43m89Npg2fTjeVL3KeGXVfr5BU6VJXuILxxghCXH0tPK",
+      "name": "Yuzhi",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Yuzhi",
+      "isLLM": false,
+      "status": "online",
+      "createdAt": 1763884038923
+    },
+    {
+      "id": "341e4181-8712-46eb-ae47-bf6fd992d940",
+      "email": "root@example.com",
+      "password_hash": "$2a$10$YvhvXShC.Whe3byvj4rKI.RBdCEims6C5XCCoq1RBgJ2rsuvtVc.i",
+      "name": "Admin",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin",
+      "isLLM": false,
+      "status": "online",
+      "createdAt": 1763889178034
+    },
+    {
+      "id": "117f399d-c07b-412b-85e7-5f5b8f1a5b3b",
+      "email": "prime11736@gmail.com",
+      "password_hash": "$2a$10$LMLoyrfMwOSzMxYwFFraSeFeX42qqZUWjGv3yEPa8j02PxMNZANcS",
+      "name": "Chen Haorui",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Chen%20Haorui",
+      "isLLM": false,
+      "status": "online",
+      "createdAt": 1763889661746
+    }
+  ],
+  "messages": [
+    {
+      "id": "f5329b5d-ea47-4c9c-a1a0-d15e2927410a",
+      "content": "hi",
+      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
+      "timestamp": 1763884246990,
+      "reactions": []
+    },
+    {
+      "id": "31ce4e0e-ae3d-41e9-a86c-343eeca88995",
+      "content": "a",
+      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
+      "timestamp": 1763884725233,
+      "reactions": []
+    },
+    {
+      "id": "2331827f-542c-4a1b-8fc9-6d117b7c4096",
+      "content": "aaaaaaaaaaaa",
+      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
+      "timestamp": 1763889213237,
+      "reactions": []
+    },
+    {
+      "id": "956e114f-948e-4d52-a241-f1b1c71b71a5",
+      "content": "hello",
+      "senderId": "117f399d-c07b-412b-85e7-5f5b8f1a5b3b",
+      "timestamp": 1763889667462,
+      "reactions": []
+    },
+    {
+      "id": "4679352e-cb4c-47f4-a04a-31a589d4e1f9",
+      "content": "hi",
+      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
+      "timestamp": 1763889873063,
+      "replyToId": "956e114f-948e-4d52-a241-f1b1c71b71a5",
+      "reactions": []
+    },
+    {
+      "id": "a7b61d44-c80b-40bd-8ee7-0b6129a73191",
+      "content": "@Chen Haorui hi",
+      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
+      "timestamp": 1763889881840,
+      "reactions": []
+    },
+    {
+      "id": "28887656-8ce0-427a-92b5-a2f5bd19fdd9",
+      "content": "@Chen Haorui hihihi",
+      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
+      "timestamp": 1763889994971,
+      "reactions": []
+    }
+  ],
+  "typing": {}
+}
