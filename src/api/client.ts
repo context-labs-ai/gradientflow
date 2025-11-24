@@ -59,6 +59,14 @@ export const api = {
                 method: 'POST',
                 body: JSON.stringify({ emoji, conversationId }),
             }),
+        delete: (messageId: string, conversationId?: string) => {
+            const search = new URLSearchParams();
+            if (conversationId) search.set('conversationId', conversationId);
+            const suffix = search.toString() ? `?${search.toString()}` : '';
+            return request<{ deletedMessageId: string }>(`/messages/${messageId}${suffix}`, {
+                method: 'DELETE',
+            });
+        },
     },
     typing: {
         set: (isTyping: boolean) => request<{ typingUsers: string[] }>('/typing', { method: 'POST', body: JSON.stringify({ isTyping }) }),

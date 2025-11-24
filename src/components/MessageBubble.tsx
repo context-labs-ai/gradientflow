@@ -1,7 +1,7 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Message } from '../types/chat';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Message, DEFAULT_CONVERSATION_ID } from '../types/chat';
 import { useChat } from '../context/ChatContext';
-import { Reply, MoreHorizontal } from 'lucide-react';
+import { Reply, MoreHorizontal, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { api } from '../api/client';
@@ -18,9 +18,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
   const sender = state.users.find(u => u.id === message.senderId);
   const reactionOptions = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
   const [isHovered, setIsHovered] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const HOVER_IN_DELAY = 80;
-  const HOVER_OUT_DELAY = 220;
+  const HOVER_IN_DELAY = 350;
+  const HOVER_OUT_DELAY = 120;
 
   const clearHoverTimeout = () => {
     if (hoverTimeoutRef.current) {
@@ -46,6 +49,44 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
     dispatch({ type: 'SET_REPLYING_TO', payload: message });
   };
 
+  const openDeleteConfirm = () => {
+    if (!isOwnMessage) return;
+    setDeleteError(null);
+    setShowDeleteConfirm(true);
+  };
+
+  const closeDeleteConfirm = () => {
+    if (isDeleting) return;
+    setShowDeleteConfirm(false);
+    setDeleteError(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!isOwnMessage || isDeleting) return;
+    const conversation = message.conversationId || DEFAULT_CONVERSATION_ID;
+    try {
+      setIsDeleting(true);
+      setDeleteError(null);
+      const res = await api.messages.delete(message.id, conversation);
+      dispatch({ type: 'DELETE_MESSAGE', payload: { id: res.deletedMessageId } });
+
+      try {
+        const refreshed = await api.messages.list({ limit: 100, conversationId: conversation });
+        dispatch({ type: 'SET_MESSAGES', payload: refreshed.messages });
+        dispatch({ type: 'SET_USERS', payload: refreshed.users });
+      } catch (refreshErr) {
+        console.error('Failed to refresh messages after delete', refreshErr);
+      }
+
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      console.error('Failed to delete message', err);
+      setDeleteError('Failed to delete. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleMouseEnter = () => {
     clearHoverTimeout();
     hoverTimeoutRef.current = setTimeout(() => {
@@ -55,6 +96,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
 
   const handleMouseLeave = () => {
     clearHoverTimeout();
+    if (showDeleteConfirm) return;
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
     }, HOVER_OUT_DELAY);
@@ -67,6 +109,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
   const fullTimeLabel = timestamp.toLocaleString();
   const hasReacted = (emoji: string) =>
     Boolean(currentUserId && message.reactions.some(r => r.emoji === emoji && r.userIds.includes(currentUserId)));
+  const shouldShowActions = isHovered || showDeleteConfirm;
 
   return (
     <motion.div
@@ -144,47 +187,81 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
       </div>
 
       <AnimatePresence>
-        {isHovered && (
+        {shouldShowActions && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 18, filter: 'blur(6px)' }}
             animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, scale: 0.92, y: 10, filter: 'blur(4px)' }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="actions-group"
+            className={clsx('actions-group', showDeleteConfirm && 'confirming')}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <div className="emoji-panel">
-              {reactionOptions.map((emoji, index) => (
-                <motion.button
-                  key={emoji}
-                  className={clsx('emoji-btn', hasReacted(emoji) && 'active')}
-                  onClick={() => handleReaction(emoji)}
-                  initial={{ opacity: 0, scale: 0.5, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 20,
-                    delay: index * 0.04
-                  }}
-                  whileHover={{ scale: 1.25, rotate: -8, transition: { type: 'spring', stiffness: 400, damping: 15 } }}
-                  whileTap={{ scale: 0.9 }}
-                  title={`React with ${emoji}`}
-                >
-                  {emoji}
-                  <span className="emoji-glow" aria-hidden="true" />
-                </motion.button>
-              ))}
-            </div>
-            <div className="action-buttons">
-              <button className="action-btn" onClick={handleReply} title="Reply">
-                <Reply size={16} />
-              </button>
-              <button className="action-btn" title="More">
-                <MoreHorizontal size={16} />
-              </button>
-            </div>
+            {showDeleteConfirm ? (
+              <div className="delete-confirm-card">
+                <div className="delete-card-header">
+                  <span className="delete-title">Delete this message?</span>
+                  <span className="delete-subtitle">This action cannot be undone.</span>
+                </div>
+                <div className="delete-preview">
+                  <span className="delete-preview-author">{sender?.name || 'You'}</span>
+                  <span className="delete-preview-text">{message.content}</span>
+                </div>
+                {deleteError && <span className="delete-error">{deleteError}</span>}
+                <div className="delete-confirm-actions">
+                  <button className="delete-confirm-btn ghost" onClick={closeDeleteConfirm} disabled={isDeleting}>
+                    Cancel
+                  </button>
+                  <button
+                    className="delete-confirm-btn destructive"
+                    onClick={handleDeleteConfirm}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="emoji-panel">
+                  {reactionOptions.map((emoji, index) => (
+                    <motion.button
+                      key={emoji}
+                      className={clsx('emoji-btn', hasReacted(emoji) && 'active')}
+                      onClick={() => handleReaction(emoji)}
+                      initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 400,
+                        damping: 20,
+                        delay: index * 0.04
+                      }}
+                      whileHover={{ scale: 1.25, rotate: -8, transition: { type: 'spring', stiffness: 400, damping: 15 } }}
+                      whileTap={{ scale: 0.9 }}
+                      title={`React with ${emoji}`}
+                    >
+                      {emoji}
+                      <span className="emoji-glow" aria-hidden="true" />
+                    </motion.button>
+                  ))}
+                </div>
+                <div className="action-buttons">
+                  <button className="action-btn" onClick={handleReply} title="Reply">
+                    <Reply size={16} />
+                  </button>
+                  {isOwnMessage ? (
+                    <button className="action-btn delete-btn" onClick={openDeleteConfirm} title="Delete">
+                      <Trash2 size={16} />
+                    </button>
+                  ) : (
+                    <button className="action-btn" title="More">
+                      <MoreHorizontal size={16} />
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -261,15 +338,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           font-size: 1rem;
           line-height: 1.4;
           position: relative;
-          box-shadow: var(--shadow-sm);
+          box-shadow: var(--shadow-sm), 0 8px 22px rgba(0, 0, 0, 0.08);
           transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
           border: 1px solid transparent;
           background-image: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
           transform-origin: center;
+          transform: translateY(0);
           will-change: transform, box-shadow;
           display: inline-flex;
           gap: 8px;
           align-items: flex-end;
+          animation: floaty 7s ease-in-out infinite;
         }
 
         .bubble-text {
@@ -311,7 +390,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
 
         .bubble.hovered {
           box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.04);
-          transform: translateY(-1px);
+          transform: translateY(-3px) scale(1.005);
+          animation-play-state: paused;
         }
 
         .bubble.hovered::after {
@@ -335,12 +415,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
 
         .bubble.own.hovered {
           background-color: #e8ffd4;
-          box-shadow: var(--shadow-lg), 0 4px 16px rgba(51, 144, 236, 0.15);
+          box-shadow: var(--shadow-lg), 0 8px 20px rgba(51, 144, 236, 0.2);
         }
 
         .bubble.other.hovered {
           background-color: #f8fafc;
-          box-shadow: var(--shadow-lg), 0 4px 16px rgba(0, 0, 0, 0.08);
+          box-shadow: var(--shadow-lg), 0 8px 20px rgba(0, 0, 0, 0.12);
         }
 
         .reply-context {
@@ -442,6 +522,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           left: 0;
         }
 
+        .actions-group.confirming {
+          padding: 14px;
+          min-width: 240px;
+          border-radius: var(--radius-lg);
+          background: #fff;
+          border: 1px solid rgba(15, 23, 42, 0.08);
+          box-shadow: 0 18px 46px rgba(15, 23, 42, 0.16);
+          overflow: visible;
+          align-items: stretch;
+        }
+
         .emoji-panel {
             display: flex;
             gap: 6px;
@@ -524,6 +615,121 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
         .action-btn:hover {
           background-color: var(--bg-tertiary);
           color: var(--text-primary);
+        }
+
+        .delete-btn {
+          color: #b91c1c;
+        }
+
+        .delete-btn:hover {
+          color: #7f1d1d;
+          background-color: #fee2e2;
+        }
+
+        .delete-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .delete-confirm-card {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: 100%;
+          color: var(--text-primary);
+        }
+
+        .delete-card-header {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .delete-title {
+          font-weight: 600;
+          font-size: 0.95rem;
+          color: var(--text-primary);
+        }
+
+        .delete-subtitle {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+        }
+
+        .delete-preview {
+          padding: 8px 10px;
+          border-radius: var(--radius-md);
+          background: rgba(15, 23, 42, 0.03);
+          border: 1px solid rgba(15, 23, 42, 0.06);
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .delete-preview-author {
+          font-size: 0.75rem;
+          color: var(--text-tertiary);
+        }
+
+        .delete-preview-text {
+          font-size: 0.85rem;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .delete-error {
+          font-size: 0.78rem;
+          color: #b91c1c;
+        }
+
+        .delete-confirm-actions {
+          display: flex;
+          gap: 8px;
+          justify-content: flex-end;
+        }
+
+        .delete-confirm-btn {
+          border-radius: var(--radius-full);
+          padding: 6px 14px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .delete-confirm-btn.ghost {
+          background: transparent;
+          color: var(--text-secondary);
+          border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+
+        .delete-confirm-btn.ghost:hover {
+          background: rgba(15, 23, 42, 0.04);
+          color: var(--text-primary);
+        }
+
+        .delete-confirm-btn.destructive {
+          background: linear-gradient(145deg, #f87171, #ef4444);
+          color: white;
+          border: none;
+          box-shadow: 0 8px 18px rgba(248, 113, 113, 0.35);
+        }
+
+        .delete-confirm-btn.destructive:hover {
+          background: linear-gradient(145deg, #ef4444, #dc2626);
+        }
+
+        .delete-confirm-btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+
+        @keyframes floaty {
+          0% { transform: translateY(0); }
+          50% { transform: translateY(-2px); }
+          100% { transform: translateY(0); }
         }
       `}</style>
     </motion.div>

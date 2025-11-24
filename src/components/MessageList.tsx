@@ -222,10 +222,11 @@ export const MessageList: React.FC = () => {
           display: flex;
           flex-direction: column;
           width: 100%;
-          max-width: 768px;
+          max-width: var(--content-max-width);
+          box-sizing: border-box;
           margin: 0 auto;
           margin-top: auto;
-          padding: 0 var(--spacing-md) 20px; /* Added bottom padding */
+          padding: 0 var(--content-gutter) 20px; /* Added bottom padding */
           gap: 2px;
         }
 

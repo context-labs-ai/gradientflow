@@ -232,6 +232,26 @@ app.post('/messages', authMiddleware, async (req, res) => {
     res.json({ message, users: [req.user] });
 });
 
+app.delete('/messages/:messageId', authMiddleware, async (req, res) => {
+    const { messageId } = req.params;
+    const conversationId = req.query.conversationId ? String(req.query.conversationId) : undefined;
+    const index = db.data.messages.findIndex((m) => m.id === messageId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Message not found' });
+    }
+    const message = db.data.messages[index];
+    if (conversationId && message.conversationId && message.conversationId !== conversationId) {
+        return res.status(404).json({ error: 'Message not found in this conversation' });
+    }
+    if (message.senderId !== req.user.id) {
+        return res.status(403).json({ error: 'Cannot delete this message' });
+    }
+
+    db.data.messages.splice(index, 1);
+    await db.write();
+    res.json({ deletedMessageId: messageId });
+});
+
 app.post('/messages/:messageId/reactions', authMiddleware, async (req, res) => {
     const { emoji, conversationId } = req.body || {};
     const { messageId } = req.params;

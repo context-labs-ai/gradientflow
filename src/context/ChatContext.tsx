@@ -20,6 +20,7 @@ type Action =
     | { type: 'SEND_MESSAGE'; payload: Message }
     | { type: 'ADD_REACTION'; payload: { messageId: string; reaction: Reaction } }
     | { type: 'UPDATE_MESSAGE'; payload: Message }
+    | { type: 'DELETE_MESSAGE'; payload: { id: string } }
     | { type: 'SET_REPLYING_TO'; payload: Message | undefined }
     | { type: 'SET_TYPING'; payload: { userId: string; isTyping: boolean } }
     | { type: 'SET_TYPING_USERS'; payload: string[] };
@@ -55,7 +56,7 @@ const chatReducer = (state: ChatState, action: Action): ChatState => {
         case 'SET_USERS':
             return { ...state, users: mergeUsers([...state.users, ...action.payload]) };
         case 'SET_MESSAGES':
-            return { ...state, messages: mergeMessages(state.messages, action.payload) };
+            return { ...state, messages: mergeMessages([], action.payload) };
         case 'UPSERT_MESSAGES':
             return { ...state, messages: mergeMessages(state.messages, action.payload) };
         case 'SEND_MESSAGE':
@@ -107,6 +108,11 @@ const chatReducer = (state: ChatState, action: Action): ChatState => {
                 ? state.messages.map((msg) => (msg.id === action.payload.id ? action.payload : msg))
                 : [...state.messages, action.payload];
             return { ...state, messages };
+        }
+        case 'DELETE_MESSAGE': {
+            const messages = state.messages.filter((msg) => msg.id !== action.payload.id);
+            const replyingTo = state.replyingTo?.id === action.payload.id ? undefined : state.replyingTo;
+            return { ...state, messages, replyingTo };
         }
         case 'SET_REPLYING_TO':
             return { ...state, replyingTo: action.payload };
