@@ -1,29 +1,23 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
 import { MessageBubble } from './MessageBubble';
 import { DateSeparator, shouldShowDateSeparator } from './DateSeparator';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
 export const MessageList: React.FC = () => {
   const { state } = useChat();
-  const listRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const lastSeenMessageIdRef = useRef<string | null>(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const currentUserId = state.currentUser?.id;
   const typingUsers = state.typingUsers
     .map(id => state.users.find(u => u.id === id))
     .filter((user): user is NonNullable<typeof user> => Boolean(user));
   const typingNames = typingUsers.map(user => (user.id === currentUserId ? 'You' : user.name));
-  const initialScrollDoneRef = useRef(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [unseenCount, setUnseenCount] = useState(0);
 
   const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    const lastMessage = state.messages[state.messages.length - 1];
-    if (lastMessage) {
-      lastSeenMessageIdRef.current = lastMessage.id;
-    }
+    virtuosoRef.current?.scrollToIndex({ index: state.messages.length - 1, behavior: 'smooth' });
     setUnseenCount(0);
   };
 
@@ -39,172 +33,126 @@ export const MessageList: React.FC = () => {
 
   const typingText = buildTypingText();
 
-  const shouldStickToBottom = useCallback(
-    (threshold = 160) => {
-      if (!listRef.current) return false;
-      const el = listRef.current;
-      const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      return distanceToBottom < threshold;
-    },
-    []
-  );
-
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
-
-    // Track whether the user has scrolled away from the bottom to toggle the scroll button
-    const handleScroll = () => {
-      const atBottom = shouldStickToBottom();
-      setShowScrollButton(!atBottom);
-      if (atBottom && state.messages.length) {
-        lastSeenMessageIdRef.current = state.messages[state.messages.length - 1].id;
-        setUnseenCount(0);
-      }
-    };
-
-    handleScroll();
-    el.addEventListener('scroll', handleScroll, { passive: true });
-    return () => el.removeEventListener('scroll', handleScroll);
-  }, [shouldStickToBottom, state.messages.length]);
-
-  useEffect(() => {
-    if (!bottomRef.current) return;
-    if (!initialScrollDoneRef.current) {
-      initialScrollDoneRef.current = true;
-      bottomRef.current.scrollIntoView({ behavior: 'auto' });
-      const lastMessage = state.messages[state.messages.length - 1];
-      if (lastMessage) {
-        lastSeenMessageIdRef.current = lastMessage.id;
-      }
-      return;
-    }
-
-    // Only auto-scroll if user is still near the bottom; otherwise count unseen messages
-    const atBottom = shouldStickToBottom();
-    if (atBottom) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
-      const lastMessage = state.messages[state.messages.length - 1];
-      if (lastMessage) {
-        lastSeenMessageIdRef.current = lastMessage.id;
-      }
-      setUnseenCount(0);
-    } else {
-      const lastSeenId = lastSeenMessageIdRef.current;
-      const lastSeenIndex = lastSeenId
-        ? state.messages.findIndex(msg => msg.id === lastSeenId)
-        : -1;
-      const unseen = lastSeenIndex === -1 ? state.messages.length : state.messages.length - lastSeenIndex - 1;
-      setUnseenCount(unseen > 0 ? unseen : 0);
-    }
-  }, [state.messages, shouldStickToBottom]);
-
-
-
   return (
-    <div className="message-list" ref={listRef}>
-      <div className="messages-wrapper">
-        <AnimatePresence initial={false} mode="popLayout">
-          {state.messages.map((message, index) => {
-            const isOwnMessage = message.senderId === currentUserId;
-            const prevMessage = state.messages[index - 1];
-            const showAvatar = !prevMessage || prevMessage.senderId !== message.senderId;
-            const showDateSep = shouldShowDateSeparator(message, prevMessage);
+    <div className="message-list">
+      <Virtuoso
+        ref={virtuosoRef}
+        style={{ height: '100%' }}
+        data={state.messages}
+        initialTopMostItemIndex={state.messages.length - 1}
+        followOutput={'auto'}
+        atBottomStateChange={(atBottom) => {
+          setShowScrollButton(!atBottom);
+          if (atBottom) setUnseenCount(0);
+        }}
+        itemContent={(index, message) => {
+          const isOwnMessage = message.senderId === currentUserId;
+          const prevMessage = state.messages[index - 1];
+          const showAvatar = !prevMessage || prevMessage.senderId !== message.senderId;
+          const showDateSep = shouldShowDateSeparator(message, prevMessage);
 
-            return (
-              <React.Fragment key={message.id}>
-                {showDateSep && <DateSeparator timestamp={message.timestamp} />}
-                <MessageBubble
-                  message={message}
-                  isOwnMessage={isOwnMessage}
-                  showAvatar={showAvatar}
-                />
-              </React.Fragment>
-            );
-          })}
-        </AnimatePresence>
-        <AnimatePresence>
-          {typingUsers.length > 0 && (
-            <motion.div
-              className="typing-indicator"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-            >
-              <div className="typing-card" aria-live="polite">
-                <div className="typing-avatars" aria-hidden="true">
-                  {typingUsers.slice(0, 3).map((user, idx) => (
-                    <img
-                      key={user.id}
-                      src={user.avatar}
-                      alt=""
-                      className="typing-avatar"
-                      style={{ zIndex: typingUsers.length - idx }}
-                    />
-                  ))}
-                  {typingUsers.length > 3 && (
-                    <span className="typing-extra">+{typingUsers.length - 3}</span>
-                  )}
-                </div>
-                <div className="typing-copy">
-                  <span className="typing-text">{typingText}</span>
-                  <span className="typing-dots" aria-hidden="true">
-                    <span className="dot" />
-                    <span className="dot" />
-                    <span className="dot" />
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {showScrollButton && (
-            <div className="scroll-btn-container">
-              <motion.button
-                className="scroll-bottom-btn"
-                initial={{ opacity: 0, scale: 0.6, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.6, y: 20 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                whileHover={{ scale: 1.1, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={scrollToBottom}
-                aria-label="Scroll to bottom"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 5v14M19 12l-7 7-7-7" />
-                </svg>
-                {unseenCount > 0 && (
-                  <span className="scroll-btn-badge" aria-label={`${unseenCount} new messages`}>
-                    {unseenCount > 99 ? '99+' : unseenCount}
-                  </span>
-                )}
-              </motion.button>
+          return (
+            <div className="message-wrapper">
+              {showDateSep && <DateSeparator timestamp={message.timestamp} />}
+              <MessageBubble
+                message={message}
+                isOwnMessage={isOwnMessage}
+                showAvatar={showAvatar}
+              />
             </div>
-          )}
-        </AnimatePresence>
-        <div ref={bottomRef} />
-      </div>
+          );
+        }}
+        components={{
+          Footer: () => <div style={{ height: '20px' }} /> // Spacing at bottom
+        }}
+      />
+
+      <AnimatePresence>
+        {typingUsers.length > 0 && (
+          <motion.div
+            className="typing-indicator"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+          >
+            <div className="typing-card" aria-live="polite">
+              <div className="typing-avatars" aria-hidden="true">
+                {typingUsers.slice(0, 3).map((user, idx) => (
+                  <img
+                    key={user.id}
+                    src={user.avatar}
+                    alt=""
+                    className="typing-avatar"
+                    style={{ zIndex: typingUsers.length - idx }}
+                  />
+                ))}
+                {typingUsers.length > 3 && (
+                  <span className="typing-extra">+{typingUsers.length - 3}</span>
+                )}
+              </div>
+              <div className="typing-copy">
+                <span className="typing-text">{typingText}</span>
+                <span className="typing-dots" aria-hidden="true">
+                  <span className="dot" />
+                  <span className="dot" />
+                  <span className="dot" />
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showScrollButton && (
+          <div className="scroll-btn-container">
+            <motion.button
+              className="scroll-bottom-btn"
+              initial={{ opacity: 0, scale: 0.6, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.6, y: 20 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={scrollToBottom}
+              aria-label="Scroll to bottom"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </svg>
+              {unseenCount > 0 && (
+                <span className="scroll-btn-badge" aria-label={`${unseenCount} new messages`}>
+                  {unseenCount > 99 ? '99+' : unseenCount}
+                </span>
+              )}
+            </motion.button>
+          </div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .message-list {
           flex: 1;
-          overflow-y: auto;
-          padding: var(--spacing-md) 0;
           display: flex;
           flex-direction: column;
           background-color: var(--bg-primary);
           position: relative;
-          scroll-behavior: smooth;
+          height: 100%; /* Important for Virtuoso */
+        }
+
+        .message-wrapper {
+            padding: 0 var(--content-gutter);
+            max-width: var(--content-max-width);
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .message-list::before,
         .message-list::after {
           content: '';
-          position: sticky;
+          position: absolute;
           left: 0;
           right: 0;
           height: 12px;
@@ -222,28 +170,15 @@ export const MessageList: React.FC = () => {
           background: linear-gradient(0deg, rgba(var(--bg-secondary-rgb), 0.6), rgba(var(--bg-secondary-rgb), 0));
         }
 
-        .messages-wrapper {
-          display: flex;
-          flex-direction: column;
-          width: 100%;
-          max-width: var(--content-max-width);
-          box-sizing: border-box;
-          margin: 0 auto;
-          margin-top: auto;
-          padding: 0 var(--content-gutter) 20px; /* Added bottom padding */
-          gap: 2px;
-        }
-
         .typing-indicator {
           display: flex;
           align-items: center;
           padding: 0;
-          position: sticky;
+          position: absolute;
           bottom: 20px;
+          left: 20px; /* Fixed left position */
           z-index: 10;
           pointer-events: none;
-          margin-top: 10px;
-          margin-left: 4px;
         }
 
         .typing-card {
@@ -344,8 +279,10 @@ export const MessageList: React.FC = () => {
         }
 
         .scroll-btn-container {
-          position: sticky;
+          position: absolute;
           bottom: 80px;
+          left: 50%;
+          transform: translateX(-50%);
           display: flex;
           justify-content: center;
           height: 0;
@@ -369,7 +306,6 @@ export const MessageList: React.FC = () => {
           color: #0b4f80;
           cursor: pointer;
           position: relative;
-          transform: translateY(-100%);
           transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1);
           overflow: hidden;
           z-index: 1;
@@ -389,7 +325,7 @@ export const MessageList: React.FC = () => {
         .scroll-bottom-btn:hover {
           color: white;
           box-shadow: 0 10px 26px rgba(51, 144, 236, 0.38);
-          transform: translateY(-104%);
+          transform: translateY(-4px);
         }
 
         .scroll-bottom-btn:hover::after {
@@ -426,8 +362,8 @@ export const MessageList: React.FC = () => {
           }
 
           @keyframes scrollPulse {
-            0%, 100% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); transform: translateY(-100%) scale(1); }
-            50% { box-shadow: 0 12px 26px rgba(51, 144, 236, 0.24); transform: translateY(-100%) scale(1.04); }
+            0%, 100% { box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); transform: scale(1); }
+            50% { box-shadow: 0 12px 26px rgba(51, 144, 236, 0.24); transform: scale(1.04); }
           }
         }
       `}</style>

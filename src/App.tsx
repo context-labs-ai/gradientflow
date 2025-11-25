@@ -237,11 +237,15 @@ const AppShell = () => {
     return <ChatApp />;
 };
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 function App() {
     return (
-        <ChatProvider>
-            <AppShell />
-        </ChatProvider>
+        <ErrorBoundary>
+            <ChatProvider>
+                <AppShell />
+            </ChatProvider>
+        </ErrorBoundary>
     );
 }
 
