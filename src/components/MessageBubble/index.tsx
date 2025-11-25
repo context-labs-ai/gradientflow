@@ -145,14 +145,32 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
     const hasReacted = (emoji: string) =>
         Boolean(currentUserId && message.reactions.some(r => r.emoji === emoji && r.userIds.includes(currentUserId)));
     const shouldShowActions = isHovered || showDeleteConfirm;
+    const exitAnimation = useMemo(() => {
+        if (prefersReducedMotion) {
+            return { opacity: 0, y: -4 };
+        }
+        return {
+            opacity: 0,
+            scale: 0.92,
+            x: isOwnMessage ? 8 : -8,
+            y: -6,
+            filter: 'blur(8px)',
+            transition: {
+                duration: 0.24,
+                ease: [0.22, 0.72, 0.3, 1],
+                filter: { duration: 0.18 }
+            }
+        };
+    }, [isOwnMessage, prefersReducedMotion]);
 
     return (
         <motion.div
             initial={{ opacity: 0, x: isOwnMessage ? 16 : -16, scale: prefersReducedMotion ? 1 : 0.98 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: isOwnMessage ? 10 : -10, scale: prefersReducedMotion ? 1 : 0.96 }}
+            exit={exitAnimation}
             transition={{ type: 'spring', stiffness: 420, damping: 32, mass: 0.85 }}
             layout="position"
+            style={{ transformOrigin: isOwnMessage ? '100% 50%' : '0% 50%' }}
             className={clsx('message-container', isOwnMessage ? 'own' : 'other')}
         >
             {!isOwnMessage && (
