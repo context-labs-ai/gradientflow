@@ -570,3 +570,962 @@ const usePerformanceMonitoring = () => {
 4. **用户体验**: 添加暗色模式、通知系统等提升用户满意度
 
 建议按照优先级逐步实施这些改进，每次专注于一到两个重点任务，确保每个改进都经过充分测试后再进行下一个。
+
+---
+
+## 🖥️ 后端架构改进建议
+
+### 📋 执行摘要
+
+基于对 `server/server.js` 的详细审查，发现了多个可以改进的领域。当前后端使用 Express + lowdb，虽然作为原型和开发环境非常合适，但在安全性、性能、错误处理和功能完整性方面有较大提升空间。
+
+---
+
+### 🔒 安全性改进 (⚡ 高优先级)
+
+#### 1. 输入验证和清理
+
+**当前问题:**
+- 缺少系统性的输入验证
+- 直接信任客户端数据
+- 没有使用专门的验证库
+
+**改进建议:**
+
+```javascript
+// 安装验证库: npm install zod
+import { z } from 'zod';
+
+// 定义消息验证 schema
+const messageSchema = z.object({
+    content: z.string().min(1).max(5000), // 限制消息长度
+    replyToId: z.string().uuid().optional(),
+    conversationId: z.string().min(1).max(100).optional(),
+    role: z.enum(['user', 'assistant', 'system', 'tool']).optional(),
+    metadata: z.record(z.unknown()).optional(),
+    mentions: z.array(z.string().uuid()).optional(),
+});
+
+// 使用中间件验证
+app.post('/messages', authMiddleware, async (req, res) => {
+    try {
+        const validated = messageSchema.parse(req.body);
+        // 继续处理...
+    } catch (error) {
+        return res.status(400).json({ 
+            error: 'Invalid request data', 
+            details: error.errors 
+        });
+    }
+});
+```
+
+#### 2. 速率限制 (Rate Limiting)
+
+**当前问题:**
+- 没有任何速率限制
+- 容易受到暴力破解攻击
+- 容易受到 DoS 攻击
+
+**改进建议:**
+
+```javascript
+// npm install express-rate-limit
+import rateLimit from 'express-rate-limit';
+
+// 一般 API 限制
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 分钟
+    max: 100, // 限制 100 次请求
+    message: 'Too many requests from this IP',
+});
+
+// 严格的认证限制
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5, // 15分钟内最多5次登录尝试
+    skipSuccessfulRequests: true,
+});
+
+// 消息发送限制
+const messageLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 分钟
+    max: 30, // 1分钟最多30条消息
+});
+
+app.use('/api/', apiLimiter);
+app.use('/auth/login', authLimiter);
+app.use('/auth/register', authLimiter);
+app.post('/messages', messageLimiter, authMiddleware, async (req, res) => {
+    // ...
+});
+```
+
+#### 3. JWT 安全性增强
+
+**当前问题:**
+- 使用简单的 'dev-secret-change-me' 作为默认密钥
+- 没有 token 刷新机制
+- 没有 token 撤销功能
+
+**改进建议:**
+
+```javascript
+// 在初始化时检查并警告
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+    console.warn('⚠️  WARNING: Using insecure default JWT_SECRET!');
+    return 'dev-secret-change-me';
+})();
+
+// 添加 refresh token 支持
+const signTokenPair = (userId) => {
+    const accessToken = jwt.sign(
+        { id: userId }, 
+        JWT_SECRET, 
+        { expiresIn: '15m' }
+    );
+    const refreshToken = jwt.sign(
+        { id: userId, type: 'refresh' }, 
+        JWT_SECRET, 
+        { expiresIn: '7d' }
+    );
+    return { accessToken, refreshToken };
+};
+
+// 添加 token 黑名单
+const revokedTokens = new Set();
+
+// 添加 refresh endpoint
+app.post('/auth/refresh', async (req, res) => {
+    const refreshToken = req.body.refreshToken;
+    if (!refreshToken) {
+        return res.status(401).json({ error: 'No refresh token' });
+    }
+    
+    try {
+        const payload = jwt.verify(refreshToken, JWT_SECRET);
+        if (payload.type !== 'refresh') {
+            return res.status(401).json({ error: 'Invalid token type' });
+        }
+        
+        const user = db.data.users.find((u) => u.id === payload.id);
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        
+        const { accessToken, refreshToken: newRefreshToken } = signTokenPair(user.id);
+        res.json({ accessToken, refreshToken: newRefreshToken });
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid refresh token' });
+    }
+});
+```
+
+#### 4. 密码策略增强
+
+**当前问题:**
+- 仅检查密码长度 >= 8
+- 没有密码复杂度要求
+
+**改进建议:**
+
+```javascript
+const passwordSchema = z.string()
+    .min(10, '密码至少需要10个字符')
+    .refine((password) => {
+        const hasUpper = /[A-Z]/.test(password);
+        const hasLower = /[a-z]/.test(password);
+        const hasNumber = /\d/.test(password);
+        return hasUpper && hasLower && hasNumber;
+    }, '密码必须包含大写字母、小写字母和数字');
+```
+
+#### 5. 安全 Headers
+
+```javascript
+// npm install helmet
+import helmet from 'helmet';
+
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'https://api.dicebear.com'],
+        },
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true,
+    },
+}));
+```
+
+---
+
+### ⚡ 性能优化 (⚡ 高优先级)
+
+#### 1. 数据库索引和查询优化
+
+**当前问题:**
+- 使用数组的 `find` 和 `filter`，时间复杂度 O(n)
+- 没有索引，大数据量下性能差
+
+**改进建议 - 添加内存索引:**
+
+```javascript
+class IndexedDatabase {
+    constructor(adapter, defaultData) {
+        this.db = new Low(adapter, defaultData);
+        this.indexes = {
+            userById: new Map(),
+            messageById: new Map(),
+            messagesByConversation: new Map(),
+        };
+    }
+
+    async read() {
+        await this.db.read();
+        this.rebuildIndexes();
+    }
+
+    rebuildIndexes() {
+        this.indexes.userById.clear();
+        this.indexes.messageById.clear();
+        this.indexes.messagesByConversation.clear();
+
+        this.db.data.users.forEach(user => {
+            this.indexes.userById.set(user.id, user);
+        });
+
+        this.db.data.messages.forEach(message => {
+            this.indexes.messageById.set(message.id, message);
+            
+            const convId = message.conversationId || DEFAULT_CONVERSATION_ID;
+            if (!this.indexes.messagesByConversation.has(convId)) {
+                this.indexes.messagesByConversation.set(convId, []);
+            }
+            this.indexes.messagesByConversation.get(convId).push(message);
+        });
+    }
+
+    getUserById(id) {
+        return this.indexes.userById.get(id);
+    }
+
+    getMessagesByConversation(conversationId) {
+        return this.indexes.messagesByConversation.get(conversationId) || [];
+    }
+}
+```
+
+**更好的长期方案 - 升级到 SQLite:**
+
+```javascript
+// npm install better-sqlite3
+import Database from 'better-sqlite3';
+
+const db = new Database('chat.db');
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS messages (
+        id TEXT PRIMARY KEY,
+        content TEXT NOT NULL,
+        senderId TEXT NOT NULL,
+        timestamp INTEGER NOT NULL,
+        conversationId TEXT NOT NULL,
+        role TEXT NOT NULL
+    );
+
+    CREATE INDEX idx_messages_conversation 
+    ON messages(conversationId, timestamp);
+    CREATE INDEX idx_messages_sender ON messages(senderId);
+`);
+```
+
+#### 2. 缓存策略
+
+```javascript
+// npm install node-cache
+import NodeCache from 'node-cache';
+
+const cache = new NodeCache({ 
+    stdTTL: 60, // 默认 60 秒过期
+    checkperiod: 120 
+});
+
+app.get('/users', authMiddleware, (req, res) => {
+    const cacheKey = 'users:all';
+    const cached = cache.get(cacheKey);
+    
+    if (cached) {
+        return res.json({ users: cached });
+    }
+    
+    const users = db.data.users.map(sanitizeUser);
+    cache.set(cacheKey, users, 30); // 30秒缓存
+    res.json({ users });
+});
+```
+
+#### 3. 压缩中间件
+
+```javascript
+// npm install compression
+import compression from 'compression';
+
+app.use(compression({
+    level: 6, // 压缩级别 0-9
+}));
+```
+
+#### 4. 基于游标的分页
+
+**当前问题:** 使用 `slice(-limit)` 需要遍历所有消息
+
+**改进建议:**
+
+```javascript
+app.get('/messages', authMiddleware, (req, res) => {
+    const limit = Math.min(Number(req.query.limit) || 50, 200);
+    const cursor = req.query.cursor ? String(req.query.cursor) : undefined;
+    const conversationId = req.query.conversationId || DEFAULT_CONVERSATION_ID;
+
+    let msgs = indexedDb.getMessagesByConversation(conversationId);
+    
+    if (cursor) {
+        const cursorIndex = msgs.findIndex(m => m.id === cursor);
+        if (cursorIndex !== -1) {
+            msgs = msgs.slice(cursorIndex + 1);
+        }
+    }
+    
+    msgs = msgs.slice(0, limit);
+    const nextCursor = msgs.length === limit ? msgs[msgs.length - 1].id : null;
+    
+    res.json({ 
+        messages: msgs, 
+        users: getUsersForMessages(msgs),
+        nextCursor,
+        hasMore: nextCursor !== null
+    });
+});
+```
+
+---
+
+### 🏗️ 代码质量和架构改进 (🔧 中优先级)
+
+#### 1. 模块化重构
+
+**当前问题:**
+- 所有逻辑都在一个 339 行的文件中
+- 难以维护和测试
+
+**建议的文件结构:**
+
+```
+server/
+├── src/
+│   ├── config/
+│   │   ├── env.js          # 环境变量配置
+│   │   └── constants.js    # 常量定义
+│   ├── db/
+│   │   ├── index.js        # 数据库初始化
+│   │   └── seed.js         # 数据种子
+│   ├── middleware/
+│   │   ├── auth.js         # 认证中间件
+│   │   ├── validation.js   # 验证中间件
+│   │   └── errorHandler.js # 错误处理
+│   ├── routes/
+│   │   ├── auth.js         # 认证路由
+│   │   ├── messages.js     # 消息路由
+│   │   ├── users.js        # 用户路由
+│   │   └── typing.js       # 输入状态路由
+│   ├── services/
+│   │   ├── authService.js  # 认证业务逻辑
+│   │   └── messageService.js # 消息业务逻辑
+│   └── app.js              # Express 应用
+└── server.js               # 入口文件
+```
+
+**示例 - 消息路由模块:**
+
+```javascript
+// src/routes/messages.js
+import express from 'express';
+
+export const createMessageRouter = (db, authMiddleware) => {
+    const router = express.Router();
+
+    router.get('/', authMiddleware, async (req, res, next) => {
+        try {
+            // 获取消息逻辑
+            res.json(result);
+        } catch (error) {
+            next(error);
+        }
+    });
+
+    router.post('/', authMiddleware, async (req, res, next) => {
+        try {
+            // 创建消息逻辑
+            res.json(result);
+        } catch (error) {
+            next(error);
+        }
+    });
+
+    return router;
+};
+```
+
+#### 2. 错误处理标准化
+
+```javascript
+// src/utils/errors.js
+export class AppError extends Error {
+    constructor(message, statusCode = 500, isOperational = true) {
+        super(message);
+        this.statusCode = statusCode;
+        this.isOperational = isOperational;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+export class ValidationError extends AppError {
+    constructor(message) {
+        super(message, 400);
+    }
+}
+
+export class UnauthorizedError extends AppError {
+    constructor(message = 'Unauthorized') {
+        super(message, 401);
+    }
+}
+
+export class NotFoundError extends AppError {
+    constructor(message = 'Not found') {
+        super(message, 404);
+    }
+}
+
+// src/middleware/errorHandler.js
+export const errorHandler = (err, req, res, next) => {
+    let error = err;
+
+    if (!(error instanceof AppError)) {
+        const statusCode = error.statusCode || 500;
+        const message = error.message || 'Internal Server Error';
+        error = new AppError(message, statusCode, false);
+    }
+
+    if (!error.isOperational || error.statusCode >= 500) {
+        console.error('ERROR 💥:', error);
+    }
+
+    res.status(error.statusCode).json({
+        error: error.message,
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
+    });
+};
+```
+
+#### 3. 日志系统
+
+```javascript
+// npm install winston
+import winston from 'winston';
+
+const logger = winston.createLogger({
+    level: process.env.LOG_LEVEL || 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.json()
+    ),
+    transports: [
+        new winston.transports.File({ filename: 'logs/combined.log' }),
+        new winston.transports.File({ 
+            filename: 'logs/error.log', 
+            level: 'error' 
+        }),
+    ],
+});
+
+// 开发环境控制台输出
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        ),
+    }));
+}
+
+// 使用
+logger.info('User logged in', { userId: user.id });
+logger.error('Failed to send message', { error: err.message });
+```
+
+#### 4. TypeScript 迁移
+
+将后端迁移到 TypeScript，提高类型安全性：
+
+```typescript
+// src/types/index.ts
+export interface User {
+    id: string;
+    email: string;
+    password_hash: string;
+    name: string;
+    avatar: string;
+    isLLM: boolean;
+    status: 'online' | 'offline' | 'away';
+    createdAt: number;
+}
+
+export interface Message {
+    id: string;
+    content: string;
+    senderId: string;
+    timestamp: number;
+    reactions: Reaction[];
+    conversationId: string;
+    role: 'user' | 'assistant' | 'system' | 'tool';
+    replyToId?: string;
+    metadata?: Record<string, unknown>;
+    mentions?: string[];
+}
+```
+
+---
+
+### ✨ 功能增强 (🔧 中优先级)
+
+#### 1. WebSocket 支持
+
+**当前问题:**
+- 使用轮询获取消息，效率低
+- 延迟高，服务器负载大
+
+**改进建议:**
+
+```javascript
+// npm install ws
+import { WebSocketServer } from 'ws';
+import { createServer } from 'http';
+
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+
+const connections = new Map(); // userId -> WebSocket
+
+wss.on('connection', (ws, req) => {
+    let userId = null;
+
+    ws.on('message', async (data) => {
+        try {
+            const message = JSON.parse(data.toString());
+
+            // 处理认证
+            if (message.type === 'auth') {
+                const payload = jwt.verify(message.token, JWT_SECRET);
+                const user = db.data.users.find((u) => u.id === payload.id);
+                
+                if (user) {
+                    userId = user.id;
+                    connections.set(userId, ws);
+                    ws.send(JSON.stringify({ type: 'auth', success: true }));
+                }
+                return;
+            }
+
+            // 处理消息
+            if (message.type === 'message') {
+                const newMessage = {
+                    id: randomUUID(),
+                    content: message.content,
+                    senderId: userId,
+                    timestamp: Date.now(),
+                    // ...
+                };
+
+                db.data.messages.push(newMessage);
+                await db.write();
+
+                // 广播到所有连接的用户
+                broadcast({ type: 'new_message', message: newMessage });
+            }
+        } catch (error) {
+            ws.send(JSON.stringify({ type: 'error', message: error.message }));
+        }
+    });
+
+    ws.on('close', () => {
+        if (userId) {
+            connections.delete(userId);
+        }
+    });
+});
+
+function broadcast(message, excludeUserId = null) {
+    const data = JSON.stringify(message);
+    connections.forEach((ws, userId) => {
+        if (userId !== excludeUserId && ws.readyState === ws.OPEN) {
+            ws.send(data);
+        }
+    });
+}
+
+server.listen(PORT, () => {
+    console.log(`Server with WebSocket on http://localhost:${PORT}`);
+});
+```
+
+#### 2. 文件上传支持
+
+```javascript
+// npm install multer
+import multer from 'multer';
+import path from 'path';
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads/'),
+    filename: (req, file, cb) => {
+        const uniqueName = `${randomUUID()}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    },
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|pdf|doc|docx|txt|mp4|mp3/;
+        const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+        const mime = allowed.test(file.mimetype);
+        
+        if (ext && mime) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type'));
+        }
+    },
+});
+
+app.post('/upload', authMiddleware, upload.array('files', 5), async (req, res) => {
+    try {
+        const files = req.files.map(file => ({
+            id: randomUUID(),
+            filename: file.filename,
+            originalName: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            uploadedBy: req.user.id,
+            uploadedAt: Date.now(),
+            url: `/uploads/${file.filename}`,
+        }));
+
+        db.data.files = db.data.files || [];
+        db.data.files.push(...files);
+        await db.write();
+
+        res.json({ files });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.use('/uploads', express.static('uploads'));
+```
+
+#### 3. 消息编辑功能
+
+```javascript
+app.patch('/messages/:messageId', authMiddleware, async (req, res) => {
+    const { messageId } = req.params;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+        return res.status(400).json({ error: 'Content required' });
+    }
+
+    const message = db.data.messages.find((m) => m.id === messageId);
+    
+    if (!message) {
+        return res.status(404).json({ error: 'Message not found' });
+    }
+
+    if (message.senderId !== req.user.id) {
+        return res.status(403).json({ error: 'Cannot edit this message' });
+    }
+
+    // 保存编辑历史
+    message.editHistory = message.editHistory || [];
+    message.editHistory.push({
+        content: message.content,
+        editedAt: Date.now(),
+    });
+
+    message.content = content.trim();
+    message.edited = true;
+    message.lastEditedAt = Date.now();
+
+    await db.write();
+    res.json({ message });
+});
+```
+
+#### 4. 消息已读状态
+
+```javascript
+app.post('/messages/:messageId/read', authMiddleware, async (req, res) => {
+    const { messageId } = req.params;
+    const message = db.data.messages.find((m) => m.id === messageId);
+
+    if (!message) {
+        return res.status(404).json({ error: 'Message not found' });
+    }
+
+    message.readBy = message.readBy || [];
+    
+    if (!message.readBy.find(r => r.userId === req.user.id)) {
+        message.readBy.push({
+            userId: req.user.id,
+            readAt: Date.now(),
+        });
+        await db.write();
+    }
+
+    res.json({ message });
+});
+```
+
+---
+
+### 🧪 测试 (🔧 中优先级)
+
+#### 1. 单元测试框架
+
+```javascript
+// npm install --save-dev jest supertest
+
+// __tests__/auth.test.js
+import request from 'supertest';
+import { createApp } from '../src/app';
+
+describe('Auth API', () => {
+    let app, db;
+
+    beforeAll(async () => {
+        db = await setupTestDb();
+        app = createApp(db);
+    });
+
+    it('should register a new user', async () => {
+        const response = await request(app)
+            .post('/auth/register')
+            .send({
+                email: 'test@example.com',
+                password: 'SecurePass123!',
+                name: 'Test User',
+            });
+
+        expect(response.status).toBe(200);
+        expect(response.body.user).toHaveProperty('id');
+        expect(response.body.user.email).toBe('test@example.com');
+    });
+
+    it('should reject weak passwords', async () => {
+        const response = await request(app)
+            .post('/auth/register')
+            .send({
+                email: 'test2@example.com',
+                password: '123',
+            });
+
+        expect(response.status).toBe(400);
+    });
+});
+```
+
+#### 2. 集成测试
+
+```javascript
+describe('Messages Flow', () => {
+    it('should create, retrieve, and delete a message', async () => {
+        // 创建用户并登录
+        const auth = await loginTestUser();
+        
+        // 创建消息
+        const createRes = await request(app)
+            .post('/messages')
+            .set('Cookie', auth.cookie)
+            .send({ content: 'Test message' });
+
+        expect(createRes.status).toBe(200);
+        const messageId = createRes.body.message.id;
+
+        // 获取消息
+        const getRes = await request(app)
+            .get('/messages')
+            .set('Cookie', auth.cookie);
+
+        expect(getRes.body.messages).toContainEqual(
+            expect.objectContaining({ id: messageId })
+        );
+
+        // 删除消息
+        const deleteRes = await request(app)
+            .delete(`/messages/${messageId}`)
+            .set('Cookie', auth.cookie);
+
+        expect(deleteRes.status).toBe(200);
+    });
+});
+```
+
+---
+
+### 📦 部署和运维 (📅 低优先级)
+
+#### 1. 环境配置
+
+```bash
+# .env.example
+NODE_ENV=production
+PORT=4000
+CLIENT_ORIGIN=https://yourdomain.com
+JWT_SECRET=your-secret-key-here-change-me
+
+# 数据库配置
+DATABASE_URL=postgresql://user:password@localhost:5432/chatdb
+
+# Redis 配置
+REDIS_URL=redis://localhost:6379
+
+# 日志配置
+LOG_LEVEL=info
+
+# 文件上传
+MAX_FILE_SIZE=10485760
+UPLOAD_DIR=/var/lib/chatapp/uploads
+```
+
+#### 2. Docker 支持
+
+```dockerfile
+# Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY server/ ./server/
+
+RUN mkdir -p /data /uploads && \
+    addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app /data /uploads
+
+USER nodejs
+
+EXPOSE 4000
+
+CMD ["node", "server/server.js"]
+```
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - chat-data:/data
+      - chat-uploads:/uploads
+    restart: unless-stopped
+
+volumes:
+  chat-data:
+  chat-uploads:
+```
+
+#### 3. 健康检查端点
+
+```javascript
+app.get('/health', (req, res) => {
+    const health = {
+        uptime: process.uptime(),
+        message: 'OK',
+        timestamp: Date.now(),
+        checks: {
+            database: 'OK',
+            memory: process.memoryUsage(),
+        },
+    };
+
+    try {
+        db.data; // 验证数据库可访问
+    } catch (error) {
+        health.checks.database = 'ERROR';
+        health.message = 'Unhealthy';
+        return res.status(503).json(health);
+    }
+
+    res.json(health);
+});
+```
+
+---
+
+### 🎯 后端改进优先级总结
+
+#### 立即实施 (⚡ 高优先级)
+1. ✅ **输入验证** - 使用 zod 验证所有输入
+2. ✅ **速率限制** - 防止暴力破解和 DoS 攻击
+3. ✅ **错误处理标准化** - 统一错误处理机制
+4. ✅ **基础安全增强** - Helmet, CORS 优化, 密码策略
+5. ✅ **日志系统** - Winston 记录请求和错误
+6. ✅ **JWT 安全性** - Token 刷新和撤销机制
+7. ✅ **数据库索引** - 添加内存索引或升级到 SQLite
+
+#### 近期实施 (🔧 中优先级)
+8. 🔧 **模块化重构** - 拆分成多个文件和模块
+9. 🔧 **WebSocket 支持** - 替代轮询，实现真正的实时通信
+10. 🔧 **缓存策略** - 使用 node-cache 提升性能
+11. 🔧 **单元测试** - Jest + Supertest 测试核心功能
+12. 🔧 **TypeScript 迁移** - 提高类型安全性
+13. 🔧 **压缩中间件** - 减少响应大小
+
+#### 长期规划 (📅 低优先级)
+14. 📅 **数据库完全升级** - 迁移到 PostgreSQL/MongoDB
+15. 📅 **文件上传** - 支持图片和文件分享
+16. 📅 **消息编辑和已读** - 完整的消息管理功能
+17. 📅 **性能监控** - APM 工具集成
+18. 📅 **Docker 化部署** - 容器化和编排
+19. 📅 **CI/CD 流程** - 自动化测试和部署
+
+---
+
+### 💡 实施建议
+
+1. **分阶段进行**: 不要一次性重构所有内容，按优先级逐步实施
+2. **保持向后兼容**: 确保前端不受影响，或同步更新前端
+3. **充分测试**: 每个改进都应该有对应的测试用例
+4. **文档更新**: 及时更新 API 文档和 README
+5. **监控指标**: 实施后监控性能和错误率
+6. **代码审查**: 重要改动应经过团队审查
+
+根据 AGENTS.md 的原则，建议优先实施安全性和代码质量改进，然后再考虑功能增强。这样可以确保系统的稳定性和可维护性，为未来的扩展打下坚实基础。
