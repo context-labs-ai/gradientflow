@@ -1,27 +1,25 @@
-# Active LLM Group Chat — 开发者文档
+# Active LLM Group Chat - Developer Notes
 
-面向开发者的结构说明、运行手册和扩展建议，覆盖前端/后端、状态模型与主要组件。
-
----
-
-## 1) 项目结构与依赖
-
-- `src/`：前端（React + TypeScript + Vite）
-  - `api/`: API 客户端封装 (`src/api/client.ts`)
-  - `components/`: UI 组件（AuthScreen、Sidebar、MessageList、MessageBubble、MessageInput、Layout 等）
-  - `context/ChatContext.tsx`: 全局状态与 reducer
-  - `hooks/useLLM.ts`: 前端模拟 LLM 逻辑
-  - `types/`: 数据模型定义
-- `server/`: 轻后端（Express + lowdb）
-  - `server.js`: API 服务
-  - `data.json`: 默认数据存储（用户/消息/typing）
-- 脚本：`npm run dev`（前端）、`npm run server`（后端）、`npm run build`、`npm run lint`、`npm run preview`
-- 主要依赖：React 18、TypeScript、Vite、framer-motion、lucide-react、clsx、Express、lowdb、bcryptjs、jsonwebtoken、cookie-parser、cors
+This document focuses on architecture, data contracts, and recommended workflows for extending the project. Use it as the companion reference to the public README.
 
 ---
 
-## 2) 状态模型（`src/types/chat.ts`）
+## 1. Project layout & key dependencies
+- `src/`: React + TypeScript + Vite frontend
+  - `api/`: API client wrappers (see `src/api/client.ts`)
+  - `components/`: UI building blocks such as `AuthScreen`, `Sidebar`, `MessageList`, `MessageBubble`, `MessageInput`, `Layout`, etc.
+  - `context/ChatContext.tsx`: global reducer + provider
+  - `hooks/useLLM.ts`: frontend LLM simulation logic
+  - `types/`: shared TS models
+- `server/`: Express + lowdb backend
+  - `server.js`: API entry point
+  - `data.json`: default persisted data (users/messages/typing)
+- Scripts: `npm run dev`, `npm run server`, `npm run build`, `npm run preview`, `npm run lint`
+- Major deps: React 18, TypeScript, Vite, framer-motion, lucide-react, clsx, Express, lowdb, bcryptjs, jsonwebtoken, cookie-parser, cors
 
+---
+
+## 2. State model (`src/types/chat.ts`)
 ```ts
 export interface User {
   id: string;
@@ -61,74 +59,69 @@ export interface ChatState {
 
 ---
 
-## 3) 前端工作流
-
-- **鉴权与启动（`src/App.tsx`）**
-  - 启动时调用 `/auth/me` 校验会话；并行拉取 `/users`、`/messages`，组合去重后 HYDRATE。
-  - 会话失败则进入 `AuthScreen`；成功后进入聊天页。
-- **轮询**
-  - 消息：每 4s 调用 `/messages`，更新 `messages` 与补充的 `users`。
-  - Typing：每 2.5s 调用 `/typing`，同步 `typingUsers`。
-- **发送与输入（`MessageInput.tsx`）**
-  - 多行自适应、`Enter` 发送、`Shift+Enter` 换行。
-  - @ 提示基于输入文本，不持久化 mentions 字段（如需可扩展）。
-  - 发送调用 `POST /messages`，成功后 `SEND_MESSAGE`；有返回用户时 `SET_USERS`。
-  - Typing 上报：输入时 `POST /typing { isTyping: true/false }`，同时本地 `SET_TYPING`。
-- **展示（`MessageList` / `MessageBubble`）**
-  - 按顺序渲染消息，处理回复引用、Reaction 聚合、悬浮操作。
-- **LLM 模拟（`useLLM.ts`）**
-  - 仅在前端执行：若新消息来自非 `llm1`，40% 概率添加 Reaction；命中 `@GPT-4`/`gpt` 时 2 秒后派发一条来自 `llm1` 的回复。
-
----
-
-## 4) 组件职责速览
-
-- `AuthScreen.tsx`：登录/注册表单，调用 `/auth/register`、`/auth/login`，处理错误提示。
-- `Layout.tsx`：整体布局，移动端顶部菜单控制 `Sidebar`。
-- `Sidebar.tsx`：频道列表、成员列表（状态点、BOT 标签）、当前用户卡片，支持移动端遮罩。
-- `MessageList.tsx`：消息列表、自动滚动、typing 提示。
-- `MessageBubble.tsx`：单条气泡（头像、昵称、时间、回复、Reaction、hover 操作）。
-- `MessageInput.tsx`：多行输入、发送、回复条、@ 提示、typing 上报。
-- `useLLM.ts`：模拟 LLM 反应与自动回复。
-- `ChatContext.tsx`：全局 reducer（HYDRATE、auth 状态、消息/用户/typing/回复/Reaction）。
+## 3. Frontend workflow
+- **Auth & bootstrap (`src/App.tsx`)**
+  - call `/auth/me` when mounting; if successful, fetch `/users` + `/messages` and dispatch `HYDRATE`
+  - failure drops the app into `AuthScreen`
+- **Polling**
+  - messages: fetch `/messages` every ~4s, merge+dedupe into state, backfill newly discovered users
+  - typing: poll `/typing` every ~2.5s and update `typingUsers`
+- **Sending input (`MessageInput.tsx`)**
+  - textarea autogrows, `Enter` sends, `Shift+Enter` inserts newline
+  - lightweight mention suggestions are computed from the current input (not persisted)
+  - `POST /messages` on submit, then dispatch `SEND_MESSAGE`; API response may include updated users -> `SET_USERS`
+  - typing indicator uses `POST /typing { isTyping: true/false }` + local `SET_TYPING`
+- **Rendering (`MessageList` / `MessageBubble`)**
+  - sequential render with grouped timestamps, reply previews, reaction aggregations, and hover actions
+- **LLM simulation (`useLLM.ts`)**
+  - reacts on the last non-LLM message with a 40% chance
+  - auto replies to messages mentioning `@GPT-4`/`gpt` after a 2s timeout
 
 ---
 
-## 5) 后端说明（`server/server.js`）
+## 4. Component responsibilities
+- `AuthScreen.tsx`: login/register forms, calls `/auth/register` + `/auth/login`, handles error states
+- `Layout.tsx`: overall chrome, mobile top bar toggles the sidebar overlay
+- `Sidebar.tsx`: channel placeholders, current user card, member list with presence dots + BOT labels
+- `MessageList.tsx`: scroll container, auto-scroll to latest message, typing indicator row
+- `MessageBubble.tsx`: avatar/name/timestamp layout, reply preview, reactions, hover action tray
+- `MessageInput.tsx`: multiline composer with reply pill, attachment buttons placeholder, typing dispatch
+- `useLLM.ts`: fake bot logic; safe to swap with real inference hooks
+- `ChatContext.tsx`: reducer + context wiring; actions include `HYDRATE`, `SET_AUTH_STATUS`, `SET_USERS`, `SET_MESSAGES`, `SEND_MESSAGE`, `SET_REPLY`, `SET_TYPING`, `UPDATE_REACTIONS`
 
-- **技术**：Express + lowdb(JSONFile)；bcryptjs（密码哈希）、jsonwebtoken（JWT）、cookie-parser、cors。
-- **存储**：默认写入 `server/data.json`；启动时确保存在默认 LLM 用户 `llm1`。
-- **会话**：JWT，httpOnly cookie；也可通过 Authorization Bearer 传递。
-- **CORS**：允许列表来自 `CLIENT_ORIGIN`（逗号分隔），默认 `http://localhost:5173`。
-- **环境变量**
-  - `PORT`（默认 4000）
-  - `CLIENT_ORIGIN`（允许的前端源，逗号分隔）
-  - `JWT_SECRET`（生产务必修改）
-  - `DB_PATH`（默认 `server/data.json`）
-- **主要端点**
-  - `POST /auth/register`、`POST /auth/login`、`POST /auth/logout`、`GET /auth/me`
-  - `GET /messages?limit=100&before=timestamp`（按时间排序取最近消息）
-  - `POST /messages`（`content`，可选 `replyToId`）
+---
+
+## 5. Backend overview (`server/server.js`)
+- **Stack**: Express + lowdb (JSONFile adapter), bcryptjs for password hashing, jsonwebtoken, cookie-parser, cors
+- **Storage**: defaults to `server/data.json`; ensures default `llm1` bot exists at startup
+- **Session**: JWT stored as httpOnly cookie (Authorization Bearer is also accepted)
+- **CORS**: allowlist defined by `CLIENT_ORIGIN` (comma separated), default `http://localhost:5173`
+- **Env vars**
+  - `PORT` (default 4000)
+  - `CLIENT_ORIGIN`
+  - `JWT_SECRET`
+  - `DB_PATH`
+- **Routes**
+  - `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
+  - `GET /messages`, `POST /messages`
   - `GET /users`
-  - `GET /typing`、`POST /typing`（`isTyping`，服务端带 TTL 清理）
+  - `GET /typing`, `POST /typing`
 
 ---
 
-## 6) 本地运行与脚本
+## 6. Local scripts & tips
+1. `npm install`
+2. `npm run server` (honor env vars above)
+3. `npm run dev` (set `VITE_API_URL` when pointing to a remote API)
+4. `npm run build`, `npm run preview`, `npm run lint` as needed
 
-1) 安装依赖：`npm install`  
-2) 启动后端：`npm run server`（可配环境变量见上）  
-3) 启动前端：`npm run dev`；如后端地址变化，设置 `VITE_API_URL`。  
-4) 其他脚本：`npm run build`、`npm run lint`、`npm run preview`。  
-
-数据存储位于 `server/data.json`。删除该文件可重置（会重新写入默认 llm1）。生产部署时请使用持久化存储并配置强随机 `JWT_SECRET`。
+Data is persisted in `server/data.json`. Delete the file to reset (it will be regenerated with the default users/bot). For production deployments switch to a real database and configure a strong `JWT_SECRET`.
 
 ---
 
-## 7) 扩展建议
-
-- 将 `useLLM` 改为真实 LLM 推理（可在后端暴露 /llm 端点，前端调用后插入消息；或直接由后端推送）。
-- 用 WebSocket/SSE 取代轮询，以减少延迟与请求量。
-- 完善 @ 提醒：解析内容写入 `mentions`，并在服务端下发通知。
-- 增加频道/房间模型：在后端区分 channelId，并在前端 Sidebar 切换频道时过滤消息。
-- 强化生产配置：HTTPS、secure sameSite cookie、速率限制、输入校验、日志与监控。
+## 7. Extension ideas
+- Move LLM logic server-side; optionally expose `/llm` endpoints and push responses via polling or WebSocket/SSE
+- Replace polling with WebSocket/SSE to cut latency and request volume
+- Persist mentions + notifications, add unread badges, or per-user reaction state
+- Add channels/rooms: attach `channelId` to messages and filter lists based on the active channel
+- Harden production posture: HTTPS, secure sameSite cookies, rate limiting, input validation, audit logging, monitoring
