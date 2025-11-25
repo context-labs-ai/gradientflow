@@ -1,6 +1,7 @@
 ﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
 import { MessageBubble } from './MessageBubble';
+import { DateSeparator, shouldShowDateSeparator } from './DateSeparator';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export const MessageList: React.FC = () => {
@@ -106,18 +107,19 @@ export const MessageList: React.FC = () => {
         <AnimatePresence initial={false} mode="popLayout">
           {state.messages.map((message, index) => {
             const isOwnMessage = message.senderId === currentUserId;
-
-            // Determine if we should show the avatar (if previous message was from different user)
             const prevMessage = state.messages[index - 1];
             const showAvatar = !prevMessage || prevMessage.senderId !== message.senderId;
+            const showDateSep = shouldShowDateSeparator(message, prevMessage);
 
             return (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                isOwnMessage={isOwnMessage}
-                showAvatar={showAvatar}
-              />
+              <React.Fragment key={message.id}>
+                {showDateSep && <DateSeparator timestamp={message.timestamp} />}
+                <MessageBubble
+                  message={message}
+                  isOwnMessage={isOwnMessage}
+                  showAvatar={showAvatar}
+                />
+              </React.Fragment>
             );
           })}
         </AnimatePresence>

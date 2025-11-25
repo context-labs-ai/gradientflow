@@ -11,17 +11,18 @@
     "server": "node server/server.js"
   },
   "dependencies": {
-    "clsx": "^2.1.0",
-    "framer-motion": "^11.0.3",
-    "lucide-react": "^0.344.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "emoji-picker-react": "^4.15.2",
     "express": "^4.19.2",
+    "framer-motion": "^11.0.3",
     "jsonwebtoken": "^9.0.2",
-    "lowdb": "^7.0.1"
+    "lowdb": "^7.0.1",
+    "lucide-react": "^0.344.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.56",

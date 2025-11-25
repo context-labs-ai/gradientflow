@@ -10,3 +10,7 @@
 ## Code
 - Maintain a clear folder structure and modular code (small, focused functions/modules).
 - Keep the architecture extensible for future upgrades and integrations.
+
+
+admin账号：root@example.com
+密码：1234567890

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { api } from '../api/client';
 import { DEFAULT_CONVERSATION_ID } from '../types/chat';
+import { EmojiPickerComponent } from './EmojiPicker';
 
 export const MessageInput: React.FC = () => {
     const { state, dispatch } = useChat();
@@ -22,6 +23,8 @@ export const MessageInput: React.FC = () => {
     const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
 
     const [sending, setSending] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
     const markTyping = () => {
         if (!state.currentUser) return;
@@ -303,9 +306,25 @@ export const MessageInput: React.FC = () => {
                             placeholder="Write a message..."
                             rows={1}
                         />
-                        <button className="icon-btn emoji-btn" title="Emoji">
+                        <button
+                            ref={emojiButtonRef}
+                            className="icon-btn emoji-btn"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            title="Emoji"
+                        >
                             <Smile size={20} />
                         </button>
+                        <EmojiPickerComponent
+                            isOpen={showEmojiPicker}
+                            onClose={() => setShowEmojiPicker(false)}
+                            onEmojiSelect={(emoji) => {
+                                const cursorPos = textareaRef.current?.selectionStart ?? content.length;
+                                const newContent = content.slice(0, cursorPos) + emoji + content.slice(cursorPos);
+                                setContent(newContent);
+                                textareaRef.current?.focus();
+                            }}
+                            anchorEl={emojiButtonRef.current}
+                        />
                     </div>
 
                     <div className="input-action-slot">

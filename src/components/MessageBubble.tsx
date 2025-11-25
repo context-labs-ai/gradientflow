@@ -5,6 +5,8 @@ import { Reply, MoreHorizontal, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import { api } from '../api/client';
+import { MessageStatus } from './MessageStatus';
+import { useShouldUseComplexAnimations } from '../hooks/useDevicePerformance';
 
 interface MessageBubbleProps {
   message: Message;
@@ -17,6 +19,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
   const currentUserId = state.currentUser?.id;
   const sender = state.users.find(u => u.id === message.senderId);
   const prefersReducedMotion = useReducedMotion();
+  const shouldUseComplexAnimations = useShouldUseComplexAnimations();
   const reactionOptions = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
   const [isHovered, setIsHovered] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -112,6 +115,49 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
     Boolean(currentUserId && message.reactions.some(r => r.emoji === emoji && r.userIds.includes(currentUserId)));
   const shouldShowActions = isHovered || showDeleteConfirm;
 
+  // Helper function to render message content with @mention highlighting
+  const renderMessageContent = (content: string, users: typeof state.users) => {
+    // Match @mentions in the content
+    const mentionRegex = /@(\w+)/g;
+    const parts: (string | JSX.Element)[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+      // Add text before the mention
+      if (match.index > lastIndex) {
+        parts.push(content.substring(lastIndex, match.index));
+      }
+
+      // Find the mentioned user
+      const mentionedUsername = match[1];
+      const mentionedUser = users.find(u =>
+        u.name.toLowerCase() === mentionedUsername.toLowerCase() ||
+        u.id === mentionedUsername
+      );
+
+      // Add the mention as a highlighted span
+      parts.push(
+        <span
+          key={match.index}
+          className="mention-highlight"
+          title={mentionedUser ? `@${mentionedUser.name}` : undefined}
+        >
+          @{mentionedUsername}
+        </span>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < content.length) {
+      parts.push(content.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: isOwnMessage ? 16 : -16, scale: prefersReducedMotion ? 1 : 0.98 }}
@@ -153,10 +199,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
         )}
 
         <div className={clsx('bubble', isOwnMessage ? 'own' : 'other', isHovered && 'hovered')}>
-          <span className="bubble-text">{message.content}</span>
-          <span className="bubble-timestamp" aria-label={fullTimeLabel} title={fullTimeLabel}>
-            {timeLabel}
-          </span>
+          <span className="bubble-text">{renderMessageContent(message.content, state.users)}</span>
+          <div className="bubble-meta">
+            {message.editedAt && <span className="message-edited">(edited)</span>}
+            <span className="bubble-timestamp" aria-label={fullTimeLabel} title={fullTimeLabel}>
+              {timeLabel}
+            </span>
+            <MessageStatus status={message.status} isOwnMessage={isOwnMessage} />
+          </div>
         </div>
 
         {message.reactions.length > 0 && (
@@ -229,20 +279,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
                       key={emoji}
                       className={clsx('emoji-btn', hasReacted(emoji) && 'active')}
                       onClick={() => handleReaction(emoji)}
-                      initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                      initial={shouldUseComplexAnimations ? { opacity: 0, scale: 0.5, y: 10 } : { opacity: 0 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{
+                      transition={shouldUseComplexAnimations ? {
                         type: 'spring',
                         stiffness: 400,
                         damping: 20,
                         delay: index * 0.04
-                      }}
-                      whileHover={{ scale: 1.25, rotate: -8, transition: { type: 'spring', stiffness: 400, damping: 15 } }}
+                      } : { duration: 0.15 }}
+                      whileHover={shouldUseComplexAnimations ? { scale: 1.25, rotate: -8, transition: { type: 'spring', stiffness: 400, damping: 15 } } : { scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       title={`React with ${emoji}`}
                     >
                       {emoji}
-                      <span className="emoji-glow" aria-hidden="true" />
+                      {shouldUseComplexAnimations && <span className="emoji-glow" aria-hidden="true" />}
                     </motion.button>
                   ))}
                 </div>
@@ -353,17 +403,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           word-break: break-word;
         }
 
+        .bubble-meta {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--spacing-xs);
+          flex-shrink: 0;
+        }
+
         .bubble-timestamp {
           font-size: 0.7rem;
           color: var(--text-tertiary);
-          opacity: 0;
-          transform: translateY(4px);
-          transition: opacity 0.18s ease, transform 0.18s ease;
-        }
-
-        .bubble.hovered .bubble-timestamp {
-          opacity: 0.9;
-          transform: translateY(0);
+          white-space: nowrap;
         }
 
         @media (max-width: 768px) {

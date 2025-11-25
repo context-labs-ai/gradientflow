@@ -119,3 +119,169 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
 }
+
+/* Date Separator */
+.date-separator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+  padding: 0 var(--spacing-md);
+}
+
+.date-separator-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+
+.date-separator-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+}
+
+/* Emoji Picker */
+.emoji-picker-wrapper {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: var(--spacing-sm);
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.emoji-picker-wrapper aside.EmojiPickerReact {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+}
+
+/* Mention Highlights */
+.mention-highlight {
+  color: var(--accent-primary);
+  font-weight: 500;
+  background: rgba(51, 144, 236, 0.1);
+  padding: 1px 3px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.mention-highlight:hover {
+  background: rgba(51, 144, 236, 0.2);
+}
+
+/* Mention suggestion dropdown */
+.mention-suggestions {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: var(--spacing-xs);
+  z-index: 100;
+}
+
+.mention-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.mention-suggestion-item:hover,
+.mention-suggestion-item.selected {
+  background: var(--bg-tertiary);
+}
+
+.mention-suggestion-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.mention-suggestion-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Message Status Indicators */
+.message-status {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--spacing-xs);
+  opacity: 0.7;
+}
+
+.message-status-icon {
+  display: block;
+}
+
+.message-status-icon.sending {
+  color: var(--text-tertiary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.message-status-icon.sent {
+  color: var(--text-secondary);
+}
+
+.message-status-icon.delivered {
+  color: var(--text-secondary);
+}
+
+.message-status-icon.read {
+  color: var(--accent-primary);
+}
+
+.message-status-icon.failed {
+  color: #e53935;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Edited indicator */
+.message-edited {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+  margin-left: var(--spacing-xs);
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

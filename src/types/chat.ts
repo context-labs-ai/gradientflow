@@ -18,6 +18,18 @@ export interface Reaction {
   userIds: string[];
 }
 
+export type MessageStatus =
+  | { type: 'sending' }
+  | { type: 'sent'; sentAt: number }
+  | { type: 'delivered'; deliveredAt: number }
+  | { type: 'read'; readAt: number }
+  | { type: 'failed'; error: string };
+
+export interface MessageEditMetadata {
+  content: string;
+  editedAt: number;
+}
+
 export interface Message {
   id: string;
   content: string;
@@ -29,6 +41,9 @@ export interface Message {
   metadata?: Record<string, unknown>;
   replyToId?: string; // ID of the message being replied to
   mentions?: string[]; // IDs of users mentioned
+  status?: MessageStatus; // Message delivery status
+  editHistory?: MessageEditMetadata[]; // Edit history
+  editedAt?: number; // Timestamp of last edit
 }
 
 export interface ChatState {
