@@ -166,17 +166,24 @@ textarea {
 
 /* Mention Highlights */
 .mention-highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--accent-primary);
-  font-weight: 500;
-  background: rgba(51, 144, 236, 0.1);
-  padding: 1px 3px;
-  border-radius: 3px;
+  font-weight: 600;
+  background: radial-gradient(circle at 20% 30%, rgba(51, 144, 236, 0.18), rgba(51, 144, 236, 0.08));
+  padding: 2px 6px;
+  border-radius: 999px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.18s ease, box-shadow 0.2s ease, transform 0.18s ease;
+  box-shadow: 0 4px 12px rgba(51, 144, 236, 0.16);
+  text-decoration: none;
 }
 
 .mention-highlight:hover {
-  background: rgba(51, 144, 236, 0.2);
+  background: linear-gradient(135deg, rgba(51, 144, 236, 0.2), rgba(51, 144, 236, 0.12));
+  box-shadow: 0 6px 16px rgba(51, 144, 236, 0.22);
+  transform: translateY(-1px);
 }
 
 /* Mention suggestion dropdown */

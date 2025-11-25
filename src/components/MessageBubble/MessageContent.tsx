@@ -10,7 +10,7 @@ interface MessageContentProps {
 
 export const MessageContent: React.FC<MessageContentProps> = ({ content, users }) => {
     const processedContent = useMemo(() => {
-        return content.replace(/@(\w+)/g, (match, username) => {
+        return content.replace(/@([\p{L}\p{N}_\-\.]+)/gu, (match, username) => {
             const user = users.find(u =>
                 u.name.toLowerCase() === username.toLowerCase() ||
                 u.id === username
@@ -19,9 +19,19 @@ export const MessageContent: React.FC<MessageContentProps> = ({ content, users }
         });
     }, [content, users]);
 
+    const urlTransform = (href: string) => {
+        if (href.startsWith('mention://')) return href;
+        const safeHref = href.trim().toLowerCase();
+        if (safeHref.startsWith('javascript:') || safeHref.startsWith('data:')) {
+            return '';
+        }
+        return href;
+    };
+
     return (
         <div className="bubble-text markdown-content">
             <ReactMarkdown
+                urlTransform={urlTransform}
                 components={{
                     a: ({ node, href, children, ...props }) => {
                         if (href?.startsWith('mention://')) {
