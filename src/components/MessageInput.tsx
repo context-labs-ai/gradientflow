@@ -1,6 +1,6 @@
 ﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
-import { Send, Smile, X, Paperclip, Mic, Loader2 } from 'lucide-react';
+import { Send, Smile, X, Paperclip, Mic, Loader2, Reply } from 'lucide-react';
 import { User } from '../types/chat';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -26,11 +26,11 @@ export const MessageInput: React.FC = () => {
     const markTyping = () => {
         if (!state.currentUser) return;
         dispatch({ type: 'SET_TYPING', payload: { userId: state.currentUser.id, isTyping: true } });
-        api.typing.set(true).catch(() => {});
+        api.typing.set(true).catch(() => { });
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => {
             dispatch({ type: 'SET_TYPING', payload: { userId: state.currentUser!.id, isTyping: false } });
-            api.typing.set(false).catch(() => {});
+            api.typing.set(false).catch(() => { });
         }, TYPING_STOP_DELAY);
     };
 
@@ -41,7 +41,7 @@ export const MessageInput: React.FC = () => {
             typingTimeoutRef.current = null;
         }
         dispatch({ type: 'SET_TYPING', payload: { userId: state.currentUser.id, isTyping: false } });
-        api.typing.set(false).catch(() => {});
+        api.typing.set(false).catch(() => { });
     };
 
     const updateMentionPosition = useCallback(() => {
@@ -246,12 +246,12 @@ export const MessageInput: React.FC = () => {
                             className="reply-preview-container"
                         >
                             <div className="reply-preview-content">
-                                <div className="reply-accent-bar" />
+                                <div className="reply-icon-wrapper">
+                                    <Reply size={14} />
+                                </div>
                                 <div className="reply-info">
-                                    <span className="reply-label">Replying to</span>
-                                    <span className="reply-name">
-                                        {state.users.find(u => u.id === state.replyingTo?.senderId)?.name}
-                                    </span>
+                                    <span className="reply-label">Replying to {state.users.find(u => u.id === state.replyingTo?.senderId)?.name}</span>
+                                    <span className="reply-message-preview">{state.replyingTo.content}</span>
                                 </div>
                             </div>
                             <button onClick={cancelReply} className="close-reply">
@@ -313,9 +313,10 @@ export const MessageInput: React.FC = () => {
                             {content.trim() ? (
                                 <motion.button
                                     key="send"
-                                    initial={{ scale: 0.8, opacity: 0, rotate: -15 }}
+                                    initial={{ scale: 0.5, opacity: 0, rotate: -45 }}
                                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                                    exit={{ scale: 0.8, opacity: 0, rotate: 10 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                    exit={{ scale: 0.5, opacity: 0, rotate: 45 }}
                                     className={clsx('send-btn', sending && 'sending')}
                                     onClick={handleSend}
                                     disabled={sending}
@@ -360,38 +361,57 @@ export const MessageInput: React.FC = () => {
 
         .reply-preview-container {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
-          padding: 8px 16px;
+          gap: 8px;
+          padding: 10px 12px;
           margin-bottom: 8px;
+          background: rgba(var(--bg-secondary-rgb), 0.5);
+          border-radius: var(--radius-md);
+          border-left: 3px solid var(--accent-primary);
         }
 
         .reply-preview-content {
             display: flex;
-            gap: 12px;
+            gap: 10px;
+            flex: 1;
+            align-items: flex-start;
+            min-width: 0;
         }
 
-        .reply-accent-bar {
-            width: 3px;
+        .reply-icon-wrapper {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
             background-color: var(--accent-primary);
-            border-radius: 2px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .reply-info {
             display: flex;
             flex-direction: column;
             justify-content: center;
+            gap: 2px;
+            flex: 1;
+            min-width: 0;
         }
 
         .reply-label {
             font-size: 0.75rem;
-            color: var(--text-tertiary);
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
-        .reply-name {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--accent-primary);
+        .reply-message-preview {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .close-reply {
@@ -399,6 +419,7 @@ export const MessageInput: React.FC = () => {
           border-radius: 50%;
           color: var(--text-secondary);
           transition: background-color 0.2s;
+          flex-shrink: 0;
         }
 
         .close-reply:hover {
@@ -451,7 +472,7 @@ export const MessageInput: React.FC = () => {
             transition: box-shadow 0.2s, background-color 0.2s, transform 0.2s, border-color 0.2s;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
             border: 1px solid rgba(15, 23, 42, 0.08);
-            animation: inputFloat 9s ease-in-out infinite;
+            border: 1px solid rgba(15, 23, 42, 0.08);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
         }
@@ -460,7 +481,6 @@ export const MessageInput: React.FC = () => {
             background-color: rgba(255, 255, 255, 0.98);
             box-shadow: 0 0 0 1px rgba(51, 144, 236, 0.28), 0 14px 32px rgba(51, 144, 236, 0.18);
             transform: translateY(-1px);
-            animation-play-state: paused;
             border-color: rgba(51, 144, 236, 0.32);
         }
 
@@ -609,11 +629,7 @@ export const MessageInput: React.FC = () => {
           flex: 1;
         }
 
-        @keyframes inputFloat {
-          0% { transform: translateY(0); }
-          50% { transform: translateY(-2px); }
-          100% { transform: translateY(0); }
-        }
+
 
         @keyframes spin {
           to { transform: rotate(360deg); }

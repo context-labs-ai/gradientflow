@@ -200,13 +200,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           >
             {showDeleteConfirm ? (
               <div className="delete-confirm-card">
-                <div className="delete-card-header">
-                  <span className="delete-title">Delete this message?</span>
-                  <span className="delete-subtitle">This action cannot be undone.</span>
+                <div className="delete-icon-wrapper">
+                  <Trash2 size={20} className="delete-icon-svg" />
                 </div>
-                <div className="delete-preview">
-                  <span className="delete-preview-author">{sender?.name || 'You'}</span>
-                  <span className="delete-preview-text">{message.content}</span>
+                <div className="delete-content-col">
+                  <span className="delete-title">Delete message?</span>
+                  <span className="delete-subtitle">This cannot be undone.</span>
                 </div>
                 {deleteError && <span className="delete-error">{deleteError}</span>}
                 <div className="delete-confirm-actions">
@@ -340,12 +339,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           line-height: 1.4;
           position: relative;
           box-shadow: var(--shadow-sm), 0 8px 22px rgba(0, 0, 0, 0.08);
-          transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+          transition: background-color 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
           border: 1px solid transparent;
           background-image: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.02));
-          transform-origin: center;
-          transform: translateY(0);
-          will-change: transform, box-shadow;
           display: inline-flex;
           gap: 8px;
           align-items: flex-end;
@@ -385,17 +381,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           pointer-events: none;
           background: radial-gradient(circle at 20% 20%, rgba(51, 144, 236, 0.14), transparent 55%);
           opacity: 0;
-          transition: opacity 0.2s ease, transform 0.2s ease;
+          transition: opacity 0.2s ease;
         }
 
         .bubble.hovered {
           box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.04);
-          transform: translateY(-3px) scale(1.005);
         }
 
         .bubble.hovered::after {
           opacity: 1;
-          transform: scale(1.01);
         }
 
         .bubble.own {
@@ -509,8 +503,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           position: absolute;
           bottom: calc(100% + 10px);
           z-index: 10;
-          overflow: hidden;
-          max-width: min(340px, 72vw);
+          z-index: 10;
+          max-width: none;
         }
 
         .message-container.own .actions-group {
@@ -634,15 +628,31 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
         .delete-confirm-card {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          align-items: center;
+          gap: 12px;
           width: 100%;
           color: var(--text-primary);
+          padding: 4px;
         }
 
-        .delete-card-header {
+        .delete-icon-wrapper {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background-color: #fee2e2;
+          color: #ef4444;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 2px;
+        }
+
+        .delete-content-col {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          align-items: center;
+          gap: 4px;
+          text-align: center;
         }
 
         .delete-title {
@@ -656,89 +666,67 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isOwnMess
           color: var(--text-secondary);
         }
 
-        .delete-preview {
-          padding: 8px 10px;
-          border-radius: var(--radius-md);
-          background: rgba(15, 23, 42, 0.03);
-          border: 1px solid rgba(15, 23, 42, 0.06);
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-
-        .delete-preview-author {
-          font-size: 0.75rem;
-          color: var(--text-tertiary);
-        }
-
-        .delete-preview-text {
-          font-size: 0.85rem;
-          color: var(--text-primary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
         .delete-error {
           font-size: 0.78rem;
           color: #b91c1c;
+          text-align: center;
         }
 
         .delete-confirm-actions {
           display: flex;
           gap: 8px;
-          justify-content: flex-end;
+          width: 100%;
+          margin-top: 4px;
         }
 
         .delete-confirm-btn {
+          flex: 1;
           border-radius: var(--radius-full);
-          padding: 6px 14px;
+          padding: 8px 14px;
           font-size: 0.85rem;
-          font-weight: 600;
-          transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+          font-weight: 500;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
         }
 
         .delete-confirm-btn.ghost {
           background: transparent;
           color: var(--text-secondary);
-          border: 1px solid rgba(15, 23, 42, 0.1);
+          border: 1px solid rgba(15, 23, 42, 0.12);
         }
 
         .delete-confirm-btn.ghost:hover {
           background: rgba(15, 23, 42, 0.04);
           color: var(--text-primary);
+          border-color: rgba(15, 23, 42, 0.2);
         }
 
         .delete-confirm-btn.destructive {
-          background: linear-gradient(145deg, #f87171, #ef4444);
+          background: #ef4444;
           color: white;
-          border: none;
-          box-shadow: 0 8px 18px rgba(248, 113, 113, 0.35);
+          border: 1px solid #ef4444;
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
         }
 
         .delete-confirm-btn.destructive:hover {
-          background: linear-gradient(145deg, #ef4444, #dc2626);
+          background: #dc2626;
+          box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+          transform: translateY(-1px);
         }
 
         .delete-confirm-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+          transform: none;
           box-shadow: none;
         }
 
         @media (prefers-reduced-motion: no-preference) {
-          .bubble {
-            animation: floaty 7s ease-in-out infinite;
-          }
-
           .bubble.hovered {
             animation: none;
-          }
-
-          @keyframes floaty {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-1.5px); }
-            100% { transform: translateY(0); }
           }
         }
       `}</style>
