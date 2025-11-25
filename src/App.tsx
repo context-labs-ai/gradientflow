@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatProvider, useChat } from './context/ChatContext';
 import { Layout } from './components/Layout';
 import { MessageList } from './components/MessageList';
@@ -73,6 +73,14 @@ const ChatApp = () => {
 const AppShell = () => {
     const { state, dispatch } = useChat();
     const [error, setError] = useState<string | null>(null);
+    const lastFetchedTimestampRef = useRef(0);
+    const knownUserIdsRef = useRef<Set<string>>(new Set());
+
+    const updateLastFetchedTimestamp = useCallback((messages: { timestamp: number }[]) => {
+        if (!messages.length) return;
+        const latestTimestamp = messages[messages.length - 1].timestamp;
+        lastFetchedTimestampRef.current = Math.max(lastFetchedTimestampRef.current, latestTimestamp);
+    }, []);
 
     const bootstrap = useCallback(async () => {
         dispatch({ type: 'SET_AUTH_STATUS', payload: 'loading' });
@@ -83,7 +91,10 @@ const AppShell = () => {
                 api.users.list(),
                 api.messages.list({ limit: 100, conversationId: DEFAULT_CONVERSATION_ID }),
             ]);
+            lastFetchedTimestampRef.current = 0;
             const allUsers = mergeUsers([...users, ...messageUsers, me.user]);
+            knownUserIdsRef.current = new Set(allUsers.map((u) => u.id));
+            updateLastFetchedTimestamp(messages);
             dispatch({
                 type: 'HYDRATE',
                 payload: { currentUser: me.user, users: allUsers, messages },
@@ -93,7 +104,7 @@ const AppShell = () => {
             setError(err?.message || 'Failed to load session');
             dispatch({ type: 'SET_AUTH_STATUS', payload: 'unauthenticated' });
         }
-    }, [dispatch]);
+    }, [dispatch, updateLastFetchedTimestamp]);
 
     useEffect(() => {
         bootstrap();
@@ -104,10 +115,23 @@ const AppShell = () => {
         let cancelled = false;
         const pollMessages = async () => {
             try {
-                const res = await api.messages.list({ limit: 100, conversationId: DEFAULT_CONVERSATION_ID });
+                const res = await api.messages.list({
+                    limit: 100,
+                    conversationId: DEFAULT_CONVERSATION_ID,
+                    since: lastFetchedTimestampRef.current || undefined,
+                });
                 if (!cancelled) {
-                    dispatch({ type: 'SET_MESSAGES', payload: res.messages });
-                    dispatch({ type: 'SET_USERS', payload: res.users });
+                    if (res.messages.length) {
+                        updateLastFetchedTimestamp(res.messages);
+                        dispatch({ type: 'UPSERT_MESSAGES', payload: res.messages });
+                    }
+                    if (res.users.length) {
+                        const newUsers = res.users.filter((u) => !knownUserIdsRef.current.has(u.id));
+                        if (newUsers.length) {
+                            newUsers.forEach((u) => knownUserIdsRef.current.add(u.id));
+                            dispatch({ type: 'SET_USERS', payload: newUsers });
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('message poll failed', err);
@@ -119,7 +143,12 @@ const AppShell = () => {
             cancelled = true;
             clearInterval(id);
         };
-    }, [dispatch, state.authStatus]);
+    }, [dispatch, state.authStatus, updateLastFetchedTimestamp]);
+
+    useEffect(() => {
+        if (!state.users.length) return;
+        knownUserIdsRef.current = new Set(state.users.map((u) => u.id));
+    }, [state.users]);
 
     useEffect(() => {
         if (state.authStatus !== 'authenticated' || !state.currentUser) return;
