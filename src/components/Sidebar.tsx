@@ -4,13 +4,15 @@ import { Hash, Settings, Bot, Mic, Headphones, Search, Plus, X, LogOut } from 'l
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { api } from '../api/client';
+import { User } from '../types/chat';
 
 interface SidebarProps {
     isOpen: boolean;
     onClose: () => void;
+    onOpenAgentPanel: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPanel }) => {
     const { state, dispatch } = useChat();
     const [activeChannel, setActiveChannel] = useState('general');
     const [searchQuery, setSearchQuery] = useState('');
@@ -20,6 +22,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     const trimmedQuery = searchQuery.trim().toLowerCase();
     const filteredUsers = state.users.filter(user => user.name.toLowerCase().includes(trimmedQuery));
     const displayedUsers = trimmedQuery ? filteredUsers : state.users;
+    const statusOrder: Array<User['status']> = ['online', 'busy', 'offline'];
+    const statusLabels: Record<User['status'], string> = {
+        online: 'Online',
+        busy: 'Busy',
+        offline: 'Offline',
+    };
+    const groupedMembers = React.useMemo(() => {
+        const grouped = new Map<User['status'] | 'other', User[]>();
+        displayedUsers.forEach(user => {
+            const status = statusOrder.includes(user.status) ? user.status : 'other';
+            if (!grouped.has(status)) grouped.set(status, []);
+            grouped.get(status)!.push(user);
+        });
+
+        const ordered: { status: User['status'] | 'other'; users: User[] }[] = [];
+        statusOrder.forEach(status => {
+            if (grouped.has(status)) ordered.push({ status, users: grouped.get(status)! });
+        });
+        if (grouped.has('other')) ordered.push({ status: 'other', users: grouped.get('other')! });
+        return ordered;
+    }, [displayedUsers]);
+
     const memberCountLabel = trimmedQuery
         ? `${filteredUsers.length}/${state.users.length}`
         : state.users.length;
@@ -86,6 +110,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="sidebar-content">
+                    <div className="sidebar-section agent-section">
+                        <div className="section-header">
+                            <h3 className="section-title">LLM Agents · {state.agents.length}</h3>
+                            <button className="manage-btn" onClick={onOpenAgentPanel}>
+                                <Settings size={14} />
+                                <span>Manage</span>
+                            </button>
+                        </div>
+                        <div className="agent-list">
+                            {state.agents.length === 0 ? (
+                                <div className="agent-empty">No agents configured</div>
+                            ) : (
+                                state.agents.map(agent => (
+                                    <button key={agent.id} className="agent-card" onClick={onOpenAgentPanel}>
+                                        <div className="avatar-wrapper small">
+                                            <img
+                                                src={
+                                                    agent.avatar ||
+                                                    agent.user?.avatar ||
+                                                    `https://api.dicebear.com/7.x/bottts/svg?seed=${agent.name}`
+                                                }
+                                                alt={agent.name}
+                                            />
+                                            <span className={clsx('status-indicator', agent.status === 'inactive' ? 'offline' : 'online')} />
+                                        </div>
+                                        <div className="agent-info">
+                                            <span className="agent-name">{agent.name}</span>
+                                            <span className="agent-model">{agent.model?.name || agent.runtime?.type || 'custom runtime'}</span>
+                                        </div>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
                     <div className="sidebar-section">
                         <div className="section-header">
                             <h3 className="section-title">Channels</h3>
@@ -113,29 +172,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             {displayedUsers.length === 0 ? (
                                 <div className="member-empty">No member found</div>
                             ) : (
-                                displayedUsers.map(user => (
-                                    <motion.div
-                                        key={user.id}
-                                        className="member-item"
-                                        whileHover={{ backgroundColor: 'var(--bg-tertiary)', x: 4 }}
-                                    >
-                                        <div className="avatar-wrapper small">
-                                            <img src={user.avatar} alt={user.name} />
-                                            <motion.span
-                                                layoutId={`${user.id}-status`}
-                                                className={`status-indicator ${user.status}`}
-                                                animate={{ scale: 1 }}
-                                                transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                                            />
-                                        </div>
-                                        <div className="member-info">
-                                            <span className={clsx('member-name', user.isLLM && 'is-llm')}>
-                                                {user.name}
-                                                {user.isLLM && <span className="bot-tag">BOT</span>}
+                                groupedMembers.map(group => (
+                                    <div key={group.status} className="member-group">
+                                        <div className="member-group-header">
+                                            <span className="member-group-title">
+                                                {group.status === 'other'
+                                                    ? 'Others'
+                                                    : statusLabels[group.status as User['status']]}
                                             </span>
-                                            <span className="member-status-text">{user.status}</span>
+                                            <span className="member-group-count">{group.users.length}</span>
                                         </div>
-                                    </motion.div>
+                                        {group.users.map(user => (
+                                            <motion.div
+                                                key={user.id}
+                                                className="member-item"
+                                                whileHover={{ backgroundColor: 'var(--bg-tertiary)', x: 4 }}
+                                            >
+                                                <div className="avatar-wrapper small">
+                                                    <img src={user.avatar} alt={user.name} />
+                                                    <motion.span
+                                                        layoutId={`${user.id}-status`}
+                                                        className={`status-indicator ${user.status}`}
+                                                        animate={{ scale: 1 }}
+                                                        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                                                    />
+                                                </div>
+                                                <div className="member-info">
+                                                    <span className={clsx('member-name', user.isLLM && 'is-llm')}>
+                                                        {user.name}
+                                                        {user.isLLM && <span className="bot-tag">BOT</span>}
+                                                    </span>
+                                                    <span className="member-status-text">{user.status}</span>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
                                 ))
                             )}
                         </div>
@@ -313,6 +384,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             flex-direction: column;
         }
 
+        .agent-section {
+            gap: var(--spacing-sm);
+        }
+
         .section-header {
             display: flex;
             align-items: center;
@@ -370,7 +445,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         .member-list {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: var(--spacing-sm);
+        }
+
+        .member-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .member-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2px;
+            color: var(--text-tertiary);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        .member-group-title {
+            color: var(--text-tertiary);
+        }
+
+        .member-group-count {
+            font-size: 0.65rem;
+            background: rgba(15, 23, 42, 0.05);
+            padding: 2px 6px;
+            border-radius: 999px;
+            color: var(--text-tertiary);
         }
 
         .member-item {
@@ -428,6 +533,79 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+
+        .manage-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+        }
+
+        .manage-btn:hover {
+            color: var(--accent-primary);
+            border-color: rgba(51, 144, 236, 0.4);
+            background-color: rgba(51, 144, 236, 0.08);
+        }
+
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .agent-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-md);
+            border: 1px solid transparent;
+            background-color: var(--bg-primary);
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .agent-card:hover {
+            border-color: var(--border-light);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .agent-card .status-indicator {
+            border-color: var(--bg-primary);
+        }
+
+        .agent-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .agent-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .agent-model {
+            font-size: 0.7rem;
+            color: var(--text-tertiary);
+        }
+
+        .agent-empty {
+            padding: 12px;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border-light);
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+            text-align: center;
         }
 
         .member-name {

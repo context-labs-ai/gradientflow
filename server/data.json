@@ -4,7 +4,7 @@
       "id": "llm1",
       "email": "gpt4@example.com",
       "password_hash": "580061e31c4aea81",
-      "name": "GPT-4",
+      "name": "GPT-4 助手",
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=GPT4",
       "isLLM": true,
       "status": "online",
@@ -66,6 +66,17 @@
       "status": "online",
       "createdAt": 1764012372635,
       "type": "human"
+    },
+    {
+      "id": "agent-user-4b4bdea7-1c02-4597-9c05-f6d9a18e3183",
+      "email": "agent-3ba1b4ed-0a58-47cf-81e7-4e50e4d470d0@agents.local",
+      "password_hash": "6ef976484a0fd69ec3773fe0",
+      "name": "LLM",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=LLM",
+      "isLLM": true,
+      "status": "offline",
+      "createdAt": 1764089554697,
+      "type": "agent"
     }
   ],
   "messages": [
@@ -103,32 +114,6 @@
       "mentions": []
     },
     {
-      "id": "d868a445-f820-4e2d-8ded-5e26584f42e9",
-      "content": "a",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764054124333,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "b89705fd-02f0-4f51-8801-9a6fb506db25",
-      "content": "a",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764054126986,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
       "id": "68942ef9-f311-42ac-a146-b9fd5ff3d61b",
       "content": "1",
       "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
@@ -155,19 +140,17 @@
       "mentions": []
     },
     {
-      "id": "d5e98b94-3ba3-4284-b408-aa3cf3021c82",
-      "content": "@GPT-4 1",
+      "id": "a0878c15-9490-4fce-bd14-52b105270cc0",
+      "content": "111111",
       "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764079568443,
+      "timestamp": 1764083788793,
       "reactions": [],
       "conversationId": "global",
       "role": "user",
       "metadata": {
         "source": "ui"
       },
-      "mentions": [
-        "llm1"
-      ]
+      "mentions": []
     }
   ],
   "typing": {},
@@ -190,7 +173,17 @@
       "runtime": {
         "type": "internal-function-calling"
       },
-      "createdAt": 1764076213444
+      "createdAt": 1764076213444,
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=GPT4",
+      "status": "inactive",
+      "systemPrompt": "你是一位友好的聊天助手，请结合上下文提供精简、准确的回答，必要时引用消息内容。",
+      "model": {
+        "provider": "openai",
+        "name": "gpt-4o-mini",
+        "temperature": 0.6,
+        "maxTokens": 800
+      },
+      "updatedAt": 1764089562517
     }
   ]
 }

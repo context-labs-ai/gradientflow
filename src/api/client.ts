@@ -77,6 +77,20 @@ export const api = {
     },
     agents: {
         list: () => request<{ agents: Agent[]; users: User[] }>('/agents'),
+        create: (payload: AgentConfigPayload) =>
+            request<{ agent: Agent; user?: User }>('/agents/configs', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            }),
+        update: (agentId: string, payload: Partial<AgentConfigPayload>) =>
+            request<{ agent: Agent; user?: User }>(`/agents/configs/${agentId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            }),
+        remove: (agentId: string) =>
+            request<{ deletedAgentId: string }>(`/agents/configs/${agentId}`, {
+                method: 'DELETE',
+            }),
     },
 };
-import { Agent, DEFAULT_CONVERSATION_ID, Message, User } from '../types/chat';
+import { Agent, AgentConfigPayload, DEFAULT_CONVERSATION_ID, Message, User } from '../types/chat';

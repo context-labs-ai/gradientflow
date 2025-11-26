@@ -34,25 +34,60 @@ export interface MessageEditMetadata {
   editedAt: number;
 }
 
+export type AgentStatus = 'active' | 'inactive';
+
+export interface AgentCapabilities {
+  answer_active?: boolean;
+  answer_passive?: boolean;
+  like?: boolean;
+  summarize?: boolean;
+}
+
+export interface AgentModelConfig {
+  provider: string;
+  name: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface AgentRuntimeConfig {
+  type: string;
+  endpoint?: string;
+  apiKeyAlias?: string;
+  [key: string]: unknown;
+}
+
 export interface Agent {
   id: string;
-  userId: string;
+  userId?: string;
   name: string;
   description?: string;
-  capabilities?: {
-    answer_active?: boolean;
-    answer_passive?: boolean;
-    like?: boolean;
-    summarize?: boolean;
-  };
+  avatar?: string;
+  status?: AgentStatus;
+  systemPrompt?: string;
+  capabilities?: AgentCapabilities;
   tools?: string[];
   triggers?: unknown[];
-  runtime?: {
-    type: string;
-    [key: string]: unknown;
-  };
+  runtime?: AgentRuntimeConfig;
+  model?: AgentModelConfig;
   createdAt?: number;
+  updatedAt?: number;
   user?: User | null;
+}
+
+export interface AgentConfigPayload {
+  id?: string;
+  name: string;
+  description?: string;
+  avatar?: string;
+  status?: AgentStatus;
+  systemPrompt?: string;
+  capabilities?: AgentCapabilities;
+  tools?: string[];
+  model?: AgentModelConfig;
+  runtime?: AgentRuntimeConfig;
+  triggers?: unknown[];
+  userId?: string;
 }
 
 export interface Message {

@@ -441,3 +441,100 @@ Agent 本质上是 `type = 'agent'` 的参与者。
 - Agent 像人一样在群里聊天，但其行为本质是「调用工具」；
 - 不同大模型和 Agent 框架只要能“发现工具并调用”，就可以接入并参与群聊，对未来扩展 MCP、多模型、多 Agent 运行时非常友好。
 
+---
+
+## 10. Agent API 示例（Python 请求）
+
+为了方便外部 Agent（或 Python 脚本）直接向房间发送消息，服务器暴露了一个极简接口：
+
+- `POST /agents/:agentId/messages`
+- Header：`x-agent-token: <AGENT_API_TOKEN>`（默认 `dev-agent-token`，可在环境变量 `AGENT_API_TOKEN` 中覆盖）
+- Body：
+
+```json
+{
+  "content": "你好，我是 Agent，可以引用消息或带自定义 metadata。",
+  "conversationId": "global",
+  "replyToId": "<可选，引用的 messageId>",
+  "mentions": ["user-id-1"],
+  "metadata": {
+    "runId": "agent-run-001"
+  }
+}
+```
+
+### Python 调用示例
+
+```python
+import requests
+
+API_BASE = "http://localhost:4000"
+AGENT_ID = "helper-agent-1"
+AGENT_TOKEN = "dev-agent-token"  # 与服务器环境变量保持一致
+
+payload = {
+    "content": "这是一条来自 Python Agent 的测试消息。",
+    "conversationId": "global",
+    "metadata": {"from": "python-script"}
+}
+
+resp = requests.post(
+    f"{API_BASE}/agents/{AGENT_ID}/messages",
+    json=payload,
+    headers={"x-agent-token": AGENT_TOKEN},
+    timeout=10,
+)
+
+resp.raise_for_status()
+print("Agent message created:", resp.json())
+```
+
+通过这个接口，你可以在任何语言里构建简单的 Agent 流程：生成内容 → 调用接口 → 房间里立即出现一条由 Agent 发送的气泡。等后续接入完整的 Chat Tool / LLM 调用后，只需要在生成 `content` 前增加调用逻辑即可。
+
+---
+
+## 11. Agent Config Platform 规划
+
+**目标**  
+- 在前端提供「Agent 配置中心」，用户可创建/编辑/启用 Agent：选择模型供应商、模型名、系统 Prompt、工具/MCP、房间绑定等。  
+- 保存后后端生成/更新 Agent，并允许用户在房间里手动添加/移除。
+
+**前端设计（React + TS）**  
+1. 新增 `AgentConfigPage`：使用 React Hook Form + Zod 的分区表单  
+   - 基础信息：名称、头像、描述、角色标签  
+   - 模型配置：供应商（OpenAI/Azure/Anthropic/自定义）、模型名、参数、系统 Prompt 编辑器  
+   - 工具/MCP：勾选系统提供的 Chat Tool，配置 MCP endpoint（URI、token、tools）  
+   - 房间策略：默认启用房间、主动/被动策略、是否允许用户邀请  
+2. UI：沿用现有 CSS/组件，支持导入/导出 JSON/YAML 配置  
+3. 在房间设置页加入 “添加 Agent” 按钮，调用后端接口把 Agent 绑到房间。
+
+**后端设计（Node/Express）**  
+1. 新增 `AgentConfig` 模型：`id`, `name`, `provider`, `model`, `systemPrompt`, `tools[]`, `mcpEndpoints[]`, `runtimeSettings` 等  
+2. REST API：  
+   - `GET /agents/configs`、`POST /agents/configs`、`PATCH /agents/configs/:id`  
+   - `POST /agents/:configId/register`：根据配置创建/更新 Agent + 关联 user  
+   - `POST /rooms/:roomId/agents`：房间层面添加/移除 Agent  
+3. `AgentManager` 根据配置实例化对应 runtime，注入 ToolRegistry/MCP。
+
+**技术栈建议**  
+- 前端：React 18 + TypeScript、React Hook Form、Zod、CSS Modules/Tailwind。如配置状态复杂可加 Zustand。  
+- 后端：继续用 Express + LowDB（短期），计划迁移到 SQLite/Postgres。使用 Zod/Yup 做服务端校验。  
+- Provider 适配层：`OpenAIProvider`、`AzureOpenAIProvider`、`AnthropicProvider`、`MCPProvider`、`CustomHTTPProvider`。  
+- Tool 选择：`ToolRegistry.listTemplates()` 提供字段与描述，前端展示勾选。
+
+**实施阶段**  
+1. MVP：静态配置表 + “注册 Agent” 按钮，支持 OpenAI provider + Chat Tool 选择；房间可添加/移除 Agent。  
+2. 扩展：多 provider、系统 Prompt 编辑器、参数模板、导入导出。  
+3. 接入 MCP：配置 MCP endpoints，允许 Agent 绑定外部工具服务器。  
+4. 进阶：版本管理、草稿/发布、权限控制、多房间策略与自动审批。
+
+这一平台让“填写配置 → 注册 Agent → 加入群聊”形成闭环，后续新增模型/工具供应商时，只需在配置层和 provider 适配层扩展即可。
+
+### 与 LangChain 模板的结合
+
+- `AgentConfig` 中的 `runtime` 字段可声明 `type: 'langchain-template'`，并附带 `templateId`、`promptOverrides`、`toolBindings` 等参数。
+- AgentManager 遇到此类型时：
+  1. 将配置推送给一个 LangChain Worker（可部署为独立服务或同进程模块）。
+  2. Worker 读取 config，使用 LangChain 的 AgentExecutor/LLMChain 按模板 instantiation，注入系统 prompt、工具、MCP endpoint。
+  3. LangChain 运行出的回复或 tool call 结果，通过现有的 Chat Tool API / `POST /agents/:id/messages` 发送回聊天系统。
+- 这种方式能复用 LangChain 豐富的 prompt 模板、ReAct 流程、Memory 等机制，同时在前端仍由统一 config 驱动；未来更换运行时（原生 Node、LangChain、MCP）只需在配置层切换 `runtime.type`，核心聊天逻辑与 UI 不变。

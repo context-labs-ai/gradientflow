@@ -24,6 +24,7 @@ const DEFAULT_CONVERSATION_ID = 'global';
 const LLM_USER_ID = 'llm1';
 const DEFAULT_AGENT_ID = 'helper-agent-1';
 const ALLOWED_ROLES = new Set(['user', 'assistant', 'system', 'tool']);
+const AGENT_API_TOKEN = process.env.AGENT_API_TOKEN || process.env.AGENT_API_KEY || 'dev-agent-token';
 
 const adapter = new JSONFile(DB_PATH);
 const db = new Low(adapter, { users: [], messages: [], typing: {}, agents: [] });
@@ -63,6 +64,127 @@ const sanitizeAgent = (agent) => {
     };
 };
 
+const DEFAULT_AGENT_CAPABILITIES = {
+    answer_active: false,
+    answer_passive: true,
+    like: false,
+    summarize: false,
+};
+const DEFAULT_AGENT_MODEL = {
+    provider: 'openai',
+    name: 'gpt-4o-mini',
+    temperature: 0.6,
+    maxTokens: 1000,
+};
+const DEFAULT_AGENT_RUNTIME = {
+    type: 'internal-function-calling',
+};
+const DEFAULT_AGENT_TOOLS = ['chat.send_message'];
+
+const clampNumber = (value, min, max, fallback) => {
+    const num = Number(value);
+    if (Number.isFinite(num)) {
+        return Math.min(Math.max(num, min), max);
+    }
+    return fallback;
+};
+
+const safeTrim = (value) => {
+    if (typeof value !== 'string') return '';
+    return value.trim();
+};
+
+const generateAgentAvatar = (seed) => {
+    const actualSeed = seed || `agent-${randomBytes(4).toString('hex')}`;
+    return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(actualSeed)}`;
+};
+
+const normalizeAgentTools = (toolsInput) => {
+    if (!Array.isArray(toolsInput)) return [...DEFAULT_AGENT_TOOLS];
+    const cleaned = toolsInput
+        .map((tool) => safeTrim(tool ?? ''))
+        .filter(Boolean);
+    const unique = Array.from(new Set(cleaned));
+    return unique.length ? unique : [...DEFAULT_AGENT_TOOLS];
+};
+
+const normalizeAgentCapabilities = (capsInput = {}) => {
+    return {
+        answer_active: Boolean(capsInput.answer_active),
+        answer_passive:
+            capsInput.answer_passive === undefined ? DEFAULT_AGENT_CAPABILITIES.answer_passive : Boolean(capsInput.answer_passive),
+        like: Boolean(capsInput.like),
+        summarize: Boolean(capsInput.summarize),
+    };
+};
+
+const normalizeAgentModel = (modelInput = {}, fallback = DEFAULT_AGENT_MODEL) => {
+    const base = { ...fallback };
+    if (modelInput.provider) {
+        base.provider = safeTrim(modelInput.provider).toLowerCase() || base.provider;
+    }
+    if (modelInput.model || modelInput.name) {
+        base.name = safeTrim(modelInput.model || modelInput.name) || base.name;
+    }
+    if (modelInput.temperature !== undefined) {
+        base.temperature = clampNumber(modelInput.temperature, 0, 2, base.temperature);
+    }
+    if (modelInput.maxTokens !== undefined) {
+        base.maxTokens = clampNumber(modelInput.maxTokens, 64, 16000, base.maxTokens);
+    }
+    return base;
+};
+
+const normalizeAgentRuntime = (runtimeInput = {}, fallback = DEFAULT_AGENT_RUNTIME) => {
+    const base = { ...fallback };
+    if (runtimeInput.type) {
+        base.type = safeTrim(runtimeInput.type) || base.type;
+    }
+    if (runtimeInput.endpoint !== undefined) {
+        const endpoint = safeTrim(runtimeInput.endpoint);
+        base.endpoint = endpoint || undefined;
+    }
+    if (runtimeInput.apiKeyAlias !== undefined) {
+        const apiKeyAlias = safeTrim(runtimeInput.apiKeyAlias);
+        base.apiKeyAlias = apiKeyAlias || undefined;
+    }
+    return base;
+};
+
+const ensureAgentUserRecord = ({ agentId, userId, name, avatar }) => {
+    const desiredName = safeTrim(name) || 'AI Agent';
+    const desiredAvatar = safeTrim(avatar) || generateAgentAvatar(desiredName);
+    const trimmedUserId = safeTrim(userId);
+    let user =
+        (trimmedUserId && db.data.users.find((u) => u.id === trimmedUserId)) ||
+        db.data.users.find((u) => u.agentId === agentId);
+
+    if (!user) {
+        user = {
+            id: trimmedUserId || `agent-user-${randomUUID()}`,
+            email: `${agentId || randomUUID()}@agents.local`,
+            password_hash: randomBytes(12).toString('hex'),
+            name: desiredName,
+            avatar: desiredAvatar,
+            isLLM: true,
+            status: 'online',
+            createdAt: Date.now(),
+            type: 'agent',
+            agentId,
+        };
+        db.data.users.push(user);
+    } else {
+        user.name = desiredName;
+        user.avatar = desiredAvatar;
+        user.type = 'agent';
+        user.isLLM = true;
+        user.agentId = agentId;
+        user.status = user.status || 'online';
+    }
+
+    return sanitizeUser(user);
+};
+
 const normalizeMetadata = (value) => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
     return value;
@@ -71,6 +193,15 @@ const normalizeMetadata = (value) => {
 const normalizeMentions = (mentions) => {
     if (!Array.isArray(mentions)) return [];
     return mentions.filter(Boolean);
+};
+
+const ensureAgentMetadata = (agent, metadata = {}) => {
+    const base = normalizeMetadata(metadata);
+    return {
+        ...base,
+        agentId: agent?.id || base.agentId,
+        source: base.source || 'agent',
+    };
 };
 
 const normalizeMessage = (message) => {
@@ -117,6 +248,17 @@ const authMiddleware = (req, res, next) => {
     } catch (err) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
+};
+
+const agentAuthMiddleware = (req, res, next) => {
+    const token =
+        req.headers['x-agent-token'] ||
+        req.headers['x-agent-key'] ||
+        req.headers.authorization?.replace('Bearer ', '');
+    if (!token || token !== AGENT_API_TOKEN) {
+        return res.status(401).json({ error: 'Invalid agent token' });
+    }
+    next();
 };
 
 const ensureSeed = async () => {
@@ -269,6 +411,180 @@ app.get('/agents', authMiddleware, (_req, res) => {
         .filter(Boolean)
         .map((user) => sanitizeUser(user));
     res.json({ agents, users });
+});
+
+app.get('/agents/configs', authMiddleware, (_req, res) => {
+    const agents = db.data.agents.map((agent) => sanitizeAgent(agent)).filter(Boolean);
+    const users = agents
+        .map((agent) => agent.user)
+        .filter(Boolean)
+        .map((user) => sanitizeUser(user));
+    res.json({ agents, users });
+});
+
+app.post('/agents/configs', authMiddleware, async (req, res) => {
+    const payload = req.body || {};
+    const name = safeTrim(payload.name);
+    if (!name) {
+        return res.status(400).json({ error: 'Agent name is required' });
+    }
+
+    const requestedId = safeTrim(payload.id);
+    const agentId = requestedId || `agent-${randomUUID()}`;
+    if (db.data.agents.find((agent) => agent.id === agentId)) {
+        return res.status(409).json({ error: 'Agent ID already exists' });
+    }
+
+    const baseDescription = safeTrim(payload.description);
+    const avatar = safeTrim(payload.avatar) || generateAgentAvatar(name || agentId);
+    const systemPrompt = safeTrim(payload.systemPrompt);
+    const agent = {
+        id: agentId,
+        name,
+        description: baseDescription,
+        avatar,
+        status: payload.status === 'inactive' ? 'inactive' : 'active',
+        systemPrompt,
+        capabilities: normalizeAgentCapabilities(payload.capabilities),
+        tools: normalizeAgentTools(payload.tools),
+        model: normalizeAgentModel(payload.model || payload.modelConfig || {}, DEFAULT_AGENT_MODEL),
+        runtime: normalizeAgentRuntime(payload.runtime || {}, DEFAULT_AGENT_RUNTIME),
+        triggers: Array.isArray(payload.triggers) ? payload.triggers : [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    };
+
+    const linkedUser = ensureAgentUserRecord({
+        agentId: agent.id,
+        userId: safeTrim(payload.userId),
+        name: agent.name,
+        avatar: agent.avatar,
+    });
+    agent.userId = linkedUser?.id;
+
+    db.data.agents.push(agent);
+    await db.write();
+    res.status(201).json({ agent: sanitizeAgent(agent), user: linkedUser });
+});
+
+app.patch('/agents/configs/:agentId', authMiddleware, async (req, res) => {
+    const { agentId } = req.params;
+    const agent = db.data.agents.find((a) => a.id === agentId);
+    if (!agent) {
+        return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    const payload = req.body || {};
+
+    if (payload.name !== undefined) {
+        const nextName = safeTrim(payload.name);
+        if (!nextName) return res.status(400).json({ error: 'Agent name cannot be empty' });
+        agent.name = nextName;
+    }
+    if (payload.description !== undefined) {
+        agent.description = safeTrim(payload.description);
+    }
+    if (payload.avatar !== undefined) {
+        const avatar = safeTrim(payload.avatar);
+        agent.avatar = avatar || generateAgentAvatar(agent.name || agent.id);
+    } else if (!agent.avatar) {
+        agent.avatar = generateAgentAvatar(agent.name || agent.id);
+    }
+    if (payload.status !== undefined) {
+        agent.status = payload.status === 'inactive' ? 'inactive' : 'active';
+    }
+    if (payload.systemPrompt !== undefined) {
+        agent.systemPrompt = safeTrim(payload.systemPrompt);
+    }
+    if (payload.capabilities !== undefined) {
+        agent.capabilities = normalizeAgentCapabilities(payload.capabilities);
+    } else if (!agent.capabilities) {
+        agent.capabilities = { ...DEFAULT_AGENT_CAPABILITIES };
+    }
+    if (payload.tools !== undefined) {
+        agent.tools = normalizeAgentTools(payload.tools);
+    } else if (!Array.isArray(agent.tools) || !agent.tools.length) {
+        agent.tools = [...DEFAULT_AGENT_TOOLS];
+    }
+    if (payload.model !== undefined || payload.modelConfig !== undefined) {
+        agent.model = normalizeAgentModel(payload.model || payload.modelConfig || {}, agent.model || DEFAULT_AGENT_MODEL);
+    } else if (!agent.model) {
+        agent.model = { ...DEFAULT_AGENT_MODEL };
+    }
+    if (payload.runtime !== undefined) {
+        agent.runtime = normalizeAgentRuntime(payload.runtime, agent.runtime || DEFAULT_AGENT_RUNTIME);
+    } else if (!agent.runtime) {
+        agent.runtime = { ...DEFAULT_AGENT_RUNTIME };
+    }
+    if (payload.triggers !== undefined && Array.isArray(payload.triggers)) {
+        agent.triggers = payload.triggers;
+    }
+
+    const linkedUser = ensureAgentUserRecord({
+        agentId: agent.id,
+        userId: safeTrim(payload.userId) || agent.userId,
+        name: agent.name,
+        avatar: agent.avatar,
+    });
+    agent.userId = linkedUser?.id;
+    agent.updatedAt = Date.now();
+
+    await db.write();
+    res.json({ agent: sanitizeAgent(agent), user: linkedUser });
+});
+
+app.delete('/agents/configs/:agentId', authMiddleware, async (req, res) => {
+    const { agentId } = req.params;
+    const index = db.data.agents.findIndex((a) => a.id === agentId);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    const [removed] = db.data.agents.splice(index, 1);
+    if (removed?.userId) {
+        const linkedUser = db.data.users.find((u) => u.id === removed.userId);
+        if (linkedUser) {
+            linkedUser.agentId = undefined;
+            linkedUser.status = 'offline';
+        }
+    }
+
+    await db.write();
+    res.json({ deletedAgentId: agentId });
+});
+
+app.post('/agents/:agentId/messages', agentAuthMiddleware, async (req, res) => {
+    const { agentId } = req.params;
+    const agent = db.data.agents.find((a) => a.id === agentId);
+    if (!agent) {
+        return res.status(404).json({ error: 'Agent not found' });
+    }
+    const agentUser = db.data.users.find((u) => u.id === agent.userId);
+    if (!agentUser) {
+        return res.status(422).json({ error: 'Agent user not configured' });
+    }
+
+    const { content, conversationId, replyToId, metadata, mentions } = req.body || {};
+    if (!content || !content.trim()) {
+        return res.status(400).json({ error: 'Content required' });
+    }
+
+    const message = normalizeMessage({
+        id: randomUUID(),
+        content: content.trim(),
+        senderId: agentUser.id,
+        timestamp: Date.now(),
+        replyToId: replyToId || undefined,
+        reactions: [],
+        conversationId: conversationId?.trim() || DEFAULT_CONVERSATION_ID,
+        role: 'assistant',
+        metadata: ensureAgentMetadata(agent, metadata),
+        mentions: normalizeMentions(mentions),
+    });
+
+    db.data.messages.push(message);
+    await db.write();
+    res.json({ message });
 });
 
 app.post('/messages', authMiddleware, async (req, res) => {

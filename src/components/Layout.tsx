@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
+import { AgentConfigPanel } from './AgentConfigPanel';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAgentPanelOpen, setIsAgentPanelOpen] = useState(false);
   const isOnline = useNetworkStatus();
 
   return (
@@ -20,7 +22,11 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           You are currently offline. Changes may not be saved.
         </div>
       )}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onOpenAgentPanel={() => setIsAgentPanelOpen(true)}
+      />
 
       {/* Main Content */}
       <main className="main-content">
@@ -32,6 +38,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
         {children}
       </main>
+
+      <AgentConfigPanel isOpen={isAgentPanelOpen} onClose={() => setIsAgentPanelOpen(false)} />
 
       <style>{`
         .layout-container {
