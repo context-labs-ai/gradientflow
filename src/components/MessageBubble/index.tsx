@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Message, DEFAULT_CONVERSATION_ID } from '../../types/chat';
 import { useChat } from '../../context/ChatContext';
+import { useUsersLookup } from '../../context/UsersLookupContext';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import clsx from 'clsx';
 import { api } from '../../api/client';
@@ -25,8 +26,10 @@ interface MessageBubbleProps {
 
 export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message, isOwnMessage, showAvatar }) => {
     const { state, dispatch } = useChat();
+    const { getUserById } = useUsersLookup();
     const currentUserId = state.currentUser?.id;
-    const sender = state.users.find(u => u.id === message.senderId);
+    // O(1) lookup instead of O(n) find
+    const sender = useMemo(() => getUserById(message.senderId), [getUserById, message.senderId]);
     const isAgentSender = sender?.type === 'agent' || sender?.isLLM;
     const prefersReducedMotion = useReducedMotion();
     const shouldUseComplexAnimations = useShouldUseComplexAnimations();
@@ -54,8 +57,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
         }
     };
 
-    const repliedMessage = message.replyToId ? state.messages.find(m => m.id === message.replyToId) : null;
-    const repliedUser = repliedMessage ? state.users.find(u => u.id === repliedMessage.senderId) : null;
+    // Memoize replied message lookup
+    const repliedMessage = useMemo(() => {
+        if (!message.replyToId) return null;
+        return state.messages.find(m => m.id === message.replyToId) ?? null;
+    }, [message.replyToId, state.messages]);
+
+    // O(1) lookup for replied user
+    const repliedUser = useMemo(() => {
+        if (!repliedMessage) return null;
+        return getUserById(repliedMessage.senderId) ?? null;
+    }, [repliedMessage, getUserById]);
 
     const handleReaction = async (emoji: string) => {
         if (!state.currentUser) return;

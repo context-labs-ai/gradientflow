@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
+import { useTyping } from '../context/TypingContext';
+import { useUsersLookup } from '../context/UsersLookupContext';
 import { MessageBubble } from './MessageBubble';
 import { DateSeparator, shouldShowDateSeparator } from './DateSeparator';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -7,12 +9,23 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
 export const MessageList: React.FC = () => {
   const { state } = useChat();
+  const { typingUsers: typingUserIds } = useTyping();
+  const { getUserById } = useUsersLookup();
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const currentUserId = state.currentUser?.id;
-  const typingUsers = state.typingUsers
-    .map(id => state.users.find(u => u.id === id))
-    .filter((user): user is NonNullable<typeof user> => Boolean(user));
-  const typingNames = typingUsers.map(user => (user.id === currentUserId ? 'You' : user.name));
+
+  // Memoize typing users lookup - O(1) per user
+  const typingUsers = useMemo(() => {
+    return typingUserIds
+      .map(id => getUserById(id))
+      .filter((user): user is NonNullable<typeof user> => Boolean(user));
+  }, [typingUserIds, getUserById]);
+
+  // Memoize typing names
+  const typingNames = useMemo(() => {
+    return typingUsers.map(user => (user.id === currentUserId ? 'You' : user.name));
+  }, [typingUsers, currentUserId]);
+
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [unseenCount, setUnseenCount] = useState(0);
   const isAtBottomRef = useRef(true);

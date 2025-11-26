@@ -10,7 +10,7 @@ interface ReactionListProps {
     hasReacted: (emoji: string) => boolean;
 }
 
-export const ReactionList: React.FC<ReactionListProps> = ({
+export const ReactionList: React.FC<ReactionListProps> = React.memo(({
     reactions,
     onReact,
     hasReacted,
@@ -43,4 +43,4 @@ export const ReactionList: React.FC<ReactionListProps> = ({
             </AnimatePresence>
         </div>
     );
-};
+});

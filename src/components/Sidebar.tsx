@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useChat } from '../context/ChatContext';
 import { Hash, Settings, Bot, Mic, Headphones, Search, Plus, X, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
     if (!state.currentUser) return null;
 
     const trimmedQuery = searchQuery.trim().toLowerCase();
-    const filteredUsers = state.users.filter(user => user.name.toLowerCase().includes(trimmedQuery));
+
+    // Memoize filtered users to prevent recalculation on every render
+    const filteredUsers = useMemo(() => {
+        return state.users.filter(user => user.name.toLowerCase().includes(trimmedQuery));
+    }, [state.users, trimmedQuery]);
+
     const displayedUsers = trimmedQuery ? filteredUsers : state.users;
     const statusOrder: Array<User['status']> = ['online', 'busy', 'offline'];
     const statusLabels: Record<User['status'], string> = {

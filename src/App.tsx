@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatProvider, useChat } from './context/ChatContext';
+import { TypingProvider, useTyping } from './context/TypingContext';
+import { UsersLookupProvider } from './context/UsersLookupContext';
 import { Layout } from './components/Layout';
 import { MessageList } from './components/MessageList';
 import { MessageInput } from './components/MessageInput';
@@ -72,6 +74,7 @@ const ChatApp = () => {
 
 const AppShell = () => {
     const { state, dispatch } = useChat();
+    const { setTypingUsers } = useTyping();
     const [error, setError] = useState<string | null>(null);
     const lastFetchedTimestampRef = useRef(0);
     const lastFullSyncRef = useRef(0);
@@ -223,7 +226,7 @@ const AppShell = () => {
             try {
                 const res = await api.typing.list();
                 if (!cancelled) {
-                    dispatch({ type: 'SET_TYPING_USERS', payload: res.typingUsers });
+                    setTypingUsers(res.typingUsers);
                 }
             } catch (err) {
                 console.error('typing poll failed', err);
@@ -235,7 +238,7 @@ const AppShell = () => {
             cancelled = true;
             clearInterval(id);
         };
-    }, [dispatch, state.authStatus, state.currentUser]);
+    }, [setTypingUsers, state.authStatus, state.currentUser]);
 
     const showAuth = state.authStatus === 'unauthenticated';
     const loading = state.authStatus === 'loading';
@@ -262,8 +265,12 @@ function App() {
     return (
         <ErrorBoundary>
             <ChatProvider>
-                <AppShell />
-                <Toaster position="top-center" />
+                <TypingProvider>
+                    <UsersLookupProvider>
+                        <AppShell />
+                        <Toaster position="top-center" />
+                    </UsersLookupProvider>
+                </TypingProvider>
             </ChatProvider>
         </ErrorBoundary>
     );

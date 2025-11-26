@@ -10,7 +10,7 @@ interface ReactionPanelProps {
     shouldUseComplexAnimations: boolean;
 }
 
-export const ReactionPanel: React.FC<ReactionPanelProps> = ({
+export const ReactionPanel: React.FC<ReactionPanelProps> = React.memo(({
     onReact,
     hasReacted,
     shouldUseComplexAnimations,
@@ -40,4 +40,4 @@ export const ReactionPanel: React.FC<ReactionPanelProps> = ({
             ))}
         </div>
     );
-};
+});

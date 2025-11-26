@@ -1,6 +1,9 @@
-import React, { useRef, useEffect } from 'react';
-import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
+import React, { useRef, useEffect, lazy, Suspense } from 'react';
+import { Theme, type EmojiClickData } from 'emoji-picker-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Lazy load the emoji picker to reduce initial bundle size
+const EmojiPicker = lazy(() => import('emoji-picker-react'));
 
 interface EmojiPickerComponentProps {
     isOpen: boolean;
@@ -66,16 +69,18 @@ export const EmojiPickerComponent: React.FC<EmojiPickerComponentProps> = ({
                     transition={{ duration: 0.15 }}
                     className="emoji-picker-wrapper"
                 >
-                    <EmojiPicker
-                        onEmojiClick={handleEmojiClick}
-                        theme={Theme.AUTO}
-                        width={320}
-                        height={400}
-                        searchPlaceHolder="Search emoji..."
-                        previewConfig={{
-                            showPreview: false,
-                        }}
-                    />
+                    <Suspense fallback={<div style={{ width: 320, height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>Loading...</div>}>
+                        <EmojiPicker
+                            onEmojiClick={handleEmojiClick}
+                            theme={Theme.AUTO}
+                            width={320}
+                            height={400}
+                            searchPlaceHolder="Search emoji..."
+                            previewConfig={{
+                                showPreview: false,
+                            }}
+                        />
+                    </Suspense>
                 </motion.div>
             )}
         </AnimatePresence>

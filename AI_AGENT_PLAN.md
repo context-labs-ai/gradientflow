@@ -391,11 +391,51 @@ DEFAULT_LLM_MODEL=gpt-4o-mini
 
 **文件**：`server/agents/AgentManager.ts`
 
+#### 触发判断策略
+
+> **核心问题**：如何判断 Agent 是否应该响应某条消息？
+
+**方案对比**：
+
+| 方案 | 实现 | 延迟 | 成本 | 适用场景 |
+|------|------|------|------|----------|
+| **规则优先** | 正则/关键词匹配 | ~0ms | 免费 | MVP 阶段 |
+| **轻量 LLM 分类** | 单独调一次小模型 | +200-500ms | 低 | 需要精细控制 |
+| **主 LLM 自决策** | 让 Agent 自己决定要不要回复 | 0 额外 | 包含在主调用中 | 推荐方案 |
+
+**推荐：规则 + 主 LLM 自决策**（不加额外 LLM 调用）
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    message_created 事件                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  第一层：规则快速过滤（免费、即时）                            │
+│  ├── 被 @ 提及？ → 必须触发                                  │
+│  ├── 是 Agent 自己发的？ → 跳过（避免自我循环）               │
+│  ├── 最近 30 秒内已回复过？ → 跳过（节流）                    │
+│  └── 通过 → 进入下一层                                       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  第二层：主 LLM 自决策（不额外调用）                          │
+│  把"是否回复"的决定权交给 Agent 本身                         │
+│  → 在 system prompt 中说明：你可以选择不回复                  │
+│  → Agent 返回 [NO_RESPONSE] 或空内容 = 不回复                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 实现代码
+
 ```typescript
 class AgentManager {
   private agents: Map<string, Agent>;
   private toolRegistry: ToolRegistry;
   private llmClient: LLMClient;
+  private replyTimestamps: Map<string, number> = new Map(); // 节流记录
 
   // 加载所有 Agent 配置
   async loadAgents(): Promise<void>;
@@ -406,26 +446,104 @@ class AgentManager {
 
   // 核心：事件处理入口
   async onEvent(event: AgentEvent): Promise<void> {
-    // 1. 找到匹配的 Agent
-    const matchedAgents = this.findMatchingAgents(event);
+    if (event.type !== 'message_created' || !event.message) return;
 
-    // 2. 对每个 Agent 执行
-    for (const agent of matchedAgents) {
-      await this.executeAgent(agent, event);
+    const message = event.message;
+
+    // ========== 第一层：规则快速过滤 ==========
+
+    // 1. 跳过 Agent 自己的消息（避免自我循环）
+    if (this.isAgentMessage(message)) return;
+
+    // 2. 检查是否被 @ 提及
+    const mentionedAgents = this.findMentionedAgents(message);
+
+    // 3. 确定要触发的 Agent 列表
+    let agentsToTrigger: Agent[] = [];
+
+    if (mentionedAgents.length > 0) {
+      // 被 @ 的 Agent 必须响应
+      agentsToTrigger = mentionedAgents;
+    } else {
+      // 没有 @ 时，检查有主动回答能力的 Agent
+      agentsToTrigger = this.getActiveAnswerAgents()
+        .filter(agent => this.passesRules(agent, message));
+    }
+
+    if (agentsToTrigger.length === 0) return;
+
+    // ========== 第二层：调用 LLM，让它自己决定 ==========
+    for (const agent of agentsToTrigger) {
+      const isMentioned = mentionedAgents.includes(agent);
+      await this.executeAgent(agent, event, isMentioned);
     }
   }
 
-  private async executeAgent(agent: Agent, event: AgentEvent): Promise<void> {
-    // 1. 构建上下文
+  // 规则过滤
+  private passesRules(agent: Agent, message: Message): boolean {
+    const key = `${agent.id}:${message.conversationId}`;
+
+    // 节流：同一房间 30 秒内只主动回复一次
+    const lastReply = this.replyTimestamps.get(key) || 0;
+    if (Date.now() - lastReply < 30000) {
+      return false;
+    }
+
+    // 可选：关键词匹配
+    const triggers = agent.triggers || [];
+    const keywordTriggers = triggers.filter(t =>
+      t.matchRules?.keywords?.length
+    );
+
+    if (keywordTriggers.length > 0) {
+      const allKeywords = keywordTriggers.flatMap(t =>
+        t.matchRules?.keywords || []
+      );
+      if (!allKeywords.some(kw => message.content.includes(kw))) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private async executeAgent(
+    agent: Agent,
+    event: AgentEvent,
+    isMentioned: boolean
+  ): Promise<void> {
     const context = await this.buildContext(agent, event);
 
-    // 2. 调用 LLM
+    // 构建 system prompt，告诉 Agent 可以选择不回复
+    const decisionPrompt = isMentioned ? '' : `
+
+## 回复策略
+你是群聊中的一员。收到新消息后，请判断是否需要回复：
+- 如果被直接 @ 或问题明确指向你 → 应该回复
+- 如果是闲聊、与你无关的对话 → 不需要回复
+- 如果别人已经回答了 → 不需要重复回复
+
+如果你决定不回复，请直接返回 [NO_RESPONSE]，不要调用任何工具。`;
+
     const response = await this.llmClient.chat({
-      messages: context.messages,
+      messages: [
+        { role: 'system', content: agent.systemPrompt + decisionPrompt },
+        ...context.messages,
+      ],
       tools: this.getAgentTools(agent),
     });
 
-    // 3. 执行 tool_calls
+    // 检查是否选择不回复
+    if (response.content?.includes('[NO_RESPONSE]') ||
+        (response.toolCalls.length === 0 && !response.content?.trim())) {
+      return; // Agent 决定不回复
+    }
+
+    // 记录回复时间（用于节流）
+    const key = `${agent.id}:${event.roomId}`;
+    this.replyTimestamps.set(key, Date.now());
+
+    // 执行 tool_calls
     for (const toolCall of response.toolCalls) {
       await this.toolRegistry.invoke(
         toolCall.name,
@@ -434,8 +552,33 @@ class AgentManager {
       );
     }
   }
+
+  private isAgentMessage(message: Message): boolean {
+    const sender = this.getUserById(message.senderId);
+    return sender?.type === 'agent';
+  }
+
+  private findMentionedAgents(message: Message): Agent[] {
+    if (!message.mentions?.length) return [];
+    return message.mentions
+      .map(userId => this.agents.get(this.getAgentIdByUserId(userId)))
+      .filter((a): a is Agent => !!a);
+  }
+
+  private getActiveAnswerAgents(): Agent[] {
+    return Array.from(this.agents.values())
+      .filter(a => a.status === 'active' && a.capabilities?.answer_active);
+  }
 }
 ```
+
+#### 分阶段实施建议
+
+| 阶段 | 触发策略 |
+|------|----------|
+| **Phase 1 (MVP)** | 只用规则：被 @ → 触发，其他 → 不主动回复 |
+| **Phase 2** | 加入主 LLM 自决策：开启 `answer_active` 的 Agent 让 LLM 自己判断 |
+| **Phase 3** | 如果 token 成本成为问题，再考虑加轻量分类器前置过滤 |
 
 ### 3.3 ToolRegistry
 

@@ -8,7 +8,7 @@ interface ActionButtonsProps {
     isOwnMessage: boolean;
 }
 
-export const ActionButtons: React.FC<ActionButtonsProps> = ({
+export const ActionButtons: React.FC<ActionButtonsProps> = React.memo(({
     onReply,
     onDelete,
     isOwnMessage,
@@ -29,4 +29,4 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             )}
         </div>
     );
-};
+});

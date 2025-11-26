@@ -77,6 +77,17 @@
       "status": "offline",
       "createdAt": 1764089554697,
       "type": "agent"
+    },
+    {
+      "id": "agent-user-adbe1a6b-02a3-42c7-b32b-fa63f5565641",
+      "email": "agent-b7e1d4e1-f4b7-491b-aadf-e6ba5e6cbbd5@agents.local",
+      "password_hash": "0a9638f5854d4b7f0be08046",
+      "name": "LLM Test",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=LLM%20Test",
+      "isLLM": true,
+      "status": "offline",
+      "createdAt": 1764181929974,
+      "type": "agent"
     }
   ],
   "messages": [
@@ -131,19 +142,6 @@
       "content": "1",
       "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
       "timestamp": 1764063360695,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "a0878c15-9490-4fce-bd14-52b105270cc0",
-      "content": "111111",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764083788793,
       "reactions": [],
       "conversationId": "global",
       "role": "user",

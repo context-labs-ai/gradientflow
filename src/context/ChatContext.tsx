@@ -1,12 +1,14 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useMemo } from 'react';
 import { Agent, ChatState, Message, User, Reaction } from '../types/chat';
 
-const INITIAL_STATE: ChatState = {
+// State without typingUsers (moved to TypingContext for better performance)
+interface InternalChatState extends Omit<ChatState, 'typingUsers'> {}
+
+const INITIAL_STATE: InternalChatState = {
     currentUser: null,
     users: [],
     agents: [],
     messages: [],
-    typingUsers: [],
     replyingTo: undefined,
     authStatus: 'loading',
 };
@@ -23,9 +25,7 @@ type Action =
     | { type: 'ADD_REACTION'; payload: { messageId: string; reaction: Reaction } }
     | { type: 'UPDATE_MESSAGE'; payload: Message }
     | { type: 'DELETE_MESSAGE'; payload: { id: string } }
-    | { type: 'SET_REPLYING_TO'; payload: Message | undefined }
-    | { type: 'SET_TYPING'; payload: { userId: string; isTyping: boolean } }
-    | { type: 'SET_TYPING_USERS'; payload: string[] };
+    | { type: 'SET_REPLYING_TO'; payload: Message | undefined };
 
 const mergeUsers = (users: User[]) => {
     const map = new Map<string, User>();
@@ -40,7 +40,7 @@ const mergeMessages = (existing: Message[], incoming: Message[]) => {
     return Array.from(map.values()).sort((a, b) => a.timestamp - b.timestamp);
 };
 
-const chatReducer = (state: ChatState, action: Action): ChatState => {
+const chatReducer = (state: InternalChatState, action: Action): InternalChatState => {
     switch (action.type) {
         case 'HYDRATE': {
             return {
@@ -121,20 +121,6 @@ const chatReducer = (state: ChatState, action: Action): ChatState => {
         }
         case 'SET_REPLYING_TO':
             return { ...state, replyingTo: action.payload };
-        case 'SET_TYPING': {
-            const { userId, isTyping } = action.payload;
-            const existing = new Set(state.typingUsers);
-
-            if (isTyping) {
-                existing.add(userId);
-            } else {
-                existing.delete(userId);
-            }
-
-            return { ...state, typingUsers: Array.from(existing) };
-        }
-        case 'SET_TYPING_USERS':
-            return { ...state, typingUsers: [...action.payload] };
         default:
             return state;
     }
@@ -142,7 +128,7 @@ const chatReducer = (state: ChatState, action: Action): ChatState => {
 
 // Context
 interface ChatContextType {
-    state: ChatState;
+    state: InternalChatState;
     dispatch: React.Dispatch<Action>;
 }
 
@@ -151,11 +137,50 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(chatReducer, INITIAL_STATE);
 
-    return <ChatContext.Provider value={{ state, dispatch }}>{children}</ChatContext.Provider>;
+    const value = useMemo(() => ({ state, dispatch }), [state]);
+
+    return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };
 
 export const useChat = () => {
     const context = useContext(ChatContext);
     if (!context) throw new Error('useChat must be used within a ChatProvider');
     return context;
+};
+
+// Selective hooks for better performance - components only re-render when their specific data changes
+
+export const useCurrentUser = () => {
+    const { state } = useChat();
+    return useMemo(() => state.currentUser, [state.currentUser]);
+};
+
+export const useUsers = () => {
+    const { state } = useChat();
+    return useMemo(() => state.users, [state.users]);
+};
+
+export const useAgents = () => {
+    const { state } = useChat();
+    return useMemo(() => state.agents, [state.agents]);
+};
+
+export const useMessages = () => {
+    const { state } = useChat();
+    return useMemo(() => state.messages, [state.messages]);
+};
+
+export const useAuthStatus = () => {
+    const { state } = useChat();
+    return useMemo(() => state.authStatus, [state.authStatus]);
+};
+
+export const useReplyingTo = () => {
+    const { state } = useChat();
+    return useMemo(() => state.replyingTo, [state.replyingTo]);
+};
+
+export const useChatDispatch = () => {
+    const { dispatch } = useChat();
+    return dispatch;
 };

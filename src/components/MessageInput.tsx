@@ -1,5 +1,6 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
+import { useTyping } from '../context/TypingContext';
 import { Send, Smile, X, Paperclip, Mic, Loader2, Reply } from 'lucide-react';
 import { User } from '../types/chat';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +12,7 @@ import toast from 'react-hot-toast';
 
 export const MessageInput: React.FC = () => {
     const { state, dispatch } = useChat();
+    const { setTyping } = useTyping();
     const [content, setContent] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isFocused, setIsFocused] = useState(false);
@@ -29,11 +31,11 @@ export const MessageInput: React.FC = () => {
 
     const markTyping = () => {
         if (!state.currentUser) return;
-        dispatch({ type: 'SET_TYPING', payload: { userId: state.currentUser.id, isTyping: true } });
+        setTyping(state.currentUser.id, true);
         api.typing.set(true).catch(() => { });
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => {
-            dispatch({ type: 'SET_TYPING', payload: { userId: state.currentUser!.id, isTyping: false } });
+            setTyping(state.currentUser!.id, false);
             api.typing.set(false).catch(() => { });
         }, TYPING_STOP_DELAY);
     };
@@ -44,7 +46,7 @@ export const MessageInput: React.FC = () => {
             clearTimeout(typingTimeoutRef.current);
             typingTimeoutRef.current = null;
         }
-        dispatch({ type: 'SET_TYPING', payload: { userId: state.currentUser.id, isTyping: false } });
+        setTyping(state.currentUser.id, false);
         api.typing.set(false).catch(() => { });
     };
 
