@@ -1,4 +1,4 @@
-﻿import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Bot, Plus, Trash2, X } from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
@@ -194,7 +194,11 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
         if (!formState.id || busy) return;
         setBusy(true);
         try {
-            await api.agents.remove(formState.id);
+            const result = await api.agents.remove(formState.id);
+            // Remove the associated user from the users list
+            if (result.deletedUserId) {
+                dispatch({ type: 'REMOVE_USER', payload: { userId: result.deletedUserId } });
+            }
             await refreshAgents();
             handleSelect(undefined);
             toast.success('Agent 已删除');

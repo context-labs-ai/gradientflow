@@ -18,6 +18,7 @@ type Action =
     | { type: 'SET_AUTH_STATUS'; payload: ChatState['authStatus'] }
     | { type: 'LOGOUT' }
     | { type: 'SET_USERS'; payload: User[] }
+    | { type: 'REMOVE_USER'; payload: { userId: string } }
     | { type: 'SET_AGENTS'; payload: Agent[] }
     | { type: 'SET_MESSAGES'; payload: Message[] }
     | { type: 'UPSERT_MESSAGES'; payload: Message[] }
@@ -58,6 +59,8 @@ const chatReducer = (state: InternalChatState, action: Action): InternalChatStat
             return { ...INITIAL_STATE, authStatus: 'unauthenticated' };
         case 'SET_USERS':
             return { ...state, users: mergeUsers([...state.users, ...action.payload]) };
+        case 'REMOVE_USER':
+            return { ...state, users: state.users.filter((u) => u.id !== action.payload.userId) };
         case 'SET_AGENTS':
             return { ...state, agents: action.payload };
         case 'SET_MESSAGES':

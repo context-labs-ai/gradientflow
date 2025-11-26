@@ -541,16 +541,18 @@ app.delete('/agents/configs/:agentId', authMiddleware, async (req, res) => {
     }
 
     const [removed] = db.data.agents.splice(index, 1);
+    let deletedUserId = null;
     if (removed?.userId) {
-        const linkedUser = db.data.users.find((u) => u.id === removed.userId);
-        if (linkedUser) {
-            linkedUser.agentId = undefined;
-            linkedUser.status = 'offline';
+        const userIndex = db.data.users.findIndex((u) => u.id === removed.userId && u.type === 'agent');
+        if (userIndex !== -1) {
+            // Remove the agent user from the users list
+            deletedUserId = removed.userId;
+            db.data.users.splice(userIndex, 1);
         }
     }
 
     await db.write();
-    res.json({ deletedAgentId: agentId });
+    res.json({ deletedAgentId: agentId, deletedUserId });
 });
 
 app.post('/agents/:agentId/messages', agentAuthMiddleware, async (req, res) => {

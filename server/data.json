@@ -66,28 +66,6 @@
       "status": "online",
       "createdAt": 1764012372635,
       "type": "human"
-    },
-    {
-      "id": "agent-user-4b4bdea7-1c02-4597-9c05-f6d9a18e3183",
-      "email": "agent-3ba1b4ed-0a58-47cf-81e7-4e50e4d470d0@agents.local",
-      "password_hash": "6ef976484a0fd69ec3773fe0",
-      "name": "LLM",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=LLM",
-      "isLLM": true,
-      "status": "offline",
-      "createdAt": 1764089554697,
-      "type": "agent"
-    },
-    {
-      "id": "agent-user-adbe1a6b-02a3-42c7-b32b-fa63f5565641",
-      "email": "agent-b7e1d4e1-f4b7-491b-aadf-e6ba5e6cbbd5@agents.local",
-      "password_hash": "0a9638f5854d4b7f0be08046",
-      "name": "LLM Test",
-      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=LLM%20Test",
-      "isLLM": true,
-      "status": "offline",
-      "createdAt": 1764181929974,
-      "type": "agent"
     }
   ],
   "messages": [
@@ -129,7 +107,15 @@
       "content": "1",
       "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
       "timestamp": 1764063360339,
-      "reactions": [],
+      "reactions": [
+        {
+          "emoji": "❤️",
+          "count": 1,
+          "userIds": [
+            "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f"
+          ]
+        }
+      ],
       "conversationId": "global",
       "role": "user",
       "metadata": {
@@ -173,7 +159,7 @@
       },
       "createdAt": 1764076213444,
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=GPT4",
-      "status": "inactive",
+      "status": "active",
       "systemPrompt": "你是一位友好的聊天助手，请结合上下文提供精简、准确的回答，必要时引用消息内容。",
       "model": {
         "provider": "openai",
@@ -181,7 +167,7 @@
         "temperature": 0.6,
         "maxTokens": 800
       },
-      "updatedAt": 1764089562517
+      "updatedAt": 1764182438192
     }
   ]
 }

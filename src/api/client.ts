@@ -88,7 +88,7 @@ export const api = {
                 body: JSON.stringify(payload),
             }),
         remove: (agentId: string) =>
-            request<{ deletedAgentId: string }>(`/agents/configs/${agentId}`, {
+            request<{ deletedAgentId: string; deletedUserId: string | null }>(`/agents/configs/${agentId}`, {
                 method: 'DELETE',
             }),
     },
