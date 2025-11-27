@@ -103,7 +103,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
             setIsDeleting(true);
             setDeleteError(null);
             const res = await api.messages.delete(message.id, conversation);
-            dispatch({ type: 'DELETE_MESSAGE', payload: { id: res.deletedMessageId } });
+            // 支持级联删除：后端返回 deletedMessageIds 数组
+            if (res.deletedMessageIds && res.deletedMessageIds.length > 0) {
+                dispatch({ type: 'DELETE_MESSAGES', payload: { ids: res.deletedMessageIds } });
+            } else if (res.deletedMessageId) {
+                // 兼容旧版本
+                dispatch({ type: 'DELETE_MESSAGE', payload: { id: res.deletedMessageId } });
+            }
 
             try {
                 const refreshed = await api.messages.list({ limit: 100, conversationId: conversation });
@@ -114,7 +120,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
             }
 
             setShowDeleteConfirm(false);
-            toast.success('Message deleted');
+            const count = res.deletedMessageIds?.length || 1;
+            toast.success(count > 1 ? `Deleted ${count} messages` : 'Message deleted');
         } catch (err) {
             console.error('Failed to delete message', err);
             setDeleteError('Failed to delete. Please try again.');

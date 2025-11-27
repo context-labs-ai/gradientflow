@@ -3,6 +3,31 @@ import ReactMarkdown from 'react-markdown';
 import { User } from '../../types/chat';
 import './styles.css';
 
+/**
+ * 提取最终回复，移除 thinking/analysis 部分
+ */
+function stripSpecialTags(text: string): string {
+    if (!text) return '';
+
+    let result = text;
+
+    // 格式: <|channel|>analysis<|message|>...<|end|><|start|>assistant<|channel|>final<|message|>真正回答
+    // 尝试提取 final 消息
+    const finalMatch = result.match(/<\|channel\|>final<\|message\|>([\s\S]*?)(?:<\|end\|>|$)/);
+    if (finalMatch) {
+        result = finalMatch[1];
+    }
+
+    // 移除 <think>...</think>
+    result = result.replace(/<think>[\s\S]*?<\/think>/g, '');
+    // 移除剩余的特殊标签
+    result = result.replace(/<\|[^>]+\|>/g, '');
+    // 清理多余空行
+    result = result.replace(/\n{3,}/g, '\n\n');
+
+    return result.trim();
+}
+
 interface MessageContentProps {
     content: string;
     users: User[];
@@ -10,7 +35,9 @@ interface MessageContentProps {
 
 export const MessageContent: React.FC<MessageContentProps> = ({ content, users }) => {
     const processedContent = useMemo(() => {
-        return content.replace(/@([\p{L}\p{N}_\-\.]+)/gu, (match, username) => {
+        // 先过滤特殊标签
+        const cleanContent = stripSpecialTags(content);
+        return cleanContent.replace(/@([\p{L}\p{N}_\-\.]+)/gu, (match, username) => {
             const user = users.find(u =>
                 u.name.toLowerCase() === username.toLowerCase() ||
                 u.id === username

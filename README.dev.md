@@ -13,12 +13,16 @@ This document focuses on architecture, data contracts, and recommended workflows
     - `AuthScreen`, `Sidebar`, `MessageList`, `MessageInput`, `Layout`, etc.
   - `context/ChatContext.tsx`: global reducer + provider, owns cross-cutting chat state.
   - `hooks/`:
-    - `useLLM.ts`: frontend LLM simulation logic (reaction + auto-reply).
     - `useNetworkStatus.ts`: monitors online/offline state.
-  - `types/`: shared TS models (`User`, `Message`, etc.) that mirror backend payloads.
+    - `useDevicePerformance.ts`: detects device capability for animations.
+  - `types/`: shared TS models (`User`, `Message`, `Agent`, etc.) that mirror backend payloads.
 - `server/`: Express + lowdb backend
   - `server.js`: API entry point, routes, and lowdb wiring.
-  - `data.json`: default persisted data (users/messages/typing); safe to delete in local dev to reset.
+  - `data.json`: default persisted data (users/messages/typing/agents); safe to delete in local dev to reset.
+- `agents/`: Python-based LLM agent service
+  - `agent_service.py`: polls messages, detects @mentions, generates LLM responses.
+  - `query.py`: LLM client for your model backend.
+  - `requirements.txt`: Python dependencies.
 - Scripts: `npm run dev`, `npm run server`, `npm run build`, `npm run preview`, `npm run lint`
 - Major deps: React 18, TypeScript, Vite, framer-motion, lucide-react, clsx, Express, lowdb, bcryptjs, jsonwebtoken, cookie-parser, cors, **react-virtuoso**, **react-markdown**, **react-hot-toast**, **dayjs**
 
@@ -79,10 +83,10 @@ export interface ChatState {
 - **Rendering (`MessageList` / `MessageBubble`)**
   - **Virtualized list** (`react-virtuoso`) handles large message histories efficiently.
   - sequential render with grouped timestamps, reply previews, reaction aggregations, and hover actions
-- **LLM simulation (`useLLM.ts`)**
-  - reacts on the last non-LLM message with a 40% chance
-  - auto replies to messages mentioning `@GPT-4`/`gpt` after a 2s timeout
-  - all logic is client-side; replacing this with real inference is the main integration point for external LLMs
+- **Agent responses**
+  - The Python agent service (`agents/agent_service.py`) polls for @mentions
+  - Responses appear via the `/agents/:agentId/messages` API
+  - Frontend auto-refreshes messages via polling to show agent replies
 
 ---
 
@@ -98,8 +102,7 @@ export interface ChatState {
   - `ActionButtons.tsx`: Hover actions (reply, react, delete)
 - `MessageInput.tsx`: multiline composer with reply pill, attachment buttons placeholder, typing dispatch
 - `ErrorBoundary.tsx`: Catches render errors and displays a fallback UI
-- `useLLM.ts`: fake bot logic; safe to swap with real inference hooks
-- `ChatContext.tsx`: reducer + context wiring; actions include `HYDRATE`, `SET_AUTH_STATUS`, `SET_USERS`, `SET_MESSAGES`, `SEND_MESSAGE`, `SET_REPLY`, `SET_TYPING`, `UPDATE_REACTIONS`
+- `ChatContext.tsx`: reducer + context wiring; actions include `HYDRATE`, `SET_AUTH_STATUS`, `SET_USERS`, `SET_MESSAGES`, `SEND_MESSAGE`, `DELETE_MESSAGE`, `DELETE_MESSAGES`, `SET_REPLY`, `SET_TYPING`, `UPDATE_REACTIONS`
 
 ---
 
@@ -114,26 +117,63 @@ export interface ChatState {
   - `JWT_SECRET`
   - `DB_PATH`
 - **Routes**
-  - `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-  - `GET /messages`, `POST /messages`
-  - `GET /users`
-  - `GET /typing`, `POST /typing`
+  - Auth: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
+  - Messages: `GET /messages`, `POST /messages`, `DELETE /messages/:id` (cascade deletes replies)
+  - Users: `GET /users`
+  - Typing: `GET /typing`, `POST /typing`
+  - Agents: `GET /agents`, `POST /agents/configs`, `PATCH /agents/configs/:id`, `DELETE /agents/configs/:id`
+  - Agent API (token auth): `POST /agents/:agentId/messages`, `POST /agents/:agentId/heartbeat`
 
 ---
 
-## 6. Local scripts & tips
+## 6. Agent Service (`agents/`)
+
+Python service that bridges the chat backend to your LLM:
+
+```bash
+cd agents && pip install -r requirements.txt
+python agent_service.py --email root@example.com --password 1234567890
+```
+
+**Key files:**
+- `agent_service.py`: Main service loop
+- `query.py`: LLM client (configure `BASE_URL` for your model)
+- `requirements.txt`: `openai`, `requests`
+
+**Flow:**
+1. Login to chat backend (JWT)
+2. Start heartbeat thread (every 5s)
+3. Poll `/messages` (every 3s)
+4. Detect @mentions via `mentions` field or `@AgentName` in content
+5. Build context: recent 10 messages with `<Name: User>: content` format
+6. Call LLM, strip `<think>` tags and special tokens
+7. Send reply via `/agents/:agentId/messages`
+
+**Configuration (top of `agent_service.py`):**
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `API_BASE` | `http://localhost:4000` | Chat backend |
+| `AGENT_TOKEN` | `dev-agent-token` | Must match `AGENT_API_TOKEN` env var |
+| `AGENT_ID` | `helper-agent-1` | Agent config ID |
+| `AGENT_USER_ID` | `llm1` | User ID for the agent |
+| `POLL_INTERVAL` | `3` | Seconds between polls |
+
+---
+
+## 7. Local scripts & tips
 1. `npm install`
 2. `npm run server` (honor env vars above)
 3. `npm run dev` (set `VITE_API_URL` when pointing to a remote API)
-4. `npm run build`, `npm run preview`, `npm run lint` as needed
+4. `cd agents && pip install -r requirements.txt && python agent_service.py`
+5. `npm run build`, `npm run preview`, `npm run lint` as needed
 
 Data is persisted in `server/data.json`. Delete the file to reset (it will be regenerated with the default users/bot). For production deployments switch to a real database and configure a strong `JWT_SECRET`.
 
 ---
 
-## 7. Extension ideas
-- Move LLM logic server-side; optionally expose `/llm` endpoints and push responses via polling or WebSocket/SSE
+## 8. Extension ideas
 - Replace polling with WebSocket/SSE to cut latency and request volume
-- Persist mentions + notifications, add unread badges, or per-user reaction state
+- Implement streaming LLM responses (show typing indicator as agent generates)
+- Add multiple agents with different system prompts/personalities
 - Add channels/rooms: attach `channelId` to messages and filter lists based on the active channel
 - Harden production posture: HTTPS, secure sameSite cookies, rate limiting, input validation, audit logging, monitoring

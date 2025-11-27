@@ -5,7 +5,6 @@ import { UsersLookupProvider } from './context/UsersLookupContext';
 import { Layout } from './components/Layout';
 import { MessageList } from './components/MessageList';
 import { MessageInput } from './components/MessageInput';
-import { useLLM } from './hooks/useLLM';
 import { api } from './api/client';
 import { DEFAULT_CONVERSATION_ID, Message, User } from './types/chat';
 import { AuthScreen } from './components/AuthScreen';
@@ -62,8 +61,6 @@ const LoadingScreen = ({ text, error, onRetry }: { text: string; error?: string 
 );
 
 const ChatApp = () => {
-    useLLM(); // Initialize LLM listener
-
     return (
         <Layout>
             <MessageList />
@@ -207,7 +204,7 @@ const AppShell = () => {
             }
         };
         pollMessages();
-        const id = setInterval(pollMessages, 4000);
+        const id = setInterval(pollMessages, 1500);
         return () => {
             cancelled = true;
             clearInterval(id);
@@ -233,7 +230,7 @@ const AppShell = () => {
             }
         };
         fetchTyping();
-        const id = setInterval(fetchTyping, 2500);
+        const id = setInterval(fetchTyping, 1000);
         return () => {
             cancelled = true;
             clearInterval(id);

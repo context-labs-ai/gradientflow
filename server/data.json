@@ -4,7 +4,7 @@
       "id": "llm1",
       "email": "gpt4@example.com",
       "password_hash": "580061e31c4aea81",
-      "name": "GPT-4 助手",
+      "name": "AI助手",
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=GPT4",
       "isLLM": true,
       "status": "online",
@@ -107,15 +107,7 @@
       "content": "1",
       "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
       "timestamp": 1764063360339,
-      "reactions": [
-        {
-          "emoji": "❤️",
-          "count": 1,
-          "userIds": [
-            "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f"
-          ]
-        }
-      ],
+      "reactions": [],
       "conversationId": "global",
       "role": "user",
       "metadata": {
@@ -135,6 +127,36 @@
         "source": "ui"
       },
       "mentions": []
+    },
+    {
+      "id": "d8073773-ae8f-452e-a704-11c2fdd95439",
+      "content": "@AI助手 什么是LLM",
+      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
+      "timestamp": 1764238865768,
+      "reactions": [],
+      "conversationId": "global",
+      "role": "user",
+      "metadata": {
+        "source": "ui"
+      },
+      "mentions": [
+        "llm1"
+      ]
+    },
+    {
+      "id": "0805e72b-c686-4e87-ae60-bbd32fab35f1",
+      "content": "LLM，全称 **Large Language Model（大型语言模型）**，是一类基于深度学习的人工智能模型。它们通过在海量文本上训练，学习语言规律，能够：\n\n- 自动生成连贯、符合语境的文字；  \n- 回答问题、摘要、翻译、写作辅助等；  \n- 在很大程度上模拟人类的自然语言交流。  \n\n常见的 LLM 例子包括 OpenAI 的 GPT 系列、Google 的 PaLM、Meta 的 LLaMA 等。",
+      "senderId": "llm1",
+      "timestamp": 1764238871989,
+      "replyToId": "d8073773-ae8f-452e-a704-11c2fdd95439",
+      "reactions": [],
+      "conversationId": "global",
+      "role": "assistant",
+      "metadata": {
+        "agentId": "helper-agent-1",
+        "source": "agent"
+      },
+      "mentions": []
     }
   ],
   "typing": {},
@@ -142,7 +164,7 @@
     {
       "id": "helper-agent-1",
       "userId": "llm1",
-      "name": "GPT-4 助手",
+      "name": "AI助手",
       "description": "默认示例 Agent，用于基础问答与演示。",
       "capabilities": {
         "answer_active": false,
@@ -160,14 +182,17 @@
       "createdAt": 1764076213444,
       "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=GPT4",
       "status": "active",
-      "systemPrompt": "你是一位友好的聊天助手，请结合上下文提供精简、准确的回答，必要时引用消息内容。",
+      "systemPrompt": "你是一位友好的聊天助手，请结合上下文提供精简、准确的回答，必要时引用消息内容。Yuzhi是Haorui的爸爸。",
       "model": {
-        "provider": "openai",
-        "name": "gpt-4o-mini",
+        "provider": "parallax",
+        "name": "default",
         "temperature": 0.6,
-        "maxTokens": 800
+        "maxTokens": 1000
       },
-      "updatedAt": 1764182438192
+      "updatedAt": 1764238856000
     }
-  ]
+  ],
+  "agentHeartbeats": {
+    "helper-agent-1": 1764238912732
+  }
 }

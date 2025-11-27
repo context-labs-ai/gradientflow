@@ -26,6 +26,7 @@ type Action =
     | { type: 'ADD_REACTION'; payload: { messageId: string; reaction: Reaction } }
     | { type: 'UPDATE_MESSAGE'; payload: Message }
     | { type: 'DELETE_MESSAGE'; payload: { id: string } }
+    | { type: 'DELETE_MESSAGES'; payload: { ids: string[] } }
     | { type: 'SET_REPLYING_TO'; payload: Message | undefined };
 
 const mergeUsers = (users: User[]) => {
@@ -120,6 +121,12 @@ const chatReducer = (state: InternalChatState, action: Action): InternalChatStat
         case 'DELETE_MESSAGE': {
             const messages = state.messages.filter((msg) => msg.id !== action.payload.id);
             const replyingTo = state.replyingTo?.id === action.payload.id ? undefined : state.replyingTo;
+            return { ...state, messages, replyingTo };
+        }
+        case 'DELETE_MESSAGES': {
+            const idsToDelete = new Set(action.payload.ids);
+            const messages = state.messages.filter((msg) => !idsToDelete.has(msg.id));
+            const replyingTo = state.replyingTo && idsToDelete.has(state.replyingTo.id) ? undefined : state.replyingTo;
             return { ...state, messages, replyingTo };
         }
         case 'SET_REPLYING_TO':

@@ -26,7 +26,7 @@ interface AgentFormState {
 }
 
 const TOOL_CHOICES = ['chat.send_message', 'chat.reply_to_message', 'chat.react_to_message', 'chat.get_recent_history'];
-const PROVIDERS = ['openai', 'azure', 'anthropic', 'custom'];
+const PROVIDERS = ['openai', 'azure', 'anthropic', 'parallax', 'custom'];
 const RUNTIMES = ['internal-function-calling', 'function-calling-proxy', 'mcp', 'custom'];
 
 const buildFormState = (agent?: Agent): AgentFormState => ({
@@ -326,9 +326,18 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                 供应商
                                 <select
                                     value={formState.model.provider}
-                                    onChange={(e) =>
-                                        setFormState((prev) => ({ ...prev, model: { ...prev.model, provider: e.target.value } }))
-                                    }
+                                    onChange={(e) => {
+                                        const newProvider = e.target.value;
+                                        setFormState((prev) => ({
+                                            ...prev,
+                                            model: {
+                                                ...prev.model,
+                                                provider: newProvider,
+                                                // 选择 parallax 时自动设置默认模型名
+                                                name: newProvider === 'parallax' ? 'default' : prev.model.name,
+                                            },
+                                        }));
+                                    }}
                                 >
                                     {PROVIDERS.map((provider) => (
                                         <option key={provider} value={provider}>
@@ -438,6 +447,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                 <input
                                     value={formState.runtime.endpoint}
                                     onChange={(e) => handleChange('runtime', { ...formState.runtime, endpoint: e.target.value })}
+                                    placeholder={formState.model.provider === 'parallax' ? 'https://your-llm-endpoint/v1' : ''}
                                 />
                             </label>
                             <label>

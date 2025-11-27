@@ -63,7 +63,7 @@ export const api = {
             const search = new URLSearchParams();
             if (conversationId) search.set('conversationId', conversationId);
             const suffix = search.toString() ? `?${search.toString()}` : '';
-            return request<{ deletedMessageId: string }>(`/messages/${messageId}${suffix}`, {
+            return request<{ deletedMessageId?: string; deletedMessageIds?: string[] }>(`/messages/${messageId}${suffix}`, {
                 method: 'DELETE',
             });
         },

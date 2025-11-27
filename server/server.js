@@ -628,9 +628,21 @@ app.delete('/messages/:messageId', authMiddleware, async (req, res) => {
         return res.status(403).json({ error: 'Cannot delete this message' });
     }
 
-    db.data.messages.splice(index, 1);
+    // 级联删除：找出所有 replyToId 指向此消息的回复
+    const deletedIds = [messageId];
+    const findReplies = (parentId) => {
+        const replies = db.data.messages.filter((m) => m.replyToId === parentId);
+        for (const reply of replies) {
+            deletedIds.push(reply.id);
+            findReplies(reply.id); // 递归删除回复的回复
+        }
+    };
+    findReplies(messageId);
+
+    // 删除所有相关消息
+    db.data.messages = db.data.messages.filter((m) => !deletedIds.includes(m.id));
     await db.write();
-    res.json({ deletedMessageId: messageId });
+    res.json({ deletedMessageIds: deletedIds });
 });
 
 app.post('/messages/:messageId/reactions', authMiddleware, async (req, res) => {
@@ -712,6 +724,50 @@ app.post('/typing', authMiddleware, async (req, res) => {
 app.get('/typing', authMiddleware, (_req, res) => {
     pruneTyping();
     res.json({ typingUsers: Object.keys(db.data.typing) });
+});
+
+// Agent heartbeat tracking
+const AGENT_HEARTBEAT_TTL = 15000; // 15 seconds
+db.data.agentHeartbeats ||= {};
+
+const pruneAgentHeartbeats = () => {
+    const now = Date.now();
+    Object.entries(db.data.agentHeartbeats || {}).forEach(([agentId, lastSeen]) => {
+        if (now - lastSeen > AGENT_HEARTBEAT_TTL) {
+            delete db.data.agentHeartbeats[agentId];
+        }
+    });
+};
+
+// Agent heartbeat endpoint - called by agent_service to signal it's alive
+app.post('/agents/:agentId/heartbeat', agentAuthMiddleware, async (req, res) => {
+    const { agentId } = req.params;
+    const agent = db.data.agents.find((a) => a.id === agentId);
+    if (!agent) {
+        return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    db.data.agentHeartbeats ||= {};
+    db.data.agentHeartbeats[agentId] = Date.now();
+    await db.write();
+    res.json({ ok: true, agentId, timestamp: db.data.agentHeartbeats[agentId] });
+});
+
+// Get status of all agents (whether real agent service is running)
+app.get('/agents/status', authMiddleware, (_req, res) => {
+    pruneAgentHeartbeats();
+    const statuses = {};
+    db.data.agents.forEach((agent) => {
+        const lastHeartbeat = db.data.agentHeartbeats?.[agent.id];
+        statuses[agent.id] = {
+            id: agent.id,
+            name: agent.name,
+            configStatus: agent.status || 'active',
+            serviceOnline: !!lastHeartbeat && (Date.now() - lastHeartbeat < AGENT_HEARTBEAT_TTL),
+            lastHeartbeat: lastHeartbeat || null,
+        };
+    });
+    res.json({ agents: statuses });
 });
 
 app.listen(PORT, () => {

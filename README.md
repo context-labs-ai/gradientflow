@@ -3,7 +3,7 @@
 A React + Vite group chat showcase with an Express + lowdb backend. It ships a lightweight auth flow, persistent messages and member lists, plus a triggerable LLM bot that can react or reply on its own. The layout mirrors Telegram/Discord, so it doubles as a starting template for internal prototypes, demos, and “LLM in chat” experiments.
 
 
-> The current LLM behavior is still simulated on the frontend via `useLLM`. Messages, users, and typing states are stored by the local API inside `server/data.json` and can be swapped for any real backend or model service.
+> The project includes a **Python-based Agent Service** (`agents/`) that connects to real LLM backends. Messages, users, and typing states are stored by the local API inside `server/data.json`.
 
 ---
 
@@ -12,7 +12,7 @@ A React + Vite group chat showcase with an Express + lowdb backend. It ships a l
 - Message UX: text bubbles with **Markdown support**, reply preview, @ mentions, aggregated reactions, and hover actions that feel close to a modern IM client.
 - Typing + polling: typing indicators are reported via `/typing`, messages are polled through `/messages` to keep everyone in sync.
 - Members & sidebar: placeholder channels + member list (presence dots, BOT badge) with a mobile-friendly collapsible sidebar.
-- LLM simulation: bundled `llm1` (GPT-4) bot that has a 40% chance to add a reaction and auto-replies 2s after seeing `@GPT-4` or `gpt`.
+- **Real LLM Agent**: Python-based agent service (`agents/`) that polls for @mentions and responds using your LLM backend. Supports heartbeat monitoring, cascade message deletion, and customizable prompts.
 - Persistence: users, messages, and typing states live in `server/data.json`; deleting the file resets the sandbox (the default LLM user is re-created on boot).
 - Dev experience: single repo, separate dev servers for frontend/backend, TypeScript types shared between UI and API payloads.
 - Performance & Reliability: **virtualized message list** for handling large histories, **error boundary** protection, and network status monitoring.
@@ -56,7 +56,6 @@ Suggested flow: register or log in -> send a few messages (try **Markdown**!), a
 - `MessageInput.tsx`: multiline editor with @ suggestions, reply ribbon, typing reports, and `POST /messages` submission.
 - `MessageList` / `MessageBubble`: renders messages (virtualized), reply previews, reactions, and their hover interactions.
 - `Sidebar` / `Layout`: channel + member list plus the responsive mobile drawer shell.
-- `useLLM.ts`: frontend-only simulation that can be replaced by real inference or server callbacks.
 
 ### Tech stack (frontend)
 - React 18 + TypeScript + Vite
@@ -68,15 +67,38 @@ Suggested flow: register or log in -> send a few messages (try **Markdown**!), a
 
 ## Backend API (TL;DR)
 - Auth: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-- Messages: `GET /messages?limit=100&before=timestamp`, `POST /messages` (`content`, optional `replyToId`)
+- Messages: `GET /messages`, `POST /messages`, `DELETE /messages/:id` (cascade deletes replies)
 - Users: `GET /users`
-- Typing: `GET /typing`, `POST /typing` (`isTyping`, server cleans up with TTL)
+- Typing: `GET /typing`, `POST /typing`
+- Agents: `GET /agents`, `POST /agents/configs`, `PATCH /agents/configs/:id`, `DELETE /agents/configs/:id`
+- Agent API: `POST /agents/:agentId/messages` (send as agent), `POST /agents/:agentId/heartbeat`
 
 ### Tech stack (backend)
 - Express, lowdb (JSON file storage)
 - `bcryptjs` for password hashing
 - `jsonwebtoken` for JWT issuance/verification
 - `cookie-parser` and `cors` for auth cookies + CORS handling
+
+---
+
+## Agent Service (`agents/`)
+
+A Python service that connects your LLM to the chat:
+
+```bash
+cd agents
+pip install -r requirements.txt
+python agent_service.py
+```
+
+Features:
+- **@mention detection**: Responds when users mention `@GPT-4` or agent name
+- **Heartbeat**: Signals online status to the backend
+- **Context building**: Sends recent chat history to LLM with speaker labels
+- **Response filtering**: Strips `<think>` tags and special tokens from LLM output
+- **Cascade delete**: Deleting a user message also removes the agent's reply
+
+See [`agents/README.md`](agents/README.md) for detailed configuration.
 
 ---
 
@@ -95,8 +117,8 @@ Suggested flow: register or log in -> send a few messages (try **Markdown**!), a
 ---
 
 ## Possible Extensions
-- Swap `useLLM` for real inference (e.g., expose a `/llm` API or push bot messages from the server)
 - Replace polling with WebSocket/SSE transport for lower latency
-- Persist @ mentions, highlight them in the UI, and wire notification hooks
 - Add multi-channel / DM models (filter by `channelId`)
+- Implement streaming responses from LLM (show typing as agent generates)
+- Add multiple agents with different personalities/capabilities
 - Harden prod readiness: HTTPS, secure sameSite cookies, rate limits, schema validation, logging, alerting
