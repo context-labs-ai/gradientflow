@@ -46,22 +46,22 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
                                     <div className="about-feature">
                                         <span className="feature-icon">🤖</span>
                                         <div>
-                                            <div className="feature-title">多智能体系统</div>
-                                            <div className="feature-desc">多个 LLM Agent 实时协作，共同完成复杂任务</div>
+                                            <div className="feature-title">边缘协同编排</div>
+                                            <div className="feature-desc">基于 Gradient Parallax 边缘计算网络，动态调度多模态 Agent 工具链</div>
+                                        </div>
+                                    </div>
+                                    <div className="about-feature">
+                                        <span className="feature-icon">🛡️</span>
+                                        <div>
+                                            <div className="feature-title">端侧隐私计算</div>
+                                            <div className="feature-desc">数据在本地边缘节点处理，通过 Parallax 协议实现可信的分布式推理</div>
                                         </div>
                                     </div>
                                     <div className="about-feature">
                                         <span className="feature-icon">⚡</span>
                                         <div>
-                                            <div className="feature-title">主动式响应</div>
-                                            <div className="feature-desc">Agent 主动参与对话，无需被动等待指令</div>
-                                        </div>
-                                    </div>
-                                    <div className="about-feature">
-                                        <span className="feature-icon">🔗</span>
-                                        <div>
-                                            <div className="feature-title">Parallax 集成</div>
-                                            <div className="feature-desc">基于 Parallax 强大的 LLM 基础设施构建</div>
+                                            <div className="feature-title">意图驱动协作</div>
+                                            <div className="feature-desc">基于 LLM 意图识别引擎，实现 Agent 从"被动响应"到"主动协作"的范式转变</div>
                                         </div>
                                     </div>
                                 </div>
