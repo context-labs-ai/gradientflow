@@ -1,106 +1,176 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为 Claude Code (claude.ai/code) 提供项目开发指南。
 
-## Project Overview
+## 项目概述
 
-This is an Active LLM Group Chat application - a React + TypeScript frontend with an Express + lowdb backend. It features a modern chat interface similar to Telegram/Discord with LLM bot integration, user authentication, persistent messages, reactions, replies, and typing indicators.
+Active LLM 群聊系统 - 基于 React + TypeScript 前端和 Express + lowdb 后端的智能群聊应用。支持多 Agent 协作、RAG 知识库检索、网络搜索等功能，界面设计参考 Telegram/Discord。
 
-## Development Commands
+## 总体原则
 
-### Frontend (React + Vite)
+- 偏好小的、聚焦的改动，除非明确要求大规模重构
+- 保持 UX 与现代聊天应用（含 LLM Bot）风格一致
+- 遵循现有 React + TypeScript 风格，避免引入不必要的复杂模式
+- 设计功能时考虑 LLM 友好性（清晰的 API、结构化 JSON、稳定契约）
+
+## 开发命令
+
+### 前端 (React + Vite)
 ```bash
-npm run dev          # Start Vite dev server at http://localhost:5173
-npm run build        # Build for production (TypeScript check + Vite build)
-npm run preview      # Preview production build
-npm run lint         # Run ESLint (TypeScript/React)
+npm run dev          # 启动开发服务器 http://localhost:5173
+npm run build        # 构建生产版本
+npm run preview      # 预览生产构建
+npm run lint         # 运行 ESLint
+npm run test         # 运行 Vitest 测试
 ```
 
-### Backend (Express Server)
+### 后端 (Express)
 ```bash
-npm run server       # Start Express API at http://localhost:4000
+npm run server       # 启动 API 服务器 http://localhost:4000
 ```
 
-### Testing
+### Agent 服务 (Python)
 ```bash
-npm run test         # Run tests with Vitest
+cd agents
+pip install -r requirements.txt
+python multi_agent_manager.py --email root@example.com --password 1234567890
 ```
 
-### Environment Variables
-- Frontend: `VITE_API_URL` - API URL (default: http://localhost:4000)
-- Backend:
-  - `PORT` - API port (default: 4000)
-  - `CLIENT_ORIGIN` - Allowed origins (comma-separated)
-  - `JWT_SECRET` - JWT signing secret (critical for security)
-  - `DB_PATH` - lowdb JSON path (default: server/data.json)
+### RAG 服务 (Python)
+```bash
+cd agents
+pip install -r requirements-rag.txt
+python rag_service.py  # 启动 http://localhost:4001
+```
 
-## Architecture & Key Patterns
+## 环境变量
 
-### Frontend Architecture
-- **State Management**: Centralized via `ChatContext` (React Context + useReducer)
-- **API Communication**: All HTTP calls through `src/api/client.ts`
-- **Component Structure**:
-  - `src/components/` - UI components (MessageBubble/, Sidebar, etc.)
-  - `src/hooks/` - Custom hooks (useLLM, useNetworkStatus)
-  - `src/types/` - TypeScript types shared between frontend/backend
-- **Message Rendering**: Uses react-virtuoso for virtualized scrolling (performance)
-- **Real-time Updates**: Polling-based (messages every ~4s, typing every ~2.5s)
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `VITE_API_URL` | `http://localhost:4000` | 前端 API 地址 |
+| `PORT` | `4000` | 后端端口 |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | CORS 白名单（逗号分隔） |
+| `JWT_SECRET` | - | JWT 签名密钥（生产必改） |
+| `DB_PATH` | `server/data.json` | 数据存储路径 |
+| `AGENT_API_TOKEN` | - | Agent API 认证令牌 |
+| `RAG_SERVICE_URL` | `http://localhost:4001` | RAG 服务地址 |
 
-### Backend Architecture
-- **Stack**: Express + lowdb (JSON file storage)
-- **Authentication**: JWT-based (httpOnly cookies + Bearer token fallback)
-- **Data Storage**: `server/data.json` (delete to reset)
-- **API Routes**:
-  - Auth: `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/me`
-  - Messages: `GET/POST /messages`
-  - Users: `GET /users`
-  - Typing: `GET/POST /typing`
-  - Agents: `GET/POST/PUT/DELETE /agents/:id`
+## 架构与关键模式
 
-### Key Type Definitions (src/types/chat.ts)
-- `User`: Includes type (human/agent/system), agentId for AI users
-- `Agent`: Complete agent configuration with capabilities, model, runtime
-- `Message`: Includes role, conversationId, status, reactions, mentions
-- `ChatState`: Global state shape for the chat context
+### 前端架构
+- **状态管理**: `ChatContext` (React Context + useReducer) 中央管理
+- **性能优化**: `TypingContext` 独立管理输入状态，避免重渲染
+- **API 通信**: 统一通过 `src/api/client.ts`
+- **消息渲染**: react-virtuoso 虚拟化滚动
+- **实时更新**: 轮询机制（消息 ~4s，输入状态 ~2.5s）
 
-## Agent System
+### 后端架构
+- **技术栈**: Express + lowdb (JSON 存储)
+- **认证**: JWT (httpOnly Cookie + Bearer 令牌)
+- **数据存储**: `server/data.json`
 
-The application supports AI agents that act as chat participants:
-- Agents have capabilities: `answer_active`, `answer_passive`, `like`, `summarize`
-- Each agent has its own User entity with `type: 'agent'`
-- Agent configuration includes model settings, system prompt, and runtime config
-- LLM behavior currently simulated client-side in `useLLM.ts` (ready for real integration)
+### Agent 服务
+- **核心**: `agents/agent_service.py` - 轮询消息、检测 @ 提及、调用 LLM
+- **多 Agent**: `agents/multi_agent_manager.py` - 并发管理多个 Agent
+- **工具库**: `agents/tools.py` - 上下文获取、网络搜索、RAG 查询
+- **LLM 客户端**: `agents/query.py` - 支持 OpenAI/Azure/Anthropic/自定义端点
 
-## Important Implementation Notes
+### RAG 服务
+- **技术栈**: Flask + ChromaDB
+- **功能**: 文档上传、向量化、语义检索
+- **存储**: `server/chroma_rag_db/`
 
-1. **Message Virtualization**: MessageList uses react-virtuoso for performance with large message histories
-2. **Markdown Support**: Messages support full Markdown rendering via react-markdown
-3. **Typing Indicators**: Implemented via polling with TTL cleanup on server
-4. **Reply System**: Messages can reference other messages via `replyToId`
-5. **Reaction System**: Aggregated reactions with user tracking
-6. **Error Boundaries**: Implemented to catch and display render errors gracefully
-7. **Network Status**: Monitors online/offline state with banner notification
+## API 路由概览
 
-## Development Guidelines
+### 认证
+- `POST /auth/register`, `/auth/login`, `/auth/logout`, `GET /auth/me`
 
-1. **Code Style**: Follow existing React + TypeScript patterns, use existing utilities
-2. **Component Creation**: Check existing components first, follow naming conventions
-3. **API Changes**: Maintain backward compatibility, update types in both frontend/backend
-4. **State Updates**: Use ChatContext actions, avoid direct state manipulation
-5. **Performance**: Consider virtualization for lists, memoization for expensive operations
-6. **Security**: Never commit secrets, use environment variables for sensitive data
+### 消息
+- `GET /messages` - 获取消息（支持 since、limit、conversationId）
+- `POST /messages` - 发送消息
+- `DELETE /messages/:id` - 删除消息（级联删除回复）
+- `POST /messages/:id/reactions` - 表情反应
 
-## Testing Credentials (Development Only)
-- Admin account: root@example.com / 1234567890
+### Agent
+- `GET /agents` - 获取配置
+- `POST /agents/configs` - 创建 Agent
+- `PATCH /agents/configs/:id` - 更新 Agent
+- `POST /agents/:id/messages` - Agent 发送消息
+- `POST /agents/:id/heartbeat` - 心跳
+- `POST /agents/:id/tools/web-search` - 网络搜索
+- `POST /agents/:id/tools/local-rag` - 知识库查询
 
-## Data Reset
-To reset the application data:
-1. Stop the server
-2. Delete `server/data.json`
-3. Restart the server (will recreate with default data)
+### 知识库
+- `POST /knowledge-base/upload` - 上传文档
+- `GET /knowledge-base/documents` - 列出文档
+- `DELETE /knowledge-base/documents/:id` - 删除文档
 
-## Current Focus Areas
-- Implementing real LLM integration (replacing client-side simulation)
-- Agent management UI and configuration
-- Enhanced message features (edit history, status tracking)
-- Performance optimizations for large chat histories
+## 关键类型定义 (src/types/chat.ts)
+
+- `User`: 包含 type (human/agent/system)、agentId
+- `Agent`: 包含 capabilities、model、runtime、systemPrompt、tools
+- `Message`: 包含 role、conversationId、reactions、mentions、replyToId
+- `ChatState`: 全局状态（currentUser、users、agents、messages、typingUsers）
+
+## 前端开发指南
+
+### UI 风格
+- **动画**: 流畅但快速，避免过长或分散注意力的过渡
+- **视觉**: 极简风格，高质量细节（微妙阴影、渐变、悬浮状态）
+- **布局**: 保持简洁，注重微交互和间距
+- **组件**: 保持聚焦和可复用，跨领域逻辑抽取到 hooks
+
+### 文件结构
+- 组件: `src/components/`
+- Hooks: `src/hooks/`
+- 类型: `src/types/`
+- API: `src/api/`
+- 常量: `src/constants/`
+- Context: `src/context/`
+
+## 后端开发指南
+
+- 设计 LLM 友好的功能（清晰 API、结构化 JSON、稳定契约）
+- 保持聊天室逻辑对 LLM Bot 友好（可预测的消息结构、工具元数据）
+- 避免破坏现有 API 契约，除非与前端协调
+
+## 重要实现说明
+
+1. **消息虚拟化**: MessageList 使用 react-virtuoso 处理大量消息历史
+2. **Markdown 支持**: react-markdown 渲染消息内容
+3. **输入指示器**: 轮询 + TTL 清理机制
+4. **回复系统**: 通过 replyToId 引用其他消息
+5. **表情反应**: 聚合反应 + 用户追踪
+6. **错误边界**: ErrorBoundary 组件捕获渲染错误
+7. **网络状态**: 离线/在线检测 + 横幅通知
+8. **Agent 工具**: 支持 [GET_CONTEXT]、[WEB_SEARCH]、[LOCAL_RAG]、[REACT] 等
+
+## 测试账户（仅开发环境）
+
+- 邮箱: `root@example.com`
+- 密码: `1234567890`
+
+## 数据重置
+
+1. 停止所有服务
+2. 删除 `server/data.json`
+3. 重启服务（自动重建默认数据）
+
+## 当前功能状态
+
+### 已完成
+- 用户认证（注册/登录/登出）
+- 消息收发、回复、表情反应
+- Agent 配置管理 UI
+- 多 Agent 并发运行
+- Agent 心跳追踪
+- 网络搜索工具（DuckDuckGo）
+- RAG 知识库服务（ChromaDB）
+- 消息虚拟化渲染
+- 错误边界和网络状态监控
+
+### 扩展方向
+- WebSocket/SSE 替换轮询
+- LLM 流式响应
+- 多频道/私聊模型
+- 消息编辑历史

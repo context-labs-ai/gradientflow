@@ -1,225 +1,293 @@
-# Agent Service
+# Agent 服务
 
-Python-based multi-agent service that connects to the chat backend and responds to @ mentions with intelligent context awareness.
+基于 Python 的多智能体服务，连接到聊天后端并智能响应 @ 提及，具备上下文感知能力。
 
-## Architecture
+## 架构
 
 ```
-                      poll messages
+                      轮询消息
                   ←─────────────────────
-  Chat Backend                             Multi-Agent Manager
+  聊天后端                                多 Agent 管理器
   (Express.js)   ─────────────────────→    (Python)
-  localhost:4000      send replies              │
-       ↑                                        ├── Agent 1 Thread
-       │                                        ├── Agent 2 Thread
-       │    fetch agent configs                 └── Agent N Thread
-       └────────────────────────────────────────────→│
-                                                     ↓
-                                                LLM Backend
-                                              (parallax/openai/custom)
+  localhost:4000      发送回复                  │
+       ↑                                       ├── Agent 1 线程
+       │                                       ├── Agent 2 线程
+       │    获取 agent 配置                    └── Agent N 线程
+       └────────────────────────────────────────→│
+                                                 ↓
+                                             LLM 后端
+                                          (parallax/openai/自定义)
 ```
 
-## Files
+## 文件结构
 
-| File | Description |
-|------|-------------|
-| `agent_service.py` | Core agent service - handles polling, mentions detection, context building, LLM calls |
-| `multi_agent_manager.py` | Multi-agent orchestrator - runs multiple agents concurrently with auto-restart |
-| `tools.py` | Built-in tools - context retrieval tools (GET_CONTEXT, GET_LONG_CONTEXT) |
-| `query.py` | LLM client - handles communication with model backends (supports dynamic configuration) |
-| `requirements.txt` | Python dependencies |
+| 文件 | 描述 |
+|------|------|
+| `agent_service.py` | 核心 agent 服务 - 处理轮询、提及检测、上下文构建、LLM 调用 |
+| `multi_agent_manager.py` | 多 agent 协调器 - 并发运行多个 agent，支持自动重启 |
+| `tools.py` | 内置工具 - 上下文检索工具 (GET_CONTEXT, GET_LONG_CONTEXT) |
+| `query.py` | LLM 客户端 - 处理与模型后端的通信（支持动态配置） |
+| `rag_service.py` | RAG 服务 - 基于 ChromaDB 的文档向量检索服务 |
+| `requirements.txt` | Python 依赖 |
+| `requirements-rag.txt` | RAG 服务额外依赖 |
 
-## Setup
+## 安装
 
-1. Install dependencies:
+### 基础依赖
+
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Configure agent in the frontend (Agent 配置中心):
-   - Set Provider to `parallax` (or other)
-   - Set Endpoint URL in "Endpoint / MCP URL" field
-   - Set model name, temperature, max tokens
-   - Set system prompt
+### RAG 服务依赖（可选）
 
-3. Ensure the chat backend is running:
 ```bash
-# In project root
+pip install -r requirements-rag.txt
+```
+
+## 配置
+
+### 前端配置（推荐）
+
+在 Web UI（Agent 配置中心）中配置你的 agent，服务会自动获取以下设置：
+
+| 设置项 | 描述 |
+|--------|------|
+| System Prompt | 发送给 LLM 的系统提示词 |
+| Provider | `parallax`、`openai`、`azure`、`anthropic`、`custom` |
+| Model Name | 模型标识符（如 `default`、`gpt-4o-mini`） |
+| Temperature | 响应随机性（0.0 - 2.0） |
+| Max Tokens | 最大响应长度 |
+| Endpoint | LLM API 端点 URL（用于 parallax provider） |
+| API Key Alias | 可选的 API 密钥标识符 |
+
+### 环境变量
+
+| 变量 | 默认值 | 描述 |
+|------|--------|------|
+| `API_BASE` | `http://localhost:4000` | 聊天后端 URL |
+| `AGENT_TOKEN` | `dev-agent-token` | Agent API 认证令牌 |
+| `AGENT_ID` | `helper-agent-1` | Agent ID（必须在后端存在） |
+| `AGENT_USER_ID` | `llm1` | 与 agent 关联的用户 ID |
+| `POLL_INTERVAL` | `3` | 消息轮询间隔（秒） |
+| `HEARTBEAT_INTERVAL` | `5` | 心跳信号间隔（秒） |
+
+## 使用方法
+
+### 前置条件
+
+确保聊天后端正在运行：
+```bash
+# 在项目根目录
 npm run server
 ```
 
-## Usage
+### 单 Agent 模式
 
-### Single Agent Mode
-
-Start a single agent:
+启动单个 agent：
 ```bash
 python agent_service.py
 ```
 
-With specific agent ID:
+指定 agent ID：
 ```bash
 python agent_service.py --agent-id helper-agent-1
 ```
 
-With custom credentials:
+使用自定义凭据：
 ```bash
 python agent_service.py --email user@example.com --password yourpassword --agent-id my-agent
 ```
 
-### Multi-Agent Mode (Recommended)
+### 多 Agent 模式（推荐）
 
-Start all active agents concurrently:
+并发启动所有活跃的 agent：
 ```bash
 python multi_agent_manager.py
 ```
 
-Start specific agents:
+启动指定的 agent：
 ```bash
 python multi_agent_manager.py --agent-ids agent-1 agent-2 agent-3
 ```
 
-Features:
-- Runs each agent in its own thread
-- Auto-restarts crashed agents
-- Skips inactive agents automatically
-- Single login for all agents
+多 Agent 模式特性：
+- 每个 agent 在独立线程中运行
+- 崩溃的 agent 自动重启
+- 自动跳过未激活的 agent
+- 所有 agent 共享单次登录
 
-## Configuration
+### RAG 服务
 
-### Frontend Configuration (Recommended)
+启动 RAG API 服务器：
+```bash
+python rag_service.py --port 4001
+```
 
-Configure your agent via the web UI (Agent 配置中心). The agent service will automatically fetch:
+运行快速测试：
+```bash
+python rag_service.py --test
+```
 
-| Setting | Description |
-|---------|-------------|
-| System Prompt | The system message sent to the LLM |
-| Provider | `parallax`, `openai`, `azure`, `anthropic`, `custom` |
-| Model Name | Model identifier (e.g., `default`, `gpt-4o-mini`) |
-| Temperature | Response randomness (0.0 - 2.0) |
-| Max Tokens | Maximum response length |
-| Endpoint | LLM API endpoint URL (for parallax provider) |
-| API Key Alias | Optional API key identifier |
+## 工作原理
 
-### Environment Variables (agent_service.py)
+1. **登录**：向聊天后端认证获取 JWT 令牌
+2. **获取配置**：从 `/agents` API 获取 agent 配置
+3. **配置 LLM**：如果 provider 是 `parallax`，使用端点 URL 配置 LLM 客户端
+4. **心跳**：周期性发送心跳信号表示服务在线（设置"正在查看"指示器）
+5. **轮询**：每隔 `POLL_INTERVAL` 秒获取新消息
+6. **检测 @**：检查消息是否提及此 agent（通过 `mentions` 字段或内容中的 `@AgentName`）
+7. **追问检测**：检测用户是否发送了后续消息（避免响应不完整的想法）
+8. **构建上下文**：收集带有方向标签的最近消息（[TO: YOU]、[TO: @other]、[TO: everyone]）
+9. **生成回复**：发送上下文给 LLM，支持多轮工具调用
+10. **执行工具**：在发送响应前处理工具调用（表情、上下文检索）
+11. **发送**：通过 `/agents/:agentId/messages` API 发送回复
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `API_BASE` | `http://localhost:4000` | Chat backend URL |
-| `AGENT_TOKEN` | `dev-agent-token` | Agent API authentication token |
-| `AGENT_ID` | `helper-agent-1` | Agent ID (must exist in backend) |
-| `AGENT_USER_ID` | `llm1` | User ID associated with the agent |
-| `POLL_INTERVAL` | `3` | Seconds between message polls |
-| `HEARTBEAT_INTERVAL` | `5` | Seconds between heartbeat signals |
+## 消息格式
 
-## How It Works
+### 发送给 LLM 的输入
 
-1. **Login**: Authenticates with the chat backend to get JWT token
-2. **Fetch Config**: Retrieves agent configuration from `/agents` API
-3. **Configure LLM**: If provider is `parallax`, configures LLM client with endpoint URL
-4. **Heartbeat**: Sends periodic heartbeat to signal the service is online (sets "looking" indicator)
-5. **Poll**: Fetches new messages every `POLL_INTERVAL` seconds
-6. **Detect @**: Checks if messages mention this agent (via `mentions` field or `@AgentName` in content)
-7. **Follow-up Check**: Detects if user sent additional messages (avoids responding to incomplete thoughts)
-8. **Build Context**: Collects recent messages with direction tags ([TO: YOU], [TO: @other], [TO: everyone])
-9. **Generate Reply**: Sends context to LLM, supports multi-round tool calls
-10. **Execute Tools**: Processes tool calls (reactions, context retrieval) before sending response
-11. **Send**: Posts reply via `/agents/:agentId/messages` API
-
-## Message Format
-
-### Input to LLM
-
-Messages are formatted with direction tags to help the agent understand who each message is addressed to:
+消息带有方向标签格式化，帮助 agent 理解每条消息是发给谁的：
 
 ```python
 [
-    {"role": "system", "content": "You are a helpful AI assistant..."},
-    {"role": "user", "content": "[msg:abc-123] <Alice> [TO: everyone]: Hello everyone!"},
-    {"role": "user", "content": "[msg:def-456] <Bob> [TO: @MOSS, not you]: Hey MOSS, what's up?"},
-    {"role": "assistant", "content": "Hello! How can I help?"},
-    {"role": "user", "content": "[msg:ghi-789] <Charlie> [TO: YOU]: What is 1+1?"},
+    {"role": "system", "content": "你是一个有帮助的 AI 助手..."},
+    {"role": "user", "content": "[msg:abc-123] <Alice> [TO: everyone]: 大家好！"},
+    {"role": "user", "content": "[msg:def-456] <Bob> [TO: @MOSS, not you]: 嘿 MOSS，最近怎么样？"},
+    {"role": "assistant", "content": "你好！有什么可以帮助你的？"},
+    {"role": "user", "content": "[msg:ghi-789] <Charlie> [TO: YOU]: 1+1 等于多少？"},
 ]
 ```
 
-**Direction Tags:**
-- `[TO: YOU]` - Message is addressed to this agent (must respond)
-- `[TO: @OtherAgent, not you]` - Message is for another agent (should not respond)
-- `[TO: everyone]` - General message to the group (may respond if helpful)
+**方向标签说明：**
+- `[TO: YOU]` - 消息是发给此 agent 的（必须响应）
+- `[TO: @OtherAgent, not you]` - 消息是发给其他 agent 的（不应响应）
+- `[TO: everyone]` - 发给群组的通用消息（如有帮助可响应）
 
-### Response Processing
+### 响应处理
 
-The service automatically strips special tags from LLM responses:
-- `<think>...</think>` - Thinking/reasoning blocks
-- `<|channel|>analysis<|message|>...<|end|>` - Analysis channels
-- Extracts content from `<|channel|>final<|message|>...` if present
-- `[REACT:emoji:msg_id]` - Emoji reaction tool calls
-- `[GET_CONTEXT:msg_id]` / `[GET_LONG_CONTEXT]` - Context tool calls
+服务自动从 LLM 响应中剥离特殊标签：
+- `<think>...</think>` - 思考/推理块
+- `<|channel|>analysis<|message|>...<|end|>` - 分析通道
+- 如果存在则提取 `<|channel|>final<|message|>...` 中的内容
+- `[REACT:emoji:msg_id]` - 表情反应工具调用
+- `[GET_CONTEXT:msg_id]` / `[GET_LONG_CONTEXT]` - 上下文工具调用
 
-## Agent Modes
+## Agent 模式
 
-### Passive Mode (Default)
+### 被动模式（默认）
 
-Agent only responds when explicitly @ mentioned. Configured when `capabilities.answer_active` is false.
+Agent 只在被明确 @ 提及时响应。当 `capabilities.answer_active` 为 false 时配置。
 
-### Proactive Mode
+### 主动模式
 
-Agent can proactively participate in conversations. Enable by setting `capabilities.answer_active: true`.
+Agent 可以主动参与对话。通过设置 `capabilities.answer_active: true` 启用。
 
-In proactive mode, the agent:
-- Monitors all messages (not just @ mentions)
-- Decides whether to respond based on context
-- Can use `[SKIP]` to decline responding
-- Respects cooldown period (`runtime.proactiveCooldown`, default 30s)
-- Won't respond to messages directed at other agents
+主动模式下，agent：
+- 监控所有消息（不仅是 @ 提及）
+- 根据上下文决定是否响应
+- 可以使用 `[SKIP]` 拒绝响应
+- 遵守冷却期（`runtime.proactiveCooldown`，默认 30 秒）
+- 不会响应发给其他 agent 的消息
 
-**Proactive Decision Flow:**
-1. Check if message @ mentions another agent → Skip
-2. Check cooldown period → Skip if too recent
-3. Check for follow-up messages → Skip if user still typing
-4. Let LLM decide: respond, react, or `[SKIP]`
+**主动决策流程：**
+1. 检查消息是否 @ 提及其他 agent → 跳过
+2. 检查冷却期 → 如果太近则跳过
+3. 检查是否有后续消息 → 如果用户仍在输入则跳过
+4. 让 LLM 决定：响应、反应或 `[SKIP]`
 
-## Built-in Tools
+## 内置工具
 
-Agents have access to built-in tools for enhanced capabilities:
+Agent 可以使用内置工具增强能力：
 
-### Reaction Tool
-Add emoji reactions to messages:
+### 表情反应工具
+给消息添加表情反应：
 ```
 [REACT:👍:message-id-here]
 [REACT:❤️:abc-123-def]
 ```
 
-### Context Retrieval Tools
-Get more conversation history when needed:
-
+### 上下文检索工具
+需要时获取更多对话历史：
 ```
-[GET_CONTEXT:message-id]     # Get 10 messages around a specific message
-[GET_LONG_CONTEXT]           # Get full conversation history (up to 50 messages)
-```
-
-These tools enable multi-round LLM calls:
-1. Agent requests context → Tool executes → Context returned
-2. Agent generates informed response with additional context
-
-### Follow-up Detection
-
-The agent detects "split messages" (when users send multiple messages in quick succession):
-
-```
-User: Hey guys!          # Message 1
-User: You know what?     # Message 2
-User: I saw a star!      # Message 3 (with @Agent)
+[GET_CONTEXT:message-id]     # 获取特定消息周围的 10 条消息
+[GET_LONG_CONTEXT]           # 获取完整对话历史（最多 50 条消息）
 ```
 
-Instead of responding to Message 3 immediately, the agent:
-1. Checks if the sender has newer messages
-2. If yes, skips the current message
-3. Waits for the complete thought before responding
+这些工具支持多轮 LLM 调用：
+1. Agent 请求上下文 → 工具执行 → 返回上下文
+2. Agent 利用额外上下文生成知情的响应
 
-## Logging
+### 追问检测
 
-The service logs detailed information including full prompts and responses:
+Agent 检测"分段消息"（用户快速连续发送多条消息时）：
+
+```
+用户: 大家好！         # 消息 1
+用户: 你们知道吗？     # 消息 2
+用户: 我看到一颗星星！ # 消息 3（带 @Agent）
+```
+
+Agent 不会立即响应消息 3，而是：
+1. 检查发送者是否有更新的消息
+2. 如果有，跳过当前消息
+3. 等待完整的想法后再响应
+
+## RAG 服务
+
+RAG（检索增强生成）服务提供基于向量嵌入的文档检索能力：
+
+### 功能特性
+- 文档上传，自动分块和嵌入
+- 使用向量相似度进行语义搜索
+- 所有 agent 共享知识库
+- 使用 ChromaDB 进行持久化存储
+- 内置嵌入模型（all-MiniLM-L6-v2）
+
+### API 端点
+
+| 端点 | 方法 | 描述 |
+|------|------|------|
+| `/rag/upload` | POST | 上传文档到知识库 |
+| `/rag/search` | POST | 语义搜索知识库 |
+| `/rag/stats` | GET | 获取知识库统计信息 |
+| `/rag/delete` | POST | 通过文档哈希删除文档 |
+| `/rag/clear` | POST | 清空整个知识库 |
+| `/health` | GET | 健康检查 |
+
+### 使用示例
+
+上传文档：
+```python
+import requests
+
+response = requests.post("http://localhost:4001/rag/upload", json={
+    "content": "文档内容...",
+    "filename": "document.txt",
+    "type": "text"
+})
+```
+
+搜索文档：
+```python
+response = requests.post("http://localhost:4001/rag/search", json={
+    "query": "搜索关键词",
+    "topK": 5,
+    "threshold": 0.3
+})
+```
+
+### 配置参数
+
+| 参数 | 默认值 | 描述 |
+|------|--------|------|
+| `CHUNK_SIZE` | 500 | 每个分块的字符数 |
+| `CHUNK_OVERLAP` | 50 | 分块之间的重叠字符数 |
+| `COLLECTION_NAME` | `knowledge_base` | ChromaDB 集合名称 |
+
+## 日志
+
+服务记录详细信息，包括完整的提示词和响应：
 
 ```
 [Agent] 启动服务...
@@ -251,84 +319,84 @@ Hi! I'm your friendly AI assistant.
 [Agent] 消息已发送: Hi! I'm your friendly AI assistant....
 ```
 
+## API 端点
+
+Agent 服务使用以下后端端点：
+
+| 端点 | 方法 | 描述 |
+|------|------|------|
+| `/auth/login` | POST | 登录获取 JWT 令牌 |
+| `/agents` | GET | 获取所有 agent 配置 |
+| `/agents/:id/heartbeat` | POST | 发送心跳信号 |
+| `/agents/:id/messages` | POST | 以 agent 身份发送消息 |
+| `/agents/:id/reactions` | POST | 给消息添加表情反应 |
+| `/agents/:id/looking` | POST | 设置"正在查看消息"状态 |
+| `/agents/:id/context` | GET | 获取特定消息周围的消息 |
+| `/agents/:id/long-context` | GET | 获取完整对话历史 |
+| `/messages` | GET | 获取消息（带 `since` 参数） |
+
 ## Parallax Provider
 
-The `parallax` provider is designed for custom OpenAI-compatible LLM endpoints:
+`parallax` provider 专为兼容 OpenAI 的自定义 LLM 端点设计：
 
-1. In frontend, select Provider: `parallax`
-2. Set Endpoint URL: `https://your-llm-endpoint/v1`
-3. Model name defaults to `default` (can be customized)
-4. API key is optional (defaults to `not-needed`)
+1. 在前端选择 Provider: `parallax`
+2. 设置端点 URL: `https://your-llm-endpoint/v1`
+3. 模型名称默认为 `default`（可自定义）
+4. API key 可选（默认为 `not-needed`）
 
-The agent service will automatically configure the LLM client with these settings.
+Agent 服务会自动使用这些设置配置 LLM 客户端。
 
-## API Endpoints
+## 扩展开发
 
-The agent service uses these backend endpoints:
+### 上下文窗口大小
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/auth/login` | POST | Login to get JWT token |
-| `/agents` | GET | Fetch all agent configurations |
-| `/agents/:id/heartbeat` | POST | Send heartbeat signal |
-| `/agents/:id/messages` | POST | Send a message as the agent |
-| `/agents/:id/reactions` | POST | Add emoji reaction to a message |
-| `/agents/:id/looking` | POST | Set "looking at messages" status |
-| `/agents/:id/context` | GET | Get messages around a specific message |
-| `/agents/:id/long-context` | GET | Get full conversation history |
-| `/messages` | GET | Fetch messages (with `since` parameter) |
-
-## Extending
-
-### Context Window Size
-
-Change the number of recent messages in context (default: 10):
+修改上下文中最近消息的数量（默认：10）：
 
 ```python
-# In agent_service.py
-CONTEXT_LIMIT = 20  # Increase to 20 messages
+# 在 agent_service.py 中
+CONTEXT_LIMIT = 20  # 增加到 20 条消息
 ```
 
-### Custom LLM Configuration
+### 自定义 LLM 配置
 
-For programmatic configuration, use `query.py`:
+使用 `query.py` 进行编程配置：
 
 ```python
 from query import configure, chat_with_history
 
-# Configure endpoint
+# 配置端点
 configure(base_url="https://your-endpoint/v1", api_key="your-key")
 
-# Use the client
+# 使用客户端
 response = chat_with_history(messages, model="your-model", temperature=0.7)
 ```
 
-### Adding Custom Tools
+### 添加自定义工具
 
-Extend `tools.py` to add new agent tools:
+扩展 `tools.py` 添加新的 agent 工具：
 
 ```python
-# Add new tool pattern
+# 添加新工具模式
 RE_MY_TOOL = re.compile(r"\[MY_TOOL:([^\]]+)\]")
 
-# Add to parse_tool_calls()
+# 添加到 parse_tool_calls()
 def parse_tool_calls(response: str) -> Dict[str, List]:
     result = {
         "get_context": [],
         "get_long_context": False,
-        "my_tool": [],  # Add new tool
+        "my_tool": [],  # 添加新工具
     }
-    # ... parse logic
+    # ... 解析逻辑
     return result
 ```
 
-### Capabilities Reference
+### 能力参考
 
-Configure these in the frontend under "Agent Capabilities":
+在前端"Agent 能力"下配置这些选项：
 
-| Capability | Description |
-|------------|-------------|
-| `answer_passive` | Respond when @ mentioned |
-| `answer_active` | Proactively participate in conversations |
-| `like` | Add emoji reactions to messages |
-| `summarize` | Generate conversation summaries |
+| 能力 | 描述 |
+|------|------|
+| `answer_passive` | 被 @ 提及时响应 |
+| `answer_active` | 主动参与对话 |
+| `like` | 给消息添加表情反应 |
+| `summarize` | 生成对话摘要 |

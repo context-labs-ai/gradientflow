@@ -949,7 +949,7 @@ if (agent.runtime.type === 'langchain') {
 - [x] 级联删除消息（删除 @ 消息时同时删除回复）
 - [x] 轮询优化（前端 1.5s、Agent 1s）
 
-### Phase 2: 框架化 + 完整工具 ✅ 基本完成
+### Phase 2: 框架化 + 完整工具 ✅ 已完成
 
 **目标**：主动回答、点赞、引用
 
@@ -961,12 +961,21 @@ if (agent.runtime.type === 'langchain') {
 - [x] 前端：消息上的「问 AI」按钮
 - [x] "Agent is taking a look" 指示器（处理消息时显示）
 - [x] Mention 系统 Bug 修复（精确匹配 + 动态 userId）
-- [ ] 完整 Chat Tool API（get_context、get_long_context）
-- [ ] 可配置冷却时间（UI 配置面板）
+- [x] 完整 Chat Tool API（`tools.py` 已实现）
+  - [x] `[GET_CONTEXT:message_id]` - 获取特定消息周围 10 条上下文
+  - [x] `[GET_LONG_CONTEXT]` - 获取完整对话历史（最多 50 条）
+  - [x] `[WEB_SEARCH:query]` - 网络搜索（需后端 API 支持）
+  - [x] `[LOCAL_RAG:query]` - 本地知识库检索
+- [x] 多轮工具调用支持（`generate_reply` 中实现）
+- [ ] 可配置冷却时间（UI 配置面板）- 后端已支持，前端 UI 待添加
 
 **已实现的工具调用格式**：
 - `[REACT:emoji:message_id]` - 对指定消息添加表情反应
 - `[SKIP]` - 主动模式下跳过不参与
+- `[GET_CONTEXT:message_id]` - 获取消息上下文
+- `[GET_LONG_CONTEXT]` - 获取长对话上下文
+- `[WEB_SEARCH:query]` - 网络搜索
+- `[LOCAL_RAG:query]` - 本地 RAG 检索
 
 **Agent 行为模式**：
 - **被动模式（passive）**：被 @ 时必须回复，可选点赞
@@ -974,18 +983,581 @@ if (agent.runtime.type === 'langchain') {
 
 **交付物**：Agent 能主动插话、点赞、引用回复 ✅
 
-### Phase 3: 高级功能
+### Phase 2.5: RAG 与知识库 ✅ 已完成
+
+**新增功能**：
+
+- [x] `agents/rag_service.py` - 基于 ChromaDB 的 RAG 服务
+  - [x] 文档上传与自动分块
+  - [x] 向量嵌入（使用 all-MiniLM-L6-v2）
+  - [x] 语义相似度搜索
+  - [x] RESTful API（Flask）
+- [x] Agent 工具集成 `[LOCAL_RAG:query]`
+- [x] 原生模型格式支持（`<|channel|>...to=LOCAL_RAG...` 格式）
+
+**RAG API 端点**：
+| 端点 | 方法 | 描述 |
+|------|------|------|
+| `/rag/upload` | POST | 上传文档到知识库 |
+| `/rag/search` | POST | 语义搜索知识库 |
+| `/rag/stats` | GET | 获取知识库统计 |
+| `/rag/delete` | POST | 删除指定文档 |
+| `/rag/clear` | POST | 清空知识库 |
+
+**交付物**：Agent 可以查询本地知识库回答问题 ✅
+
+### Phase 3: 高级功能 🚧 进行中
 
 **目标**：长上下文、多运行时
 
-- [ ] RoomMemory + SummarizerAgent
-- [ ] `chat.get_long_context` 实现
-- [ ] Function Calling 适配层
-- [ ] MCP Server 暴露
-- [ ] 多 Provider 支持（Anthropic、Azure）
-- [x] 完整 Agent 配置平台
+- [ ] RoomMemory + SummarizerAgent - 自动对话摘要
+- [x] `chat.get_long_context` 实现 ✅
+- [ ] Function Calling 适配层 - OpenAI 原生 tool_calls 格式
+- [ ] MCP Server 暴露 - 将 Chat Tool API 暴露为 MCP 服务
+- [ ] 多 Provider 支持
+  - [x] `parallax` - 自定义 OpenAI 兼容端点 ✅
+  - [ ] `anthropic` - Claude 系列
+  - [ ] `azure` - Azure OpenAI
+  - [ ] `ollama` - 本地模型
+- [x] 完整 Agent 配置平台 ✅
+- [x] 多 Agent 管理器 `multi_agent_manager.py` ✅
+  - [x] 并发运行多个 Agent
+  - [x] 自动重启崩溃的 Agent
+  - [x] 共享单次登录
 
 **交付物**：支持长对话、可配置的多 Agent 系统
+
+### Phase 4: 未来规划 📋
+
+- [ ] 流式响应（SSE/WebSocket）
+- [ ] Agent 间协作（多 Agent 对话）
+- [ ] 外部工具集成（代码执行、图片生成等）
+- [ ] 用户权限管理（谁可以配置 Agent）
+- [ ] Agent 性能监控与分析
+- [ ] 对话导出与存档
+
+---
+
+## Part 8: 增强方向详细设计
+
+> 本节详细描述各个增强方向的设计思路和实现方案
+
+### 8.1 工具系统升级 🔧
+
+**当前状态**：使用文本标记 `[TOOL:xxx]` 解析工具调用
+
+**问题**：
+- 依赖正则解析，容易出错
+- 不支持复杂参数结构
+- 无法利用模型原生工具调用能力
+
+**改进方案**：
+
+| 改进项 | 描述 | 优先级 |
+|--------|------|--------|
+| **原生 Function Calling** | 支持 OpenAI/Anthropic 原生 `tool_calls` 格式 | ⭐⭐⭐ |
+| **工具执行沙箱** | 代码执行工具（Python/JS），安全隔离环境 | ⭐⭐ |
+| **图片理解/生成** | 多模态支持，处理用户发送的图片 | ⭐⭐ |
+| **工具链编排** | 多工具串联执行，复杂任务分解 | ⭐ |
+
+```python
+# 原生 Function Calling 适配示例
+class ToolAdapter:
+    def to_openai_tools(self, tools: List[ToolDef]) -> List[dict]:
+        """转换为 OpenAI tools 格式"""
+        return [{
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": tool.input_schema
+            }
+        } for tool in tools]
+
+    def parse_tool_calls(self, response) -> List[ToolCall]:
+        """解析原生 tool_calls 响应"""
+        if hasattr(response, 'tool_calls') and response.tool_calls:
+            return [
+                ToolCall(
+                    name=tc.function.name,
+                    args=json.loads(tc.function.arguments),
+                    id=tc.id
+                )
+                for tc in response.tool_calls
+            ]
+        return []
+```
+
+### 8.2 上下文与记忆管理 🧠
+
+**当前状态**：每次请求获取最近 10 条消息，无持久记忆
+
+**问题**：
+- 长对话时丢失重要历史信息
+- 无法记住用户偏好
+- Token 消耗随对话增长
+
+**改进方案**：
+
+```python
+class RoomMemory:
+    """房间级记忆管理"""
+
+    def __init__(self, room_id: str):
+        self.room_id = room_id
+        self.short_term: List[Message] = []      # 最近 20 条消息
+        self.summaries: List[SummaryBlock] = []  # 历史摘要块
+        self.key_facts: List[KeyFact] = []       # 重要信息提取
+        self.user_profiles: Dict[str, UserProfile] = {}  # 用户画像
+
+    async def add_message(self, msg: Message):
+        self.short_term.append(msg)
+        # 超过阈值时触发摘要
+        if len(self.short_term) > 50:
+            await self.summarize_and_compact()
+
+    async def summarize_and_compact(self):
+        """压缩历史消息为摘要"""
+        old_messages = self.short_term[:-20]  # 保留最近 20 条
+        summary = await self.llm.summarize(old_messages)
+        self.summaries.append(SummaryBlock(
+            content=summary,
+            from_ts=old_messages[0].timestamp,
+            to_ts=old_messages[-1].timestamp
+        ))
+        self.short_term = self.short_term[-20:]
+
+    def build_context(self) -> List[dict]:
+        """构建完整上下文"""
+        context = []
+        # 添加历史摘要
+        if self.summaries:
+            context.append({
+                "role": "system",
+                "content": f"历史对话摘要:\n" + "\n".join(s.content for s in self.summaries[-3:])
+            })
+        # 添加重要信息
+        if self.key_facts:
+            context.append({
+                "role": "system",
+                "content": f"重要信息:\n" + "\n".join(f"- {f.content}" for f in self.key_facts)
+            })
+        # 添加近期消息
+        for msg in self.short_term:
+            context.append(msg.to_llm_format())
+        return context
+
+
+class SummaryBlock:
+    content: str           # 摘要内容
+    from_ts: int          # 起始时间戳
+    to_ts: int            # 结束时间戳
+    message_count: int    # 包含消息数
+
+
+class KeyFact:
+    content: str          # 事实内容
+    category: str         # 分类: decision/deadline/preference/contact
+    extracted_from: str   # 来源消息 ID
+    confidence: float     # 置信度
+```
+
+### 8.3 多 Agent 协作 🤝
+
+**当前状态**：多 Agent 并行运行但相互独立
+
+**问题**：
+- 无法根据问题类型选择最合适的 Agent
+- Agent 之间不能协作完成复杂任务
+- 多个 Agent 可能重复回答同一问题
+
+**改进方案**：
+
+```python
+class AgentRouter:
+    """专家路由器 - 根据问题类型选择最佳 Agent"""
+
+    def __init__(self, agents: List[Agent]):
+        self.agents = agents
+        self.agent_profiles = self._build_profiles()
+
+    def _build_profiles(self) -> Dict[str, AgentProfile]:
+        """构建 Agent 能力画像"""
+        return {
+            agent.id: AgentProfile(
+                name=agent.name,
+                expertise=agent.capabilities,
+                tools=agent.tools,
+                keywords=self._extract_keywords(agent.system_prompt)
+            )
+            for agent in self.agents
+        }
+
+    async def route(self, message: Message) -> Optional[Agent]:
+        """选择最合适的 Agent 处理消息"""
+        # 1. 如果明确 @ 了某个 Agent，直接返回
+        if message.mentions:
+            return self._get_mentioned_agent(message)
+
+        # 2. 使用轻量模型分类
+        category = await self._classify_message(message)
+
+        # 3. 匹配最佳 Agent
+        best_match = self._find_best_agent(category, message.content)
+        return best_match
+
+
+class AgentOrchestrator:
+    """Agent 协作编排器"""
+
+    async def handle_complex_task(self, task: str, lead_agent: Agent):
+        """处理需要多 Agent 协作的复杂任务"""
+        # 1. 任务分解
+        subtasks = await lead_agent.decompose_task(task)
+
+        # 2. 分配给专业 Agent
+        results = []
+        for subtask in subtasks:
+            specialist = await self.router.route(subtask)
+            result = await specialist.execute(subtask)
+            results.append(result)
+
+        # 3. 汇总结果
+        final_response = await lead_agent.synthesize(results)
+        return final_response
+```
+
+**协作流程示例**：
+
+```
+用户: @AI助手 帮我分析这份销售数据并生成报告
+
+AI助手 (Lead):
+  ├── 识别任务类型: 数据分析 + 报告生成
+  ├── 调用 @数据专家 分析销售数据
+  │     └── 返回: 销售趋势、关键指标、异常点
+  ├── 调用 @写作专家 生成报告
+  │     └── 返回: 结构化报告草稿
+  └── 汇总并返回最终报告给用户
+```
+
+### 8.4 流式响应与体验优化 ⚡
+
+**当前状态**：完整生成后一次性返回
+
+**问题**：
+- 长回答时用户等待时间长
+- 无法感知 Agent 正在工作
+- 无法中途取消
+
+**改进方案**：
+
+```python
+# 后端：流式生成
+async def stream_response(agent_id: str, messages: List[dict]):
+    """SSE 流式响应"""
+    async def generate():
+        # 发送开始信号
+        yield f"data: {json.dumps({'type': 'start', 'agent_id': agent_id})}\n\n"
+
+        # 流式生成内容
+        async for chunk in llm.stream(messages):
+            yield f"data: {json.dumps({'type': 'chunk', 'content': chunk})}\n\n"
+
+        # 发送结束信号
+        yield f"data: {json.dumps({'type': 'end'})}\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+# 前端：SSE 接收
+const eventSource = new EventSource(`/agents/${agentId}/stream`);
+eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    switch (data.type) {
+        case 'start':
+            setTypingAgent(data.agent_id);
+            break;
+        case 'chunk':
+            appendToMessage(data.content);
+            break;
+        case 'end':
+            setTypingAgent(null);
+            finalizeMessage();
+            break;
+    }
+};
+```
+
+**中断机制**：
+
+```python
+class CancellableGeneration:
+    def __init__(self):
+        self._cancel_requested = False
+
+    async def generate(self, prompt):
+        async for chunk in self.llm.stream(prompt):
+            if self._cancel_requested:
+                yield "[生成已中断]"
+                break
+            yield chunk
+
+    def cancel(self):
+        self._cancel_requested = True
+```
+
+### 8.5 RAG 系统增强 📚
+
+**当前状态**：基础的向量搜索
+
+**问题**：
+- 纯向量搜索可能遗漏关键词匹配
+- 无法处理多种文档格式
+- 结果相关性有时不准
+
+**改进方案**：
+
+```python
+class EnhancedRAG:
+    """增强型 RAG 系统"""
+
+    def __init__(self):
+        self.vector_store = ChromaDB()
+        self.bm25_index = BM25Index()
+        self.reranker = CrossEncoderReranker()
+
+    async def hybrid_search(self, query: str, top_k: int = 5) -> List[Chunk]:
+        """混合检索：向量 + 关键词 + 重排序"""
+
+        # 1. 向量检索
+        vector_results = await self.vector_store.search(query, top_k=top_k * 2)
+
+        # 2. 关键词检索 (BM25)
+        keyword_results = self.bm25_index.search(query, top_k=top_k * 2)
+
+        # 3. 融合结果 (Reciprocal Rank Fusion)
+        merged = self._rrf_fusion(vector_results, keyword_results)
+
+        # 4. 重排序
+        reranked = await self.reranker.rerank(query, merged[:top_k * 2])
+
+        return reranked[:top_k]
+
+    def _rrf_fusion(self, *result_lists, k=60) -> List[Chunk]:
+        """RRF 融合多路召回结果"""
+        scores = defaultdict(float)
+        for results in result_lists:
+            for rank, chunk in enumerate(results):
+                scores[chunk.id] += 1 / (k + rank + 1)
+        return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+
+    async def upload_document(self, file: UploadFile) -> DocumentInfo:
+        """支持多格式文档上传"""
+        content = await self._extract_content(file)
+        chunks = self._smart_chunk(content)
+
+        # 同时更新向量库和关键词索引
+        await self.vector_store.add(chunks)
+        self.bm25_index.add(chunks)
+
+        return DocumentInfo(
+            filename=file.filename,
+            chunks_count=len(chunks),
+            format=file.content_type
+        )
+
+    async def _extract_content(self, file: UploadFile) -> str:
+        """提取文档内容"""
+        ext = Path(file.filename).suffix.lower()
+        if ext == '.pdf':
+            return await self._extract_pdf(file)
+        elif ext in ['.docx', '.doc']:
+            return await self._extract_word(file)
+        elif ext in ['.xlsx', '.xls']:
+            return await self._extract_excel(file)
+        elif ext == '.html':
+            return await self._extract_html(file)
+        else:
+            return await file.read().decode('utf-8')
+```
+
+### 8.6 可观测性与调试 📊
+
+**当前状态**：基础日志输出
+
+**改进方案**：
+
+```python
+import structlog
+from dataclasses import dataclass
+from typing import Optional
+import time
+
+@dataclass
+class LLMCallMetrics:
+    agent_id: str
+    model: str
+    prompt_tokens: int
+    completion_tokens: int
+    latency_ms: float
+    tools_used: List[str]
+    success: bool
+    error: Optional[str] = None
+
+class ObservabilityMiddleware:
+    """可观测性中间件"""
+
+    def __init__(self):
+        self.logger = structlog.get_logger()
+        self.metrics_store = MetricsStore()
+
+    async def wrap_llm_call(self, agent_id: str, func, *args, **kwargs):
+        """包装 LLM 调用，记录指标"""
+        start_time = time.time()
+        error = None
+        result = None
+
+        try:
+            result = await func(*args, **kwargs)
+            return result
+        except Exception as e:
+            error = str(e)
+            raise
+        finally:
+            latency_ms = (time.time() - start_time) * 1000
+
+            metrics = LLMCallMetrics(
+                agent_id=agent_id,
+                model=kwargs.get('model', 'unknown'),
+                prompt_tokens=result.usage.prompt_tokens if result else 0,
+                completion_tokens=result.usage.completion_tokens if result else 0,
+                latency_ms=latency_ms,
+                tools_used=self._extract_tools(result),
+                success=error is None,
+                error=error
+            )
+
+            # 结构化日志
+            self.logger.info(
+                "llm_call",
+                **asdict(metrics)
+            )
+
+            # 存储指标用于分析
+            await self.metrics_store.record(metrics)
+
+
+class DebugPanel:
+    """调试面板 API"""
+
+    @app.get("/debug/agents/{agent_id}/calls")
+    async def get_agent_calls(agent_id: str, limit: int = 50):
+        """获取 Agent 最近的 LLM 调用记录"""
+        return await metrics_store.get_calls(agent_id, limit)
+
+    @app.get("/debug/agents/{agent_id}/stats")
+    async def get_agent_stats(agent_id: str):
+        """获取 Agent 统计信息"""
+        return {
+            "total_calls": await metrics_store.count_calls(agent_id),
+            "avg_latency_ms": await metrics_store.avg_latency(agent_id),
+            "total_tokens": await metrics_store.total_tokens(agent_id),
+            "success_rate": await metrics_store.success_rate(agent_id),
+            "top_tools": await metrics_store.top_tools(agent_id),
+        }
+```
+
+### 8.7 安全与治理 🔒
+
+**改进方案**：
+
+```python
+class SecurityMiddleware:
+    """安全中间件"""
+
+    def __init__(self):
+        self.rate_limiter = RateLimiter()
+        self.content_filter = ContentFilter()
+
+    async def check_request(self, user_id: str, content: str) -> SecurityResult:
+        """请求安全检查"""
+
+        # 1. 速率限制
+        if not await self.rate_limiter.allow(user_id):
+            return SecurityResult(allowed=False, reason="rate_limit_exceeded")
+
+        # 2. 内容过滤
+        if await self.content_filter.is_harmful(content):
+            return SecurityResult(allowed=False, reason="harmful_content")
+
+        # 3. Prompt 注入检测
+        if self._detect_injection(content):
+            return SecurityResult(allowed=False, reason="prompt_injection")
+
+        return SecurityResult(allowed=True)
+
+    def _detect_injection(self, content: str) -> bool:
+        """检测 Prompt 注入攻击"""
+        injection_patterns = [
+            r"ignore\s+(previous|all)\s+instructions",
+            r"you\s+are\s+now\s+",
+            r"forget\s+everything",
+            r"system\s*:\s*",
+        ]
+        return any(re.search(p, content, re.I) for p in injection_patterns)
+
+
+class RateLimiter:
+    """速率限制器"""
+
+    def __init__(self):
+        self.limits = {
+            "default": (10, 60),      # 10 次/分钟
+            "premium": (100, 60),     # 100 次/分钟
+            "agent": (1000, 60),      # Agent 1000 次/分钟
+        }
+
+    async def allow(self, user_id: str, tier: str = "default") -> bool:
+        limit, window = self.limits.get(tier, self.limits["default"])
+        key = f"rate:{user_id}:{int(time.time() // window)}"
+        count = await redis.incr(key)
+        if count == 1:
+            await redis.expire(key, window)
+        return count <= limit
+```
+
+### 8.8 实施优先级总览
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 3.1 (短期 - 1-2 周)                                       │
+├─────────────────────────────────────────────────────────────────┤
+│  ⭐⭐⭐ 流式响应 (SSE)           → 大幅提升用户体验               │
+│  ⭐⭐⭐ 打字指示器增强            → 显示 "正在搜索/思考..."        │
+│  ⭐⭐  Token 统计               → 成本监控基础                   │
+│  ⭐⭐  结构化日志               → 问题排查效率                   │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 3.2 (中期 - 3-4 周)                                       │
+├─────────────────────────────────────────────────────────────────┤
+│  ⭐⭐⭐ 原生 Function Calling     → 工具调用可靠性               │
+│  ⭐⭐⭐ 自动摘要 (RoomMemory)     → 长对话支持                   │
+│  ⭐⭐  RAG 混合检索              → 检索质量提升                  │
+│  ⭐⭐  专家路由                  → 多 Agent 协作基础             │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 3.3 (长期 - 1-2 月)                                       │
+├─────────────────────────────────────────────────────────────────┤
+│  ⭐⭐  Agent 间协作              → 复杂任务处理                  │
+│  ⭐⭐  长期记忆                  → 个性化体验                    │
+│  ⭐   代码执行沙箱              → 高级工具能力                  │
+│  ⭐   多模态支持                → 图片理解/生成                 │
+│  ⭐   安全治理                  → 生产环境必需                  │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
