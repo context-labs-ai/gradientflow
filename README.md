@@ -54,14 +54,14 @@ GradientFlow 由三个主要组件构成：
 
 ```mermaid
 graph TD
-    User[用户 / 浏览器] <--> Frontend[React 前端]
-    Frontend <--> Backend[Express 服务器]
-    Backend <--> DB[(本地 JSON 数据库)]
+    User["用户 / 浏览器"] <--> Frontend["React 前端"]
+    Frontend <--> Backend["Express 服务器"]
+    Backend <--> DB[("本地 JSON 数据库")]
     
     subgraph "Parallax 计算节点"
-        AgentMgr[多 Agent 管理器]
-        RAG[RAG 服务 / ChromaDB]
-        LLM[本地 LLM (Llama 3 / Mistral)]
+        AgentMgr["多 Agent 管理器"]
+        RAG["RAG 服务 / ChromaDB"]
+        LLM["本地 LLM (Llama 3 / Mistral)"]
         
         AgentMgr <--> LLM
         AgentMgr <--> RAG

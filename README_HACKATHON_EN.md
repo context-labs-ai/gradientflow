@@ -54,14 +54,14 @@ GradientFlow consists of three main components:
 
 ```mermaid
 graph TD
-    User[User / Browser] <--> Frontend[React Frontend]
-    Frontend <--> Backend[Express Server]
-    Backend <--> DB[(Local JSON DB)]
+    User["User / Browser"] <--> Frontend["React Frontend"]
+    Frontend <--> Backend["Express Server"]
+    Backend <--> DB[("Local JSON DB")]
     
     subgraph "Parallax Compute Node"
-        AgentMgr[Multi-Agent Manager]
-        RAG[RAG Service / ChromaDB]
-        LLM[Local LLM (Llama 3 / Mistral)]
+        AgentMgr["Multi-Agent Manager"]
+        RAG["RAG Service / ChromaDB"]
+        LLM["Local LLM (Llama 3 / Mistral)"]
         
         AgentMgr <--> LLM
         AgentMgr <--> RAG
