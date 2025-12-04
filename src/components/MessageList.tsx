@@ -425,20 +425,19 @@ export const MessageList: React.FC = () => {
 
         .scroll-bottom-btn {
           pointer-events: auto;
-          width: 42px;
-          height: 42px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.3)),
-            linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-          border: 1px solid rgba(255,255,255,0.6);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+          background-color: var(--bg-secondary);
+          border: 1px solid var(--border-light);
+          box-shadow: var(--shadow-lg);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #0b4f80;
+          color: var(--accent-primary);
           cursor: pointer;
           position: relative;
-          transition: all 0.22s cubic-bezier(0.25, 0.8, 0.25, 1);
+          transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
           overflow: hidden;
           z-index: 1;
         }
@@ -446,18 +445,18 @@ export const MessageList: React.FC = () => {
         .scroll-bottom-btn::after {
           content: '';
           position: absolute;
-          inset: -4px;
+          inset: 0;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(79, 172, 254, 0.25), transparent 65%);
+          background: var(--bg-tertiary);
           opacity: 0;
-          transition: opacity 0.25s ease;
+          transition: opacity 0.2s ease;
           z-index: 0;
         }
 
         .scroll-bottom-btn:hover {
-          color: white;
-          box-shadow: 0 10px 26px rgba(51, 144, 236, 0.38);
-          transform: translateY(-4px);
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-xl);
+          color: var(--accent-hover);
         }
 
         .scroll-bottom-btn:hover::after {

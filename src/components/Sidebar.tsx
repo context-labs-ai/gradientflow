@@ -249,7 +249,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
             <style>{`
         .sidebar {
           width: 280px;
-          background-color: var(--bg-secondary);
+          /* High contrast frosted glass */
+          background-color: var(--bg-glass);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           border-right: 1px solid var(--border-light);
           display: flex;
           flex-direction: column;
@@ -265,8 +268,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(6px);
+            background-color: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
             z-index: 40;
             display: none;
         }
@@ -276,8 +279,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 var(--spacing-md);
+          padding: 0 20px;
           border-bottom: 1px solid var(--border-light);
+          background-color: rgba(255, 255, 255, 0.5);
         }
 
         .close-sidebar-btn {
@@ -289,18 +293,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         .logo {
           display: flex;
           align-items: center;
-          gap: var(--spacing-sm);
+          gap: 12px;
         }
         
         .logo-icon {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
+          width: 36px;
+          height: 36px;
+          background: var(--accent-gradient);
           border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: var(--shadow-md);
+          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
           transition: transform 0.3s ease;
         }
         
@@ -311,63 +315,62 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         .logo-text {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 0;
         }
         
         .logo-title {
-          font-size: 1.1rem;
+          font-size: 1.05rem;
           font-weight: 700;
-          background: linear-gradient(135deg, #1e293b, #475569);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          line-height: 1.1;
-          letter-spacing: -0.01em;
+          color: var(--text-primary);
+          line-height: 1.2;
+          letter-spacing: -0.02em;
         }
 
         .logo-subtitle {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           color: var(--text-tertiary);
           line-height: 1;
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 4px;
           font-weight: 500;
         }
 
         .logo-parallax-img {
-          height: 18px;
+          height: 14px;
           width: auto;
           object-fit: contain;
-          filter: drop-shadow(0 2px 4px rgba(168, 85, 247, 0.4));
-          padding: 3px 8px;
-          background: linear-gradient(135deg, rgba(192, 132, 252, 0.15), rgba(124, 58, 237, 0.15));
-          border-radius: 6px;
-          border: 1px solid rgba(168, 85, 247, 0.2);
+          opacity: 0.6;
+          filter: grayscale(100%);
+          transition: all 0.2s;
+        }
+        
+        .logo:hover .logo-parallax-img {
+            filter: none;
+            opacity: 1;
         }
 
         .text-white { color: white; }
 
         .sidebar-search {
-            padding: var(--spacing-md);
-            padding-bottom: 0;
+            padding: 20px 20px 0;
         }
 
         .search-input-wrapper {
-            background-color: var(--bg-tertiary);
-            border-radius: var(--radius-full);
-            padding: 6px 12px;
+            background-color: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 8px 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: box-shadow 0.2s ease, background-color 0.2s ease;
-            border: 1px solid transparent;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
         }
 
         .search-input-wrapper.focused {
-            background-color: var(--bg-primary);
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.08);
-            border-color: rgba(14, 165, 233, 0.3);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px var(--accent-light);
         }
 
         .search-icon {
@@ -379,7 +382,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
             border: none;
             outline: none;
             width: 100%;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-primary);
         }
 
@@ -394,15 +397,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
             padding: 3px;
             display: flex;
             color: var(--text-tertiary);
+            cursor: pointer;
+        }
+        
+        .clear-search:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
         }
 
         .sidebar-content {
             flex: 1;
             overflow-y: auto;
-            padding: var(--spacing-md);
+            padding: 24px 20px;
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xl);
+            gap: 32px;
         }
 
         .sidebar-section {
@@ -411,56 +420,65 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         }
 
         .agent-section {
-            gap: var(--spacing-sm);
+            gap: 8px;
         }
 
         .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: var(--spacing-sm);
-            padding-left: var(--spacing-xs);
-            padding-right: var(--spacing-xs);
+            margin-bottom: 8px;
+            padding: 0 4px;
         }
 
         .section-title {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
           text-transform: uppercase;
           color: var(--text-tertiary);
           font-weight: 700;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
           margin: 0;
         }
 
         .add-btn {
             color: var(--text-tertiary);
             transition: color 0.2s;
+            padding: 4px;
+            border-radius: 4px;
         }
         
         .add-btn:hover {
             color: var(--accent-primary);
+            background: var(--accent-light);
         }
 
         .nav-item {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 8px 12px;
+          padding: 10px 12px;
           border-radius: var(--radius-md);
           color: var(--text-secondary);
           cursor: pointer;
           margin-bottom: 2px;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
           font-weight: 500;
+          transition: all 0.2s;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
 
         .nav-item.active {
-          background: rgba(14, 165, 233, 0.1);
+          background: var(--accent-light);
           color: var(--accent-primary);
+          font-weight: 600;
         }
 
         .nav-icon {
-            opacity: 0.7;
+            opacity: 0.8;
             transition: opacity 0.2s;
         }
         
@@ -471,7 +489,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         .member-list {
           display: flex;
           flex-direction: column;
-          gap: var(--spacing-sm);
+          gap: 16px;
         }
 
         .member-group {
@@ -484,43 +502,50 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2px;
-            color: var(--text-tertiary);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-weight: 600;
+            padding: 0 8px;
+            margin-bottom: 4px;
         }
 
         .member-group-title {
             color: var(--text-tertiary);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
         }
 
         .member-group-count {
-            font-size: 0.65rem;
-            background: rgba(15, 23, 42, 0.05);
-            padding: 2px 6px;
+            font-size: 0.6rem;
+            background: var(--bg-tertiary);
+            padding: 1px 6px;
             border-radius: 999px;
             color: var(--text-tertiary);
+            font-weight: 600;
         }
 
         .member-item {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 6px 8px;
+          padding: 8px;
           border-radius: var(--radius-md);
           color: var(--text-secondary);
           cursor: pointer;
+          transition: background 0.15s;
+        }
+        
+        .member-item:hover {
+            background: var(--bg-tertiary);
         }
 
         .member-empty {
             padding: 16px;
             border-radius: var(--radius-md);
-            background-color: rgba(0,0,0,0.03);
+            background-color: var(--bg-tertiary);
             color: var(--text-tertiary);
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            border: 1px dashed var(--border-medium);
         }
 
         .avatar-wrapper {
@@ -537,110 +562,128 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         .avatar-wrapper img {
           width: 100%;
           height: 100%;
-          border-radius: var(--radius-md);
+          border-radius: var(--radius-full);
           object-fit: cover;
+          box-shadow: var(--shadow-sm);
+          border: 1px solid var(--bg-tertiary);
         }
 
         .status-indicator {
           position: absolute;
-          bottom: -2px;
-          right: -2px;
+          bottom: 0px;
+          right: 0px;
           width: 10px;
           height: 10px;
           border-radius: 50%;
-          border: 2px solid var(--bg-secondary);
+          border: 2px solid #ffffff;
+          box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
         }
 
-        .status-indicator.online { background-color: #10b981; }
-        .status-indicator.busy { background-color: #ef4444; }
-        .status-indicator.offline { background-color: #9ca3af; }
+        .status-indicator.online { background-color: var(--success-primary); }
+        .status-indicator.busy { background-color: var(--error-primary); }
+        .status-indicator.offline { background-color: #cbd5e1; }
 
         .member-info {
             display: flex;
             flex-direction: column;
             justify-content: center;
+            min-width: 0;
         }
 
         .manage-btn {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
+            gap: 4px;
+            padding: 2px 8px;
             border-radius: 999px;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-medium);
             color: var(--text-secondary);
-            font-size: 0.75rem;
-            transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+            font-size: 0.65rem;
+            background: transparent;
+            transition: all 0.2s;
         }
 
         .manage-btn:hover {
             color: var(--accent-primary);
-            border-color: rgba(14, 165, 233, 0.3);
-            background-color: rgba(14, 165, 233, 0.08);
+            border-color: var(--accent-primary);
+            background-color: var(--bg-tertiary);
         }
 
         .agent-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .agent-card {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 10px;
-            border-radius: var(--radius-md);
-            border: 1px solid transparent;
-            background-color: var(--bg-primary);
+            gap: 12px;
+            padding: 10px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            background-color: #ffffff;
             text-align: left;
             cursor: pointer;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
         }
 
         .agent-card:hover {
-            border-color: var(--border-light);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-md);
             transform: translateY(-1px);
         }
 
         .agent-card .status-indicator {
-            border-color: var(--bg-primary);
+            border-color: #ffffff;
         }
 
         .agent-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
+            min-width: 0;
         }
 
         .agent-name {
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .agent-model {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-tertiary);
+            background: var(--bg-tertiary);
+            padding: 1px 6px;
+            border-radius: 4px;
+            width: fit-content;
         }
 
         .agent-empty {
-            padding: 12px;
+            padding: 16px;
             border-radius: var(--radius-md);
-            border: 1px dashed var(--border-light);
+            border: 1px dashed var(--border-medium);
             color: var(--text-tertiary);
             font-size: 0.8rem;
             text-align: center;
+            background: var(--bg-tertiary);
         }
 
         .member-name {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 500;
           color: var(--text-primary);
           display: flex;
           align-items: center;
           gap: 6px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         
         .member-name.is-llm {
@@ -663,8 +706,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         }
 
         .sidebar-footer {
-          padding: var(--spacing-md);
-          background-color: var(--bg-secondary);
+          padding: 16px;
+          background-color: rgba(255, 255, 255, 0.5);
           border-top: 1px solid var(--border-light);
         }
 
@@ -672,18 +715,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 8px;
-          background-color: var(--bg-primary);
+          padding: 10px;
+          background-color: #ffffff;
           border: 1px solid var(--border-light);
           border-radius: var(--radius-lg);
           box-shadow: var(--shadow-sm);
           cursor: pointer;
         }
-
+        
+        .user-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-medium);
+        }
+        
         .avatar-small {
           width: 36px;
           height: 36px;
-          border-radius: var(--radius-md);
+          border-radius: var(--radius-full);
         }
 
         .user-info {
@@ -714,12 +762,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
 
         .icon-btn-small {
             padding: 6px;
-            border-radius: 4px;
+            border-radius: 6px;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            background: transparent;
         }
 
         .icon-btn-small:hover {
@@ -732,7 +781,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         }
 
         .logout-btn:hover {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: #fef2f2;
             color: #b91c1c;
         }
 
@@ -744,8 +793,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                 left: 0;
                 bottom: 0;
                 transform: translateX(-100%);
-                box-shadow: var(--shadow-lg);
-                max-width: 80%;
+                box-shadow: var(--shadow-xl);
+                max-width: 85%;
+                background-color: #ffffff; 
             }
 
             .sidebar.open {
@@ -764,4 +814,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
         </>
     );
 };
-

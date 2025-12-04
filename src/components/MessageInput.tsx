@@ -628,42 +628,27 @@ export const MessageInput: React.FC = () => {
         .input-bar {
           display: flex;
           align-items: flex-end;
-          gap: 12px;
-          background: rgba(255, 255, 255, 0.98);
-          border-radius: var(--radius-2xl);
-          padding: 12px 14px;
-          box-shadow: var(--shadow-lg);
-          border: 1px solid var(--border-light);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          transition: var(--transition-base);
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.85);
+          border-radius: 28px; /* 大圆角，接近胶囊 */
+          padding: 6px 8px 6px 12px;
+          box-shadow: 
+            0 4px 6px -1px rgba(0, 0, 0, 0.05),
+            0 10px 30px -5px rgba(0, 0, 0, 0.08),
+            0 0 0 1px rgba(0, 0, 0, 0.03); /* 极细的内描边替代 border */
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
           position: relative;
-        }
-
-        .input-bar::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: var(--radius-2xl);
-          background: var(--accent-gradient);
-          opacity: 0;
-          pointer-events: none;
-          transition: var(--transition-base);
-          z-index: -1;
-          padding: 2px;
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
+          margin-bottom: 8px; /* 底部留白，制造悬浮感 */
         }
 
         .input-bar.focused {
-          box-shadow: var(--shadow-xl), var(--shadow-glow);
-          border-color: transparent;
-        }
-
-        .input-bar.focused::before {
-          opacity: 0.6;
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 
+            0 12px 40px -8px rgba(37, 99, 235, 0.15),
+            0 0 0 2px rgba(37, 99, 235, 0.1); /* 聚焦时的光晕 */
+          transform: translateY(-2px);
         }
 
         .input-field-container {
@@ -702,59 +687,66 @@ export const MessageInput: React.FC = () => {
         }
 
         .icon-btn {
-          color: var(--text-secondary);
-          padding: 8px;
+          color: var(--text-tertiary);
+          padding: 10px;
           border-radius: 50%;
-          transition: all 0.2s;
+          transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
           display: flex;
           align-items: center;
           justify-content: center;
+          background: transparent;
+          width: 40px;
+          height: 40px;
         }
 
         .icon-btn:hover {
-          color: var(--text-primary);
-          background-color: var(--bg-tertiary);
+          color: var(--accent-primary);
+          background-color: rgba(37, 99, 235, 0.08);
+          transform: scale(1.05);
         }
 
         .attach-btn {
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .attach-btn.has-file {
             color: var(--accent-primary);
-            background-color: rgba(51, 144, 236, 0.1);
+            background: rgba(37, 99, 235, 0.1);
         }
 
+        /* 隐藏文件预览的边框，让它更像卡片 */
         .file-preview-container {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 8px;
-          padding: 10px 12px;
-          margin-bottom: 8px;
-          background: rgba(139, 92, 246, 0.1);
-          border-radius: var(--radius-md);
-          border-left: 3px solid #8b5cf6;
+          gap: 12px;
+          padding: 12px 16px;
+          margin-bottom: 12px;
+          background: #ffffff;
+          border-radius: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+          border: 1px solid var(--border-light);
         }
 
         .file-preview-content {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex: 1;
             align-items: center;
             min-width: 0;
         }
 
         .file-icon-wrapper {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background-color: #8b5cf6;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
         }
 
         .file-info {
@@ -767,9 +759,9 @@ export const MessageInput: React.FC = () => {
         }
 
         .file-name {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-primary);
-            font-weight: 500;
+            font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -777,56 +769,59 @@ export const MessageInput: React.FC = () => {
 
         .file-meta {
             font-size: 0.75rem;
-            color: var(--text-secondary);
+            color: var(--text-tertiary);
         }
 
         .remove-file-btn {
-          padding: 6px;
+          padding: 8px;
           border-radius: 50%;
           color: var(--text-secondary);
-          transition: background-color 0.2s, color 0.2s;
+          transition: all 0.2s;
           flex-shrink: 0;
         }
 
         .remove-file-btn:hover {
           background-color: rgba(239, 68, 68, 0.1);
           color: #ef4444;
+          transform: rotate(90deg);
         }
 
         .emoji-btn {
-            margin-left: 8px;
+            margin-bottom: 2px;
             color: var(--text-tertiary);
         }
         
         .emoji-btn:hover {
-            color: var(--accent-primary);
-            background: none;
-            transform: scale(1.1);
+            color: #f59e0b; /* Amber 500 */
+            background: rgba(245, 158, 11, 0.1);
+            transform: scale(1.1) rotate(8deg);
         }
 
         .input-action-slot {
             display: flex;
             align-items: center;
-            min-width: 44px;
+            min-width: 48px;
+            justify-content: flex-end;
+            padding-bottom: 2px;
         }
 
         .send-btn {
-          background: var(--accent-gradient);
+          background: var(--accent-primary); /* 纯色比渐变更高级 */
           color: white;
-          width: 44px;
-          height: 44px;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: var(--transition-base);
-          margin-bottom: 2px;
-          box-shadow: var(--shadow-md), 0 4px 12px rgba(99, 102, 241, 0.3);
+          transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
         .send-btn:hover {
-          transform: scale(1.08);
-          box-shadow: var(--shadow-lg), 0 6px 20px rgba(99, 102, 241, 0.4);
+          background: var(--accent-hover);
+          transform: scale(1.1) rotate(-10deg);
+          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
         }
 
         .send-btn:active {
@@ -836,24 +831,26 @@ export const MessageInput: React.FC = () => {
         .send-btn.sending {
             opacity: 0.8;
             cursor: progress;
+            transform: scale(1);
         }
 
         .mic-btn {
             background-color: var(--bg-tertiary);
             color: var(--text-secondary);
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: var(--transition-base);
-            margin-bottom: 2px;
+            transition: all 0.2s;
+            border: none;
         }
 
         .mic-btn:hover {
-            background-color: var(--accent-light);
-            color: var(--accent-primary);
+            background-color: var(--border-light);
+            color: var(--text-primary);
+            transform: scale(1.05);
         }
 
         .btn-spinner {

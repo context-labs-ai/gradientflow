@@ -114,7 +114,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           flex-direction: column;
           background-color: var(--bg-primary);
           position: relative;
-          width: 100%; /* Ensure full width */
+          width: 100%;
         }
 
         .chat-header {
@@ -122,22 +122,30 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            padding: 0 var(--spacing-md);
-            height: 52px;
+            padding: 0 24px;
+            height: 60px;
             border-bottom: 1px solid var(--border-light);
-            background-color: var(--bg-primary);
+            /* Clean White Header with Blur */
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 10;
         }
 
         .chat-header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .chat-header-channel {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            padding: 4px 12px;
+            background: #ffffff;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
         }
 
         .channel-icon {
@@ -145,43 +153,43 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         }
 
         .channel-name {
-            font-weight: 700;
-            font-size: 1.05rem;
+            font-weight: 600;
+            font-size: 0.95rem;
             color: var(--text-primary);
         }
 
         .chat-header-meta {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             padding: 4px 10px;
             background: rgba(16, 185, 129, 0.1);
             border-radius: 999px;
             font-size: 0.75rem;
             color: #10b981;
+            font-weight: 500;
         }
 
         .chat-header-right {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .chat-header-powered {
             display: flex;
             align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
-            background: linear-gradient(135deg, rgba(192, 132, 252, 0.1), rgba(124, 58, 237, 0.1));
+            gap: 6px;
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
             border-radius: 999px;
             font-size: 0.7rem;
             color: var(--text-secondary);
-            border: 1px solid rgba(168, 85, 247, 0.15);
         }
 
         .parallax-text {
             font-weight: 700;
-            background: linear-gradient(135deg, #c084fc, #a855f7, #7c3aed);
+            background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -189,8 +197,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         .menu-btn {
             color: var(--text-primary);
-            padding: 6px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: var(--radius-md);
         }
 
         .menu-btn.mobile-only {
@@ -199,14 +207,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         .info-btn {
             color: var(--text-secondary);
-            padding: 6px;
-            border-radius: 8px;
-            transition: background-color 0.2s, color 0.2s;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
         }
 
         .info-btn:hover {
             background-color: var(--bg-tertiary);
-            color: var(--accent-primary);
+            color: var(--text-primary);
         }
 
         .info-btn.active {
