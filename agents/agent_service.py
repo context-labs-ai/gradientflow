@@ -98,6 +98,37 @@ class AgentService(BaseAgentService):
         return self._agent_headers
 
     # =========================================================================
+    # Helper Methods
+    # =========================================================================
+
+    def _has_placeholder_args(self, args: Dict) -> bool:
+        """
+        Check if any argument values look like placeholders that should not be executed.
+
+        Common patterns from LLMs when they don't have actual values:
+        - <REPLACE>, <PLACEHOLDER>, <TODO>
+        - PLACEHOLDER, UNKNOWN, TBD
+        - Paper name used as ID (contains spaces or common words)
+        """
+        placeholder_patterns = [
+            '<REPLACE>', '<PLACEHOLDER>', '<TODO>', '<INSERT>',
+            'REPLACE', 'PLACEHOLDER', 'UNKNOWN', 'TBD', 'TODO',
+            '_IDENTIFIER', '_ID_HERE', '_GOES_HERE',
+        ]
+
+        for key, value in args.items():
+            if isinstance(value, str):
+                value_upper = value.upper()
+                # Check for common placeholder patterns
+                for pattern in placeholder_patterns:
+                    if pattern in value_upper:
+                        return True
+                # Check if paper_id looks like a title (has spaces or common title words)
+                if key in ('paper_id', 'paperId') and ' ' in value:
+                    return True
+        return False
+
+    # =========================================================================
     # LLM Initialization (Abstract Method Implementation)
     # =========================================================================
 
@@ -155,8 +186,27 @@ class AgentService(BaseAgentService):
         instructions += "- **Language**: ALWAYS respond in the same language as the user's message.\n"
         instructions += "- **Format**: Do NOT include any prefix like your name or role.\n"
         instructions += "- **Style**: Be concise. No unnecessary filler words.\n"
-        instructions += "- **Tool Usage**: When you need to use a tool, ONLY output the tool call. Do NOT output a final answer in the same response. Wait for tool results before providing your answer.\n"
         instructions += "- **No Hallucination**: If a tool returns an error or no results, tell the user honestly. Do NOT make up or guess the answer.\n"
+
+        # Add detailed tool usage instructions
+        instructions += "\n## Tool Usage Rules (IMPORTANT)\n"
+        instructions += "1. **One tool at a time for dependencies**: If tool B needs output from tool A, call ONLY tool A first. Wait for results before calling tool B.\n"
+        instructions += "2. **Never use placeholders**: Do NOT use <REPLACE>, PLACEHOLDER, or made-up values. If you don't have a value, call the tool that provides it first.\n"
+        instructions += "3. **Parallel tools OK**: Independent tools (no shared inputs) can be called together.\n"
+        instructions += "4. **Wait for results**: After calling a tool, STOP. Do not provide a final answer until you receive tool results.\n"
+        instructions += "\n**Example - WRONG:**\n"
+        instructions += "```\n"
+        instructions += "mcp_search_papers({\"query\": \"attention\"})  // call 1\n"
+        instructions += "mcp_format_citation({\"paper_id\": \"<REPLACE>\"})  // call 2 - BAD! Don't know ID yet\n"
+        instructions += "```\n"
+        instructions += "\n**Example - CORRECT:**\n"
+        instructions += "```\n"
+        instructions += "// Round 1: Only call the first tool\n"
+        instructions += "mcp_search_papers({\"query\": \"attention\"})\n"
+        instructions += "// STOP - wait for results\n"
+        instructions += "// Round 2: After receiving paper ID from results, then call\n"
+        instructions += "mcp_format_citation({\"paper_id\": \"actual_id_from_search\"})\n"
+        instructions += "```\n"
 
         # Add agent awareness
         my_name = self.mention_detector.agent_name or "Assistant"
@@ -454,6 +504,11 @@ class AgentService(BaseAgentService):
                 mcp_args = call.get("args", {})
                 mcp_config = self.agent_config.get("mcp", {}) if self.agent_config else {}
                 if mcp_config.get("url"):
+                    # Check for placeholder arguments - skip if found
+                    if self._has_placeholder_args(mcp_args):
+                        print(f"[Agent] Skipping MCP call with placeholder args: {tool_name}({mcp_args})")
+                        continue
+
                     dedup_key = (tool_name, json.dumps(mcp_args, sort_keys=True))
                     if dedup_key in executed_mcp_calls:
                         print(f"[Agent] Skipping duplicate harmony MCP call: {tool_name}({mcp_args})")
@@ -562,6 +617,11 @@ class AgentService(BaseAgentService):
             for mcp_call in mcp_calls:
                 tool_name = mcp_call.get("tool", "unknown")
                 args = mcp_call.get("args", {})
+
+                # Check for placeholder arguments - skip if found
+                if self._has_placeholder_args(args):
+                    print(f"[Agent] Skipping MCP call with placeholder args: {tool_name}({args})")
+                    continue
 
                 if tool_name in executed_tools:
                     print(f"[Agent] Skipping duplicate MCP call: {tool_name}")

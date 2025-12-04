@@ -163,15 +163,18 @@ def search_papers(
     year_from: Optional[int] = None
 ) -> str:
     """
-    Search for academic papers using Semantic Scholar.
+    Search for academic papers using Semantic Scholar. ALWAYS call this first to get paper IDs before using other paper tools.
 
     Args:
-        query: Search query (e.g., 'transformer attention mechanism')
+        query: Search query - use paper title, keywords, or topic (e.g., 'Attention Is All You Need', 'transformer architecture')
         limit: Maximum number of results (default: 5, max: 10)
         year_from: Filter papers from this year onwards (e.g., 2020)
 
     Returns:
-        JSON string with paper titles, authors, abstracts, and citation counts
+        JSON with papers containing 'id' field (40-char hex string like '649def34f8be52c8b66281af98ae884c09aef38b').
+        Use this 'id' value for get_paper_details, format_citation, find_similar_papers, etc.
+
+    IMPORTANT: You must search first to get real paper IDs. Never guess or make up paper IDs!
     """
     rate_limit('semantic_scholar')
     limit = min(limit, 10)
@@ -213,15 +216,18 @@ def search_arxiv(
     limit: int = 5
 ) -> str:
     """
-    Search arXiv for preprints and papers. Good for recent ML/AI/CS/Physics research.
+    Search arXiv for preprints. Good for recent ML/AI/CS/Physics research. Call this to get arXiv paper IDs.
 
     Args:
-        query: Search query for arXiv
+        query: Search query - paper title or keywords (e.g., 'Attention Is All You Need', 'large language models')
         category: arXiv category filter (e.g., 'cs.CL', 'cs.LG', 'cs.AI', 'stat.ML')
         limit: Maximum number of results (default: 5, max: 10)
 
     Returns:
-        JSON string with arXiv papers including titles, authors, abstracts
+        JSON with papers containing 'id' field (arXiv ID like '1706.03762' or '2103.14030').
+        Use this 'id' value for get_paper_details, format_citation, etc.
+
+    IMPORTANT: Search first to get valid arXiv IDs. Never invent or guess arXiv IDs!
     """
     rate_limit('arxiv')
 
@@ -261,13 +267,19 @@ def search_arxiv(
 @mcp.tool()
 def get_paper_details(paper_id: str) -> str:
     """
-    Get detailed information about a specific paper.
+    Get detailed information about a specific paper. Requires a valid paper ID from search results.
 
     Args:
-        paper_id: Paper identifier - Semantic Scholar ID, arXiv ID (e.g., '2103.14030'), or DOI
+        paper_id: MUST be a real ID obtained from search_papers or search_arxiv results.
+                  Valid formats:
+                  - Semantic Scholar ID: 40-char hex (e.g., '649def34f8be52c8b66281af98ae884c09aef38b')
+                  - arXiv ID: numbers with dot (e.g., '1706.03762', '2103.14030')
+                  - DOI: starts with '10.' (e.g., '10.1038/nature12373')
 
     Returns:
-        JSON string with full paper details including abstract, citations, references
+        JSON with full paper details including abstract, citations, references
+
+    IMPORTANT: Do NOT make up paper IDs! First call search_papers or search_arxiv to get valid IDs.
     """
     rate_limit('semantic_scholar')
 
@@ -309,11 +321,13 @@ def find_similar_papers(paper_id: str, limit: int = 5) -> str:
     Find papers similar to a given paper. Useful for literature review.
 
     Args:
-        paper_id: Paper identifier to find similar papers for
+        paper_id: MUST be a real ID from search_papers/search_arxiv (e.g., '649def34f8be52c8b66281af98ae884c09aef38b' or '1706.03762')
         limit: Maximum number of similar papers (default: 5)
 
     Returns:
-        JSON string with list of similar papers
+        JSON with list of similar papers, each containing their own 'id' for further queries
+
+    IMPORTANT: First use search_papers to find the paper and get its ID, then call this function with that ID.
     """
     rate_limit('semantic_scholar')
 
@@ -348,11 +362,13 @@ def get_citations(paper_id: str, limit: int = 5) -> str:
     Get papers that cite a given paper. Useful for finding follow-up work.
 
     Args:
-        paper_id: Paper identifier to get citations for
+        paper_id: MUST be a real ID from search_papers/search_arxiv (e.g., '649def34f8be52c8b66281af98ae884c09aef38b' or '1706.03762')
         limit: Maximum number of citing papers (default: 5)
 
     Returns:
-        JSON string with list of papers that cite this paper
+        JSON with list of papers that cite this paper
+
+    IMPORTANT: First use search_papers to find the paper and get its ID, then call this function with that ID.
     """
     rate_limit('semantic_scholar')
 
@@ -388,11 +404,13 @@ def get_references(paper_id: str, limit: int = 5) -> str:
     Get papers referenced by a given paper. Useful for finding foundational work.
 
     Args:
-        paper_id: Paper identifier to get references for
+        paper_id: MUST be a real ID from search_papers/search_arxiv (e.g., '649def34f8be52c8b66281af98ae884c09aef38b' or '1706.03762')
         limit: Maximum number of references (default: 5)
 
     Returns:
-        JSON string with list of referenced papers
+        JSON with list of papers this paper references
+
+    IMPORTANT: First use search_papers to find the paper and get its ID, then call this function with that ID.
     """
     rate_limit('semantic_scholar')
 
@@ -522,14 +540,23 @@ def fetch_webpage(url: str, max_length: int = 5000) -> str:
 @mcp.tool()
 def format_citation(paper_id: str, style: str = "apa") -> str:
     """
-    Format a paper citation in various academic styles.
+    Format a paper citation in various academic styles. Requires a valid paper ID from search results.
+
+    WORKFLOW: You must search for the paper first to get its ID!
+    1. Call search_papers('Attention Is All You Need') or search_arxiv('transformer')
+    2. Get the 'id' field from the search results (e.g., '204e3073870fae3d05bcbc2f6a8e263d9b72e776')
+    3. Call format_citation('204e3073870fae3d05bcbc2f6a8e263d9b72e776', 'apa')
 
     Args:
-        paper_id: Paper identifier to generate citation for
+        paper_id: MUST be a real ID from search_papers or search_arxiv results.
+                  Examples: '204e3073870fae3d05bcbc2f6a8e263d9b72e776' (Semantic Scholar) or '1706.03762' (arXiv)
+                  DO NOT use paper titles, DOIs, or made-up identifiers!
         style: Citation style - 'apa', 'mla', 'chicago', or 'bibtex' (default: 'apa')
 
     Returns:
-        Formatted citation string
+        Formatted citation string in the requested style
+
+    IMPORTANT: Never guess paper IDs! Always search first to get valid IDs from search results.
     """
     # Get paper details first
     details_json = get_paper_details(paper_id)
@@ -604,75 +631,75 @@ def get_tool_definitions() -> list:
     return [
         {
             "name": "search_papers",
-            "description": "Search for academic papers using Semantic Scholar.",
+            "description": "STEP 1: Search for academic papers using Semantic Scholar. ALWAYS call this first to get paper IDs before using other tools like format_citation, get_paper_details, etc. Returns papers with 'id' field (40-char hex string) that you must use for subsequent tool calls.",
             "parameters": {
-                "query": {"type": "string", "description": "Search query (e.g., 'transformer attention mechanism')", "required": True},
+                "query": {"type": "string", "description": "Search query - use paper title or keywords (e.g., 'Attention Is All You Need', 'transformer architecture')", "required": True},
                 "limit": {"type": "integer", "description": "Maximum number of results (default: 5, max: 10)", "required": False},
                 "year_from": {"type": "integer", "description": "Filter papers from this year onwards", "required": False}
             }
         },
         {
             "name": "search_arxiv",
-            "description": "Search arXiv for preprints and papers. Good for recent ML/AI/CS/Physics research.",
+            "description": "STEP 1 (alternative): Search arXiv for preprints. Good for recent ML/AI/CS/Physics research. Returns papers with 'id' field (arXiv ID like '1706.03762') that you must use for subsequent tool calls.",
             "parameters": {
-                "query": {"type": "string", "description": "Search query for arXiv", "required": True},
+                "query": {"type": "string", "description": "Search query - paper title or keywords (e.g., 'Attention Is All You Need')", "required": True},
                 "category": {"type": "string", "description": "arXiv category filter (e.g., 'cs.CL', 'cs.LG', 'cs.AI')", "required": False},
                 "limit": {"type": "integer", "description": "Maximum number of results (default: 5, max: 10)", "required": False}
             }
         },
         {
             "name": "get_paper_details",
-            "description": "Get detailed information about a specific paper.",
+            "description": "STEP 2: Get detailed paper information. REQUIRES a valid paper_id from search_papers or search_arxiv results. Do NOT guess or make up IDs!",
             "parameters": {
-                "paper_id": {"type": "string", "description": "Paper identifier - Semantic Scholar ID, arXiv ID, or DOI", "required": True}
+                "paper_id": {"type": "string", "description": "MUST be real ID from search results: Semantic Scholar ID (40-char hex like '649def34f8be52c8b66281af98ae884c09aef38b') or arXiv ID (like '1706.03762'). NEVER make up IDs!", "required": True}
             }
         },
         {
             "name": "find_similar_papers",
-            "description": "Find papers similar to a given paper. Useful for literature review.",
+            "description": "STEP 2: Find similar papers. REQUIRES a valid paper_id from search_papers or search_arxiv results first.",
             "parameters": {
-                "paper_id": {"type": "string", "description": "Paper identifier to find similar papers for", "required": True},
+                "paper_id": {"type": "string", "description": "MUST be real ID from search results (e.g., '649def34f8be52c8b66281af98ae884c09aef38b' or '1706.03762'). Search first!", "required": True},
                 "limit": {"type": "integer", "description": "Maximum number of similar papers (default: 5)", "required": False}
             }
         },
         {
             "name": "get_citations",
-            "description": "Get papers that cite a given paper. Useful for finding follow-up work.",
+            "description": "STEP 2: Get papers citing this paper. REQUIRES a valid paper_id from search_papers or search_arxiv results first.",
             "parameters": {
-                "paper_id": {"type": "string", "description": "Paper identifier to get citations for", "required": True},
+                "paper_id": {"type": "string", "description": "MUST be real ID from search results (e.g., '649def34f8be52c8b66281af98ae884c09aef38b' or '1706.03762'). Search first!", "required": True},
                 "limit": {"type": "integer", "description": "Maximum number of citing papers (default: 5)", "required": False}
             }
         },
         {
             "name": "get_references",
-            "description": "Get papers referenced by a given paper. Useful for finding foundational work.",
+            "description": "STEP 2: Get papers referenced by this paper. REQUIRES a valid paper_id from search_papers or search_arxiv results first.",
             "parameters": {
-                "paper_id": {"type": "string", "description": "Paper identifier to get references for", "required": True},
+                "paper_id": {"type": "string", "description": "MUST be real ID from search results (e.g., '649def34f8be52c8b66281af98ae884c09aef38b' or '1706.03762'). Search first!", "required": True},
                 "limit": {"type": "integer", "description": "Maximum number of references (default: 5)", "required": False}
             }
         },
         {
             "name": "search_author",
-            "description": "Search for an author and get their top publications.",
+            "description": "Search for an author by name and get their top publications. Returns author info and papers.",
             "parameters": {
-                "name": {"type": "string", "description": "Author name to search for", "required": True},
+                "name": {"type": "string", "description": "Author name to search for (e.g., 'Geoffrey Hinton', 'Yann LeCun')", "required": True},
                 "limit": {"type": "integer", "description": "Maximum number of papers to return (default: 5)", "required": False}
             }
         },
         {
             "name": "fetch_webpage",
-            "description": "Fetch and extract main text content from a URL.",
+            "description": "Fetch and extract main text content from a URL. Use for reading web articles or documentation.",
             "parameters": {
-                "url": {"type": "string", "description": "URL to fetch content from", "required": True},
+                "url": {"type": "string", "description": "Full URL to fetch (e.g., 'https://example.com/article')", "required": True},
                 "max_length": {"type": "integer", "description": "Maximum content length to return (default: 5000)", "required": False}
             }
         },
         {
             "name": "format_citation",
-            "description": "Format a paper citation in various academic styles (apa, mla, chicago, bibtex).",
+            "description": "STEP 2: Generate formatted citation. WORKFLOW: 1) First call search_papers('paper title') to get paper ID, 2) Then call format_citation(paper_id, style). NEVER guess paper IDs!",
             "parameters": {
-                "paper_id": {"type": "string", "description": "Paper identifier to generate citation for", "required": True},
-                "style": {"type": "string", "description": "Citation style: 'apa', 'mla', 'chicago', or 'bibtex'", "required": False}
+                "paper_id": {"type": "string", "description": "MUST be real ID from search_papers/search_arxiv (e.g., '204e3073870fae3d05bcbc2f6a8e263d9b72e776' or '1706.03762'). Search first to get this ID!", "required": True},
+                "style": {"type": "string", "description": "Citation style: 'apa', 'mla', 'chicago', or 'bibtex' (default: 'apa')", "required": False}
             }
         }
     ]
