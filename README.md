@@ -27,14 +27,20 @@
 
 ### 🤖 智能本地 Agent
 -   **多 Agent 系统**：支持多个 Agent 同时运行（例如 `@Coder`, `@Writer`, `@Researcher`），全部由本地 LLM 驱动。
+-   **Agent 选择器**：下拉菜单选择在线 Agent，支持键盘导航。
 -   **RAG（检索增强生成）**：上传文档至您的本地知识库。Agent 可以利用 ChromaDB 检索您的私有数据并回答问题。
 -   **网络搜索**：集成隐私保护搜索 (DuckDuckGo)，获取实时信息。
+-   **MCP 集成**：通过 FastMCP 支持 Model Context Protocol，扩展工具能力。
+-   **顺序工具调用**：支持多轮工具的顺序执行。
+-   **最大轮次控制**：可配置 Agent 响应的最大轮次。
 
 ### 💬 现代聊天体验
 -   **富文本支持**：完整的 Markdown 支持，代码高亮，以及 LaTeX 数学公式。
 -   **交互式体验**：消息表情回应、引用回复以及 @提及功能。
 -   **智能摘要**：一键生成长对话的 AI 摘要。
 -   **实时同步**：输入状态指示器和实时消息更新。
+-   **LLM 设置**：可配置 LLM 端点、模型和 API Key。
+-   **中英文界面**：完整的中文和英文 UI 支持。
 
 ### 🛡️ 安全 & 自托管
 -   **完全掌控**：您拥有代码、数据和模型的所有权。
@@ -57,16 +63,18 @@ graph TD
     User["用户 / 浏览器"] <--> Frontend["React 前端"]
     Frontend <--> Backend["Express 服务器"]
     Backend <--> DB[("本地 JSON 数据库")]
-    
+
     subgraph "Parallax 计算节点"
         AgentMgr["多 Agent 管理器"]
         RAG["RAG 服务 / ChromaDB"]
+        MCP["MCP 研究服务"]
         LLM["本地 LLM (Llama 3 / Mistral)"]
-        
+
         AgentMgr <--> LLM
         AgentMgr <--> RAG
+        AgentMgr <--> MCP
     end
-    
+
     Backend <--> AgentMgr
 ```
 
@@ -121,8 +129,18 @@ graph TD
 ## 🏆 黑客松核查清单
 
 -   [x] **赛道**：应用构建 (Track 2: Building Applications)
--   [x] **技术栈**：React, Express, Python, Parallax (Local AI)
+-   [x] **技术栈**：React, Express, Python, FastMCP, Parallax (Local AI)
 -   [x] **目标**：隐私保护的协作工具。
+
+## 🆕 最新更新
+
+-   ✅ MCP (Model Context Protocol) 集成，基于 FastMCP
+-   ✅ Agent 选择器 UI，支持键盘导航
+-   ✅ LLM 配置设置模态框
+-   ✅ 中文本地化
+-   ✅ 顺序工具调用支持
+-   ✅ Agent 最大轮次配置
+-   ✅ Agent 抽象基类，便于扩展
 
 ---
 

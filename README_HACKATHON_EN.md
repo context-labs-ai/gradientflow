@@ -27,14 +27,20 @@ We use Parallax to host our **Python Agent Service**, allowing multiple speciali
 
 ### 🤖 Intelligent Local Agents
 -   **Multi-Agent System**: Run multiple agents simultaneously (e.g., `@Coder`, `@Writer`, `@Researcher`) powered by local LLMs.
+-   **Agent Selector**: Dropdown menu for selecting online agents with keyboard navigation support.
 -   **RAG (Retrieval-Augmented Generation)**: Upload documents to your local Knowledge Base. Agents can retrieve and answer questions based on your private data using ChromaDB.
 -   **Web Search**: Integrated privacy-focused search (DuckDuckGo) for real-time information.
+-   **MCP Integration**: Model Context Protocol support via FastMCP for extended tool capabilities.
+-   **Sequential Tool Calling**: Support for multi-round sequential tool execution.
+-   **Max Round Control**: Configurable maximum rounds for agent responses.
 
 ### 💬 Modern Chat Experience
 -   **Rich Text**: Full Markdown support, code highlighting, and LaTeX math.
 -   **Interactive**: Message reactions, replies, and @mentions.
 -   **Smart Summaries**: One-click AI summary of long conversation threads.
 -   **Real-time**: Typing indicators and live updates.
+-   **LLM Settings**: Configurable LLM endpoint, model, and API key.
+-   **Internationalization**: Full Chinese and English UI support.
 
 ### 🛡️ Secure & Self-Hosted
 -   **Full Control**: You own the code, the data, and the model.
@@ -57,16 +63,18 @@ graph TD
     User["User / Browser"] <--> Frontend["React Frontend"]
     Frontend <--> Backend["Express Server"]
     Backend <--> DB[("Local JSON DB")]
-    
+
     subgraph "Parallax Compute Node"
         AgentMgr["Multi-Agent Manager"]
         RAG["RAG Service / ChromaDB"]
+        MCP["MCP Research Server"]
         LLM["Local LLM (Llama 3 / Mistral)"]
-        
+
         AgentMgr <--> LLM
         AgentMgr <--> RAG
+        AgentMgr <--> MCP
     end
-    
+
     Backend <--> AgentMgr
 ```
 
@@ -121,8 +129,18 @@ graph TD
 ## 🏆 Hackathon Checklist
 
 -   [x] **Track**: Building Applications (Track 2)
--   [x] **Tech Stack**: React, Express, Python, Parallax (Local AI)
+-   [x] **Tech Stack**: React, Express, Python, FastMCP, Parallax (Local AI)
 -   [x] **Goal**: Privacy-focused collaboration tool.
+
+## 🆕 Recent Updates
+
+-   ✅ MCP (Model Context Protocol) integration via FastMCP
+-   ✅ Agent selector UI with keyboard navigation
+-   ✅ LLM configuration settings modal
+-   ✅ Chinese localization
+-   ✅ Sequential tool calling support
+-   ✅ Max rounds configuration for agents
+-   ✅ Base agent class for extensibility
 
 ---
 

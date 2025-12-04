@@ -19,10 +19,14 @@
 
 ### 智能 Agent 功能
 - **多 Agent 支持**: Python Agent 服务（`agents/`）支持多个 Agent 同时运行
+- **Agent 选择器**: 下拉菜单选择在线 Agent，支持键盘导航
 - **@ 提及检测**: 自动响应用户的 @ 提及
 - **心跳监控**: Agent 在线状态追踪
 - **工具调用**: 支持上下文获取、网络搜索、知识库查询
+- **顺序工具调用**: 支持多轮工具调用的顺序执行
+- **最大轮次控制**: 可配置 Agent 响应的最大轮次
 - **级联消息删除**: 删除用户消息时自动删除 Agent 回复
+- **MCP 集成**: 基于 FastMCP 的 Model Context Protocol 支持
 
 ### 高级功能
 - **聊天信息侧边栏**: 查看共享内容（文档、链接、媒体）、参与者统计、任务提取
@@ -32,6 +36,8 @@
 - **虚拟化渲染**: 使用 react-virtuoso 高效处理大量消息历史
 - **错误边界**: 渲染错误保护
 - **网络状态监控**: 离线/在线状态检测
+- **LLM 设置**: 可配置 LLM 端点、模型和 API Key
+- **中文本地化**: 完整的中文界面支持
 
 ---
 
@@ -115,10 +121,13 @@ groupchat/
 │   ├── data.json           # 数据存储（用户、消息、Agent配置）
 │   └── chroma_rag_db/      # ChromaDB 向量数据库（自动创建）
 └── agents/                 # Python Agent 服务
+    ├── base_agent.py       # Agent 抽象基类
     ├── agent_service.py    # 单 Agent 服务
     ├── multi_agent_manager.py # 多 Agent 管理器
+    ├── mcp_research_server.py # MCP 研究助手服务（FastMCP）
     ├── tools.py            # 工具库（解析工具调用）
     ├── query.py            # LLM 客户端（OpenAI/Azure/Anthropic）
+    ├── core.py             # 核心配置和工具类
     ├── rag_service.py      # RAG 向量检索服务（ChromaDB + Flask）
     ├── requirements.txt    # Agent 服务依赖
     └── requirements-rag.txt # RAG 服务依赖
@@ -177,7 +186,8 @@ groupchat/
 - cookie-parser + cors（Cookie 和跨域处理）
 
 ### Agent 服务
-- Python + requests + openai（LLM 客户端）
+- Python + OpenAI SDK（LLM 客户端）
+- FastMCP（Model Context Protocol）
 - ChromaDB + Flask（RAG 向量检索）
 
 ---
@@ -212,5 +222,13 @@ groupchat/
 - 用 WebSocket/SSE 替换轮询以降低延迟
 - 添加多频道/私聊模型（按 `channelId` 过滤）
 - 实现 LLM 流式响应（边生成边显示）
-- 添加多个不同性格/能力的 Agent
 - 生产加固：HTTPS、安全 Cookie、限流、输入校验、日志告警
+
+### 已完成功能
+- ✅ 多 Agent 并发支持
+- ✅ MCP (Model Context Protocol) 集成
+- ✅ Agent 选择器 UI
+- ✅ LLM 配置界面
+- ✅ 中文本地化
+- ✅ 顺序工具调用
+- ✅ 最大轮次配置

@@ -37,6 +37,7 @@ openai-groupchat/
 │   │   └── useReducedMotion.ts # 减少动画偏好
 │   ├── types/
 │   │   └── chat.ts             # 共享 TS 类型定义
+│   ├── i18n/                   # 国际化（中/英）
 │   └── constants/
 │       ├── animations.ts       # Framer Motion 动画配置
 │       └── ui.ts               # UI 常量
@@ -47,11 +48,14 @@ openai-groupchat/
 │   └── chroma_rag_db/          # ChromaDB 向量数据库目录
 │
 ├── agents/
+│   ├── base_agent.py           # Agent 抽象基类
 │   ├── agent_service.py        # 核心 Agent 服务（轮询 + 响应）
 │   ├── multi_agent_manager.py  # 多 Agent 并发管理器
+│   ├── mcp_research_server.py  # MCP 研究助手服务（FastMCP）
 │   ├── tools.py                # 工具库（上下文、搜索、RAG）
 │   ├── query.py                # LLM 客户端（动态配置）
 │   ├── rag_service.py          # RAG 向量检索服务（Flask + ChromaDB）
+│   ├── core.py                 # 核心配置和工具类
 │   ├── requirements.txt        # Python 基础依赖
 │   └── requirements-rag.txt    # RAG 服务依赖
 │
@@ -228,8 +232,11 @@ interface ChatState {
 | ├─ `ReactionPanel.tsx` | 表情反应面板（快速选择） |
 | ├─ `ActionButtons.tsx` | 悬浮操作（回复、反应、删除） |
 | ├─ `DeleteConfirmDialog.tsx` | 删除确认对话框 |
-| └─ `ReplyContext.tsx` | 回复上下文 |
+| ├─ `ReplyContext.tsx` | 回复上下文 |
+| └─ `AgentSelector.tsx` | Agent 选择下拉菜单 |
 | `MessageInput.tsx` | 多行编辑器、回复标签、附件按钮、输入分发 |
+| `SettingsModal.tsx` | LLM 配置设置（端点、模型、API Key） |
+| `SimulatedChat.tsx` | 模拟聊天演示组件 |
 | `MessageStatus.tsx` | 消息发送状态指示器（发送中、已发送、已送达、已读、失败） |
 | `DateSeparator.tsx` | 日期分隔符（Today、Yesterday、日期格式） |
 | `AgentConfigPanel.tsx` | Agent 配置 UI |
@@ -324,6 +331,10 @@ interface ChatState {
 - `POST /typing` - 设置输入状态
 - `GET /typing` - 查询输入状态
 
+#### LLM 配置
+- `GET /llm/config` - 获取 LLM 配置（端点、模型、是否有 API Key）
+- `POST /llm/config` - 保存 LLM 配置
+
 ---
 
 ## 6. Agent 服务 (`agents/`)
@@ -380,10 +391,55 @@ python multi_agent_manager.py --email root@example.com --password 1234567890
 
 #### 特性
 - 单次登录获取 JWT
-- 自动获取所有 Agent 配置
+- 自动获取所有 Agent 配置并同步
 - 并发线程运行每个 Agent
 - 自动跳过非活跃 Agent
 - 失败自动重启
+- **顺序工具调用**：支持多轮工具调用的顺序执行
+- **最大轮次控制**：可配置 Agent 响应的最大轮次
+
+### Base Agent 类 (`base_agent.py`)
+
+Agent 服务的抽象基类，提供通用功能：
+
+- API 客户端管理
+- 提及检测（@ 检测）
+- 心跳管理
+- 主循环结构
+- 消息处理框架
+- 消息取消支持
+
+子类需实现：
+- `generate_reply()`: LLM 响应生成
+- `build_system_prompt()`: 系统提示词构建
+- `_init_llm()`: LLM 客户端初始化
+
+### MCP 研究服务 (`mcp_research_server.py`)
+
+基于 FastMCP 框架的 Model Context Protocol 服务器：
+
+```bash
+# 安装依赖
+pip install fastmcp requests beautifulsoup4 feedparser
+
+# stdio 模式（用于 Claude Desktop）
+python mcp_research_server.py
+
+# SSE 模式（HTTP 访问）
+python mcp_research_server.py --transport sse --port 3001
+
+# 带 API Key 认证
+python mcp_research_server.py --transport sse --port 3001 --auth
+
+# 生成 API Keys
+python mcp_research_server.py --generate-keys 3
+```
+
+#### 功能
+- 学术搜索（arXiv、PubMed 等）
+- 网络内容获取
+- API Key 管理和认证
+- 支持 stdio 和 SSE 两种传输模式
 
 ### 工具库 (`tools.py`)
 
@@ -507,6 +563,17 @@ python rag_service.py
 ### Agent 工具执行
 - 多轮工具调用：获取上下文 → 再次调用 LLM → 最终回复
 - 支持标准格式和原生模型格式
+- **顺序工具调用**：当工具有依赖关系时按顺序执行
+- **最大轮次限制**：防止无限循环的工具调用
+
+### 国际化
+- 支持中英文界面切换
+- 组件级别的本地化支持
+
+### Agent 选择
+- 下拉菜单选择在线 Agent
+- 键盘导航支持（方向键、Enter、Escape）
+- 按状态排序（在线优先）
 
 ---
 
@@ -515,14 +582,23 @@ python rag_service.py
 ### 近期
 - 用 WebSocket/SSE 替换轮询降低延迟
 - 实现 LLM 流式响应（边生成边显示）
-- 添加消息编辑历史
+- ~~添加消息编辑历史~~（已完成）
 
 ### 中期
 - 添加多频道/私聊模型（按 `channelId` 过滤）
-- 添加多个不同性格/能力的 Agent
+- ~~添加多个不同性格/能力的 Agent~~（已完成）
 - 文件附件上传
 
 ### 长期
 - 生产加固：HTTPS、安全 SameSite Cookie、限流、输入校验
 - 审计日志和监控
 - 迁移至真实数据库（PostgreSQL/MongoDB）
+
+### 已完成功能
+- ✅ MCP (Model Context Protocol) 集成
+- ✅ Agent 选择下拉菜单
+- ✅ LLM 配置设置界面
+- ✅ 中文本地化
+- ✅ 顺序工具调用支持
+- ✅ 最大轮次配置
+- ✅ Agent 自动同步
