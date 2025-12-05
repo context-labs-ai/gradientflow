@@ -1,6 +1,8 @@
-import React from 'react';
-import { FileText, FileCode, FileJson, File, Database, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, FileCode, FileJson, File, Database, Trash2, Loader2 } from 'lucide-react';
 import { Message } from '../../types/chat';
+import { api } from '../../api/client';
+import toast from 'react-hot-toast';
 import './styles.css';
 
 interface Attachment {
@@ -15,6 +17,7 @@ interface Attachment {
 interface AttachmentCardProps {
     message: Message;
     isOwnMessage: boolean;
+    onRagDeleted?: () => void;
 }
 
 const FILE_ICONS: Record<string, React.ReactNode> = {
@@ -54,13 +57,33 @@ function getFileExtension(filename: string): string {
     return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'FILE';
 }
 
-export const AttachmentCard: React.FC<AttachmentCardProps> = ({ message, isOwnMessage }) => {
+export const AttachmentCard: React.FC<AttachmentCardProps> = ({ message, isOwnMessage, onRagDeleted }) => {
     const attachment = message.metadata?.attachment as Attachment | undefined;
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeleted, setIsDeleted] = useState(false);
 
     if (!attachment?.filename) return null;
 
     const ext = getFileExtension(attachment.filename);
     const sizeText = formatFileSize(attachment.size);
+
+    const handleDeleteFromRag = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!attachment.documentId || isDeleting) return;
+
+        setIsDeleting(true);
+        try {
+            await api.knowledgeBase.delete(attachment.documentId);
+            setIsDeleted(true);
+            toast.success('已从知识库中删除');
+            onRagDeleted?.();
+        } catch (err) {
+            console.error('Failed to delete from knowledge base:', err);
+            toast.error('删除失败');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <div className={`attachment-card ${isOwnMessage ? 'own' : 'other'}`}>
@@ -74,14 +97,29 @@ export const AttachmentCard: React.FC<AttachmentCardProps> = ({ message, isOwnMe
                 </span>
                 <div className="attachment-meta">
                     {sizeText && <span className="attachment-size">{sizeText}</span>}
-                    {attachment.uploadedToRag && (
+                    {attachment.uploadedToRag && !isDeleted && (
                         <span className="attachment-rag-badge" title={`已添加到知识库 (${attachment.chunksCreated || 0} 个文本块)`}>
                             <Database size={10} />
                             <span>知识库</span>
                         </span>
                     )}
+                    {isDeleted && (
+                        <span className="attachment-rag-deleted" title="已从知识库删除">
+                            <span>已移除</span>
+                        </span>
+                    )}
                 </div>
             </div>
+            {attachment.uploadedToRag && attachment.documentId && !isDeleted && (
+                <button
+                    className="attachment-delete-btn"
+                    onClick={handleDeleteFromRag}
+                    disabled={isDeleting}
+                    title="从知识库中删除"
+                >
+                    {isDeleting ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+                </button>
+            )}
         </div>
     );
 };

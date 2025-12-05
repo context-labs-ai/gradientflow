@@ -90,6 +90,13 @@ export const api = {
                 body: JSON.stringify(payload),
             }),
     },
+    knowledgeBase: {
+        delete: (documentId: string) =>
+            request<{ success: boolean; deletedDocument: string; deletedFromRag: boolean }>(
+                `/knowledge-base/documents/${documentId}`,
+                { method: 'DELETE' }
+            ),
+    },
     agents: {
         list: () => request<{ agents: Agent[]; users: User[] }>('/agents'),
         create: (payload: AgentConfigPayload) =>

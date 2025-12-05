@@ -517,6 +517,68 @@ textarea {
   opacity: 0.4;
 }
 
+/* Document item with RAG badge */
+.document-item {
+  position: relative;
+}
+
+.document-item .rag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+.document-item .rag-deleted-badge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+.doc-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.document-item:hover .doc-delete-btn {
+  opacity: 1;
+}
+
+.doc-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.doc-delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.doc-delete-btn .spin {
+  animation: spin 1s linear infinite;
+}
+
 /* Media Grid */
 .media-grid {
   display: grid;

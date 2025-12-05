@@ -1685,32 +1685,49 @@ app.get('/knowledge-base/documents', authMiddleware, (req, res) => {
 });
 
 // DELETE /knowledge-base/documents/:documentId
-// Delete a document from the SHARED knowledge base
+// Delete a document from the SHARED knowledge base (both RAG service and JSON fallback)
 app.delete('/knowledge-base/documents/:documentId', authMiddleware, async (req, res) => {
     const { documentId } = req.params;
+    let deletedFromRag = false;
+    let deletedFromJson = false;
+    let filename = null;
 
+    // Try to delete from Python RAG service first
+    try {
+        const ragResult = await callRagService('/rag/delete', { doc_hash: documentId });
+        if (ragResult && ragResult.success) {
+            deletedFromRag = true;
+            console.log(`[LocalRAG] Deleted from RAG service: ${documentId}`);
+        }
+    } catch (err) {
+        console.log(`[LocalRAG] RAG service delete failed: ${err.message}`);
+    }
+
+    // Also delete from JSON fallback storage
     const kb = db.data.knowledgeBase;
-    if (!kb) {
-        return res.status(404).json({ error: 'Knowledge base not found' });
+    if (kb) {
+        const docIndex = kb.documents.findIndex(d => d.id === documentId);
+        if (docIndex !== -1) {
+            const removedDoc = kb.documents.splice(docIndex, 1)[0];
+            kb.chunks = kb.chunks.filter(c => c.documentId !== documentId);
+            filename = removedDoc.filename;
+            deletedFromJson = true;
+            await db.write();
+            console.log(`[LocalRAG] Deleted from JSON storage: ${filename}`);
+        }
     }
 
-    const docIndex = kb.documents.findIndex(d => d.id === documentId);
-    if (docIndex === -1) {
-        return res.status(404).json({ error: 'Document not found' });
+    if (!deletedFromRag && !deletedFromJson) {
+        return res.status(404).json({ error: 'Document not found in any storage' });
     }
 
-    // Remove document and its chunks
-    const removedDoc = kb.documents.splice(docIndex, 1)[0];
-    kb.chunks = kb.chunks.filter(c => c.documentId !== documentId);
-
-    await db.write();
-
-    console.log(`[LocalRAG] Deleted document ${removedDoc.filename}`);
     res.json({
         success: true,
-        deletedDocument: removedDoc.filename,
-        remainingDocuments: kb.documents.length,
-        remainingChunks: kb.chunks.length,
+        deletedDocument: filename || documentId,
+        deletedFromRag,
+        deletedFromJson,
+        remainingDocuments: kb?.documents?.length || 0,
+        remainingChunks: kb?.chunks?.length || 0,
     });
 });
 

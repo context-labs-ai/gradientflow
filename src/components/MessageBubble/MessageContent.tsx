@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import { User } from '../../types/chat';
 import './styles.css';
 
@@ -59,7 +60,7 @@ export const MessageContent: React.FC<MessageContentProps> = ({ content, users }
     return (
         <div className="bubble-text markdown-content">
             <ReactMarkdown
-                remarkPlugins={[remarkBreaks]}
+                remarkPlugins={[remarkGfm, remarkBreaks]}
                 urlTransform={urlTransform}
                 components={{
                     a: ({ node, href, children, ...props }) => {

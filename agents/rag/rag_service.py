@@ -284,6 +284,35 @@ def delete_document(doc_hash: str) -> Dict:
         return {"success": False, "error": str(e)}
 
 
+
+def get_documents() -> List[Dict]:
+    """Get list of all documents in the knowledge base."""
+    try:
+        _, collection = get_chroma_client()
+        # Fetch all metadata to find unique files
+        result = collection.get(include=['metadatas'])
+
+        files = {}
+        if result['metadatas']:
+            for meta in result['metadatas']:
+                if not meta: continue
+                doc_hash = meta.get('doc_hash')
+                if doc_hash and doc_hash not in files:
+                    files[doc_hash] = {
+                        'filename': meta.get('filename'),
+                        'doc_type': meta.get('doc_type'),
+                        'doc_hash': doc_hash,
+                        'chunks_count': 0
+                    }
+                if doc_hash:
+                    files[doc_hash]['chunks_count'] += 1
+
+        return list(files.values())
+    except Exception as e:
+        print(f"[RAG] Error listing documents: {e}")
+        return []
+
+
 def clear_all() -> Dict:
     """Clear all documents from the knowledge base."""
     global _collection
@@ -306,11 +335,29 @@ def clear_all() -> Dict:
 
 def create_flask_app():
     """Create a Flask app for the RAG API."""
-    from flask import Flask, request, jsonify
+    from flask import Flask, request, jsonify, render_template, session, redirect, url_for
     from flask_cors import CORS
 
     app = Flask(__name__)
+    app.secret_key = os.environ.get("FLASK_SECRET_KEY", "rag-dashboard-secret-key-123")
     CORS(app)
+
+    # Auth checks
+    USER_EMAIL = "root@example.com"
+    USER_PASS = "1234567890"
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        error = None
+        if request.method == 'POST':
+            email = request.form.get('email')
+            password = request.form.get('password')
+            if email == USER_EMAIL and password == USER_PASS:
+                session['logged_in'] = True
+                return redirect(url_for('dashboard'))
+            else:
+                error = 'Invalid credentials'
+        return render_template('login.html', error=error)
 
     @app.route('/rag/upload', methods=['POST'])
     def api_upload():
@@ -347,6 +394,16 @@ def create_flask_app():
         doc_hash = data.get('doc_hash', '')
         return jsonify(delete_document(doc_hash))
 
+    @app.route('/rag/files', methods=['GET'])
+    def api_files():
+        return jsonify({"documents": get_documents()})
+
+    @app.route('/')
+    def dashboard():
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return render_template('dashboard.html')
+
     @app.route('/health', methods=['GET'])
     def health():
         return jsonify({"status": "ok", "service": "rag"})
@@ -380,6 +437,10 @@ if __name__ == "__main__":
         # Test stats
         stats = get_stats()
         print(f"Stats: {stats}")
+
+        # Test listing
+        docs = get_documents()
+        print(f"Documents: {len(docs)} found")
     else:
         # Run API server
         # Support Railway's PORT environment variable

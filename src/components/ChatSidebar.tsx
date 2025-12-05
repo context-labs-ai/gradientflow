@@ -26,7 +26,11 @@ import {
     Maximize2,
     Clock,
     MessageCircle,
+    Database,
+    Trash2,
 } from 'lucide-react';
+import { api } from '../api/client';
+import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { useChat } from '../context/ChatContext';
 
@@ -40,6 +44,10 @@ interface ExtractedDocument {
     url?: string;
     timestamp: number;
     senderId: string;
+    uploadedToRag?: boolean;
+    documentId?: string;
+    chunksCreated?: number;
+    messageId: string;
 }
 
 interface ExtractedLink {
@@ -103,6 +111,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
     const [taskCopyStatus, setTaskCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
+    // Document delete state
+    const [deletingDocs, setDeletingDocs] = useState<Record<string, boolean>>({});
+    const [deletedDocs, setDeletedDocs] = useState<Record<string, boolean>>({});
+
     // LLM config status
     const [llmStatus, setLlmStatus] = useState<'idle' | 'loading' | 'configured' | 'not-configured' | 'error'>('idle');
 
@@ -135,6 +147,29 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         const todoItems: ExtractedTodo[] = [];
 
         state.messages.forEach((msg) => {
+            // Extract file attachments from message metadata
+            const attachment = msg.metadata?.attachment as {
+                filename?: string;
+                size?: number;
+                type?: string;
+                uploadedToRag?: boolean;
+                documentId?: string;
+                chunksCreated?: number;
+            } | undefined;
+
+            if (attachment?.filename) {
+                docs.push({
+                    id: attachment.documentId || `${msg.id}-attachment`,
+                    filename: attachment.filename,
+                    timestamp: msg.timestamp,
+                    senderId: msg.senderId,
+                    uploadedToRag: attachment.uploadedToRag,
+                    documentId: attachment.documentId,
+                    chunksCreated: attachment.chunksCreated,
+                    messageId: msg.id,
+                });
+            }
+
             // Extract URLs
             const urlMatches = msg.content.match(URL_PATTERN) || [];
             urlMatches.forEach((url) => {
@@ -170,7 +205,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         });
 
         return {
-            documents: docs,
+            documents: docs.sort((a, b) => b.timestamp - a.timestamp),
             links: lnks.sort((a, b) => b.timestamp - a.timestamp),
             media: imgs.sort((a, b) => b.timestamp - a.timestamp),
             todos: todoItems.sort((a, b) => b.timestamp - a.timestamp),
@@ -260,6 +295,22 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         } catch {
             setTaskCopyStatus('error');
             setTimeout(() => setTaskCopyStatus('idle'), 2000);
+        }
+    };
+
+    const handleDeleteDocument = async (doc: ExtractedDocument) => {
+        if (!doc.documentId || deletingDocs[doc.id]) return;
+
+        setDeletingDocs((prev) => ({ ...prev, [doc.id]: true }));
+        try {
+            await api.knowledgeBase.delete(doc.documentId);
+            setDeletedDocs((prev) => ({ ...prev, [doc.id]: true }));
+            toast.success(`已从知识库删除: ${doc.filename}`);
+        } catch (err) {
+            console.error('Failed to delete document:', err);
+            toast.error('删除失败');
+        } finally {
+            setDeletingDocs((prev) => ({ ...prev, [doc.id]: false }));
         }
     };
 
@@ -368,6 +419,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         ) : (
                             documents.map((doc, i) => {
                                 const sender = state.users.find((u) => u.id === doc.senderId);
+                                const isDeleted = deletedDocs[doc.id];
+                                const isDeleting = deletingDocs[doc.id];
                                 return (
                                     <motion.div
                                         key={doc.id}
@@ -375,7 +428,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                         variants={listItemVariants}
                                         initial="hidden"
                                         animate="visible"
-                                        className="content-item"
+                                        className="content-item document-item"
                                     >
                                         <div className="content-icon doc">
                                             <FileText size={16} />
@@ -386,8 +439,30 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                 <span>{sender?.name || '未知'}</span>
                                                 <span className="dot">·</span>
                                                 <span>{formatTime(doc.timestamp)}</span>
+                                                {doc.uploadedToRag && !isDeleted && (
+                                                    <span className="rag-badge" title={`${doc.chunksCreated || 0} 个文本块`}>
+                                                        <Database size={10} />
+                                                        <span>知识库</span>
+                                                    </span>
+                                                )}
+                                                {isDeleted && (
+                                                    <span className="rag-deleted-badge">已移除</span>
+                                                )}
                                             </div>
                                         </div>
+                                        {doc.uploadedToRag && doc.documentId && !isDeleted && (
+                                            <button
+                                                className="doc-delete-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteDocument(doc);
+                                                }}
+                                                disabled={isDeleting}
+                                                title="从知识库中删除"
+                                            >
+                                                {isDeleting ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+                                            </button>
+                                        )}
                                     </motion.div>
                                 );
                             })
