@@ -71,8 +71,11 @@ export const PrivacyPanel: React.FC<PrivacyPanelProps> = ({ isOpen, onClose }) =
       return configStr.includes('parallax');
     });
 
+    // Get provider info for non-parallax agents
+    const providers = [...new Set(activeAgents.map(a => a.model?.provider || a.runtime?.type).filter(Boolean))];
+
     return {
-      provider: hasParallax ? 'Parallax 本地节点' : '本地推理',
+      provider: hasParallax ? 'Parallax 本地节点' : (providers.join(', ') || '云端 API'),
       isLocal: hasParallax,
       activeCount: activeAgents.length,
     };
