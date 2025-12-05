@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '../context/ChatContext';
 import { useTyping } from '../context/TypingContext';
-import { Send, Smile, X, Paperclip, Mic, Loader2, Reply, FileText } from 'lucide-react';
+import { Send, Smile, X, Paperclip, Mic, Loader2, Reply, FileText, Database } from 'lucide-react';
 import { User } from '../types/chat';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -59,6 +59,7 @@ export const MessageInput: React.FC = () => {
     // File attachment state
     const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
     const [uploadingFile, setUploadingFile] = useState(false);
+    const [uploadToRag, setUploadToRag] = useState(true); // Option to upload to knowledge base
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const markTyping = () => {
@@ -283,26 +284,54 @@ export const MessageInput: React.FC = () => {
             let messageContent = content.trim();
             let messageMetadata: Record<string, unknown> = { source: 'ui' };
 
-            // If file is attached, upload to knowledge base first
+            // If file is attached, optionally upload to knowledge base
             if (attachedFile) {
-                setUploadingFile(true);
-                try {
-                    const uploadRes = await api.post<{ documentId: string; chunksCreated: number }>(
-                        '/knowledge-base/upload',
-                        {
-                            content: attachedFile.content,
-                            filename: attachedFile.name,
-                            type: attachedFile.type,
-                        }
-                    );
+                if (uploadToRag) {
+                    // Upload to RAG knowledge base
+                    setUploadingFile(true);
+                    try {
+                        const uploadRes = await api.post<{ documentId: string; chunksCreated: number }>(
+                            '/knowledge-base/upload',
+                            {
+                                content: attachedFile.content,
+                                filename: attachedFile.name,
+                                type: attachedFile.type,
+                            }
+                        );
 
-                    // Add file info to message metadata
+                        // Add file info to message metadata
+                        messageMetadata.attachment = {
+                            filename: attachedFile.name,
+                            documentId: uploadRes.documentId,
+                            size: attachedFile.size,
+                            type: attachedFile.type,
+                            chunksCreated: uploadRes.chunksCreated,
+                            uploadedToRag: true,
+                        };
+
+                        // Add visual indicator in message
+                        const fileIndicator = `📎 [附件: ${attachedFile.name}] (已添加到知识库)`;
+                        messageContent = messageContent
+                            ? `${messageContent}\n\n${fileIndicator}`
+                            : fileIndicator;
+
+                        toast.success(`文件已添加到知识库 (${uploadRes.chunksCreated} 个文本块)`);
+                    } catch (uploadErr) {
+                        console.error('Failed to upload file:', uploadErr);
+                        toast.error('文件上传失败');
+                        setUploadingFile(false);
+                        setSending(false);
+                        return;
+                    }
+                    setUploadingFile(false);
+                } else {
+                    // Just share file as attachment without RAG upload
                     messageMetadata.attachment = {
                         filename: attachedFile.name,
-                        documentId: uploadRes.documentId,
                         size: attachedFile.size,
                         type: attachedFile.type,
-                        chunksCreated: uploadRes.chunksCreated,
+                        content: attachedFile.content, // Include content for display
+                        uploadedToRag: false,
                     };
 
                     // Add visual indicator in message
@@ -311,15 +340,8 @@ export const MessageInput: React.FC = () => {
                         ? `${messageContent}\n\n${fileIndicator}`
                         : fileIndicator;
 
-                    toast.success(`文件已添加到知识库 (${uploadRes.chunksCreated} 个文本块)`);
-                } catch (uploadErr) {
-                    console.error('Failed to upload file:', uploadErr);
-                    toast.error('文件上传失败');
-                    setUploadingFile(false);
-                    setSending(false);
-                    return;
+                    toast.success(`文件已添加为附件`);
                 }
-                setUploadingFile(false);
             }
 
             const res = await api.messages.create({
@@ -341,6 +363,7 @@ export const MessageInput: React.FC = () => {
 
         setContent('');
         setAttachedFile(null);
+        setUploadToRag(true); // Reset to default for next attachment
         stopTyping();
         setSending(false);
         dispatch({ type: 'SET_REPLYING_TO', payload: undefined });
@@ -444,12 +467,25 @@ export const MessageInput: React.FC = () => {
                                 </div>
                                 <div className="file-info">
                                     <span className="file-name">{attachedFile.name}</span>
-                                    <span className="file-meta">{(attachedFile.size / 1024).toFixed(1)} KB · 将添加到知识库</span>
+                                    <span className="file-meta">{(attachedFile.size / 1024).toFixed(1)} KB</span>
                                 </div>
                             </div>
-                            <button onClick={removeAttachedFile} className="remove-file-btn" title="移除文件">
-                                <X size={16} />
-                            </button>
+                            <div className="file-preview-actions">
+                                <label className="rag-toggle" title={uploadToRag ? '将添加到知识库' : '仅作为附件分享'}>
+                                    <input
+                                        type="checkbox"
+                                        checked={uploadToRag}
+                                        onChange={(e) => setUploadToRag(e.target.checked)}
+                                    />
+                                    <span className={clsx('rag-toggle-switch', uploadToRag && 'active')}>
+                                        <Database size={12} />
+                                    </span>
+                                    <span className="rag-toggle-label">{uploadToRag ? '添加到知识库' : '仅分享'}</span>
+                                </label>
+                                <button onClick={removeAttachedFile} className="remove-file-btn" title="移除文件">
+                                    <X size={16} />
+                                </button>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -465,7 +501,7 @@ export const MessageInput: React.FC = () => {
                     />
                     <button
                         className={clsx('icon-btn attach-btn', attachedFile && 'has-file')}
-                        title="添加文件到知识库"
+                        title="添加文件"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingFile}
                     >
@@ -770,6 +806,58 @@ export const MessageInput: React.FC = () => {
         .file-meta {
             font-size: 0.75rem;
             color: var(--text-tertiary);
+        }
+
+        .file-preview-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .rag-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: var(--bg-tertiary);
+            transition: all 0.2s ease;
+        }
+
+        .rag-toggle:hover {
+            background: var(--bg-secondary);
+        }
+
+        .rag-toggle input {
+            display: none;
+        }
+
+        .rag-toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--text-tertiary);
+            color: white;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rag-toggle-switch.active {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+            transform: scale(1.05);
+        }
+
+        .rag-toggle-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
         }
 
         .remove-file-btn {
