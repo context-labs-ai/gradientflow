@@ -674,13 +674,17 @@ class AgentService(BaseAgentService):
         mode: str = "passive",
         max_tool_rounds: int = None,
         users: List[Dict] = None,
-    ) -> Tuple[bool, str]:
+    ) -> Tuple[bool, str, Optional[Dict]]:
         """
         Generate reply using core.llm_client.
 
         Supports:
         - Multi-round tool execution
         - GPT-OSS Harmony format (when enabled)
+
+        Returns:
+            Tuple of (only_tools, reply_text, tool_metadata)
+            tool_metadata contains tool_results for RAG citations etc.
         """
         # Get max_tool_rounds from config, default to DEFAULT_MAX_TOOL_ROUNDS
         if max_tool_rounds is None:
@@ -699,7 +703,7 @@ class AgentService(BaseAgentService):
         mode: str = "passive",
         max_tool_rounds: int = 2,
         users: List[Dict] = None,
-    ) -> Tuple[bool, str]:
+    ) -> Tuple[bool, str, Optional[Dict]]:
         """Generate reply using GPT-OSS harmony format."""
         system_prompt = {
             "role": "system",
@@ -718,6 +722,7 @@ class AgentService(BaseAgentService):
         tool_round = 0
         only_tools = False
         final_text = ""
+        all_tool_results = []  # Collect all tool results across rounds
 
         while tool_round < max_tool_rounds:
             tool_round += 1
@@ -756,12 +761,14 @@ class AgentService(BaseAgentService):
                 tool_results = []
                 if tool_calls:
                     tool_results = self._execute_harmony_tool_calls(tool_calls, current_msg)
+                    all_tool_results.extend(tool_results)  # Collect for metadata
                     print(f"[{agent_name}] Executed {len(tool_calls)} tool calls ({len(tool_results)} with results)")
 
                 # Check for skip signal (after executing tools)
                 if "[SKIP]" in response or not response.strip():
                     print(f"[{agent_name}] Only tool actions, no text reply")
-                    return True, ""
+                    tool_metadata = {"tool_results": all_tool_results} if all_tool_results else None
+                    return True, "", tool_metadata
 
                 # If we have tool results and more rounds available, continue
                 if tool_results and tool_round < max_tool_rounds:
@@ -794,16 +801,18 @@ Now provide your response based on the tool results above."""
                 # Check if only reactions were executed
                 only_tools = len(final_text.strip()) == 0
 
-                return only_tools, final_text
+                tool_metadata = {"tool_results": all_tool_results} if all_tool_results else None
+                return only_tools, final_text, tool_metadata
 
             except Exception as e:
                 print(f"[Agent] Harmony LLM call failed: {e}")
                 import traceback
                 traceback.print_exc()
-                return False, f"Sorry, I encountered an issue: {str(e)}"
+                return False, f"Sorry, I encountered an issue: {str(e)}", None
 
         print(f"[Agent] Max tool rounds reached ({max_tool_rounds})")
-        return only_tools, final_text
+        tool_metadata = {"tool_results": all_tool_results} if all_tool_results else None
+        return only_tools, final_text, tool_metadata
 
     def _generate_standard_reply(
         self,
@@ -812,7 +821,7 @@ Now provide your response based on the tool results above."""
         mode: str = "passive",
         max_tool_rounds: int = 2,
         users: List[Dict] = None,
-    ) -> Tuple[bool, str]:
+    ) -> Tuple[bool, str, Optional[Dict]]:
         """Generate reply using standard format."""
         system_prompt = {
             "role": "system",
@@ -831,6 +840,7 @@ Now provide your response based on the tool results above."""
         tool_round = 0
         only_tools = False
         final_text = ""
+        last_context_data = None  # Track tool results for metadata
 
         while tool_round < max_tool_rounds:
             tool_round += 1
@@ -865,6 +875,8 @@ Now provide your response based on the tool results above."""
                 only_tools, final_text, context_data = self.parse_and_execute_tools(
                     response, current_msg
                 )
+                if context_data:
+                    last_context_data = context_data  # Track for return
 
                 # Clean response
                 cleaned = strip_special_tags(response)
@@ -907,14 +919,14 @@ Now provide your response based on the tool results above."""
                     )
                     continue
 
-                return only_tools, final_text
+                return only_tools, final_text, last_context_data
 
             except Exception as e:
                 print(f"[Agent] LLM call failed: {e}")
-                return False, f"Sorry, I encountered an issue: {str(e)}"
+                return False, f"Sorry, I encountered an issue: {str(e)}", None
 
         print(f"[Agent] Max tool rounds reached ({max_tool_rounds})")
-        return only_tools, final_text
+        return only_tools, final_text, last_context_data
 
 
 # =============================================================================

@@ -745,10 +745,6 @@ app.delete('/messages/:messageId', authMiddleware, async (req, res) => {
     if (conversationId && message.conversationId && message.conversationId !== conversationId) {
         return res.status(404).json({ error: 'Message not found in this conversation' });
     }
-    if (message.senderId !== req.user.id) {
-        return res.status(403).json({ error: 'Cannot delete this message' });
-    }
-
     // 级联删除：找出所有 replyToId 指向此消息的回复
     const deletedIds = [messageId];
     const findReplies = (parentId) => {

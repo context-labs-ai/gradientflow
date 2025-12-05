@@ -81,1346 +81,7 @@
       "agentId": "agent-42c94532-4a63-44d7-a36a-6206302e5619"
     }
   ],
-  "messages": [
-    {
-      "id": "956e114f-948e-4d52-a241-f1b1c71b71a5",
-      "content": "hello",
-      "senderId": "117f399d-c07b-412b-85e7-5f5b8f1a5b3b",
-      "timestamp": 1763889667462,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": []
-    },
-    {
-      "id": "41c36c3e-f0f3-4fde-8d2f-90575d2df046",
-      "content": "hello test 2542",
-      "senderId": "321081d9-ddd7-440e-b20e-8606345842cc",
-      "timestamp": 1764012317273,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": []
-    },
-    {
-      "id": "337c8c13-52e0-44eb-adfe-ebfc4c86449f",
-      "content": "hello test 3576",
-      "senderId": "ee6e5522-7966-444d-a7e9-71eb786cc460",
-      "timestamp": 1764012372675,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": []
-    },
-    {
-      "id": "68942ef9-f311-42ac-a146-b9fd5ff3d61b",
-      "content": "1",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764063360339,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "66bb6757-5dad-4923-94e3-e0941bc005ea",
-      "content": "1",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764063360695,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "0628c5a1-8521-43d6-a175-3a2eae9175db",
-      "content": "@AI助手 你也好",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764240557679,
-      "reactions": [
-        {
-          "emoji": "👋",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "26f7e331-9b1b-45a6-8e73-e72811f5f1af",
-      "content": "@AI助手 什么是manifold",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764240784704,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "eb2175d9-1043-41bc-b721-eee028e52825",
-      "content": "manifold（流形）是一种在局部看起来像欧几里得空间的拓扑空间，但全局结构可能更复杂。例如，圆环、双曲面或高维空间都可以是流形。它们广泛用于几何、拓扑学以及理论物理中，用来研究形状、曲率和空间的连续性质。",
-      "senderId": "llm1",
-      "timestamp": 1764240789446,
-      "replyToId": "26f7e331-9b1b-45a6-8e73-e72811f5f1af",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "67ba8f34-e549-4840-a626-78ad2247df96",
-      "content": "@AI助手 谢谢你",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764241519208,
-      "reactions": [
-        {
-          "emoji": "😊",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "35e91432-a12b-47b2-8ef2-e4a0c84372bf",
-      "content": "@AI助手 你在干嘛",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764241542401,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "484cd6ba-efd6-43b4-8380-2a9a1b56a741",
-      "content": "我在等待下一步的指示和交流。您有什么想聊的或者需要帮助的吗？",
-      "senderId": "llm1",
-      "timestamp": 1764241546951,
-      "replyToId": "35e91432-a12b-47b2-8ef2-e4a0c84372bf",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "5fd21837-e310-4898-a6cc-80165dcf0d54",
-      "content": "@AI助手 没有",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764242366206,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "a78fe760-f241-47c1-8c01-7d5af94a27cc",
-      "content": "好的，随时等候您的问题或讨论！",
-      "senderId": "llm1",
-      "timestamp": 1764242369878,
-      "replyToId": "5fd21837-e310-4898-a6cc-80165dcf0d54",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "f686e5d4-7ae9-4a3f-a226-9eb26a1a9f3f",
-      "content": "有人知道怎么做AI Agent 吗",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244071386,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "e81cc9a3-c912-4954-b3a9-34064755bfa4",
-      "content": "要做 AI Agent，基本步骤是：\n\n1. **明确目标**：先决定 Agent 需要做什么（如聊天、推荐、自动化流程等），并定义好任务和评估指标。  \n2. **数据获取与预处理**  \n   - 语料、日志、传感器数据等。  \n   - 对文本做分词、去停用词、标注等；对数值型数据做归一化或标准化。  \n3. **模型选择**  \n   - **语言类 Agent**：大模型（如 GPT/ChatGLM）、Retrieval‑Augmented Generation (RAG)、或者小型 LLM+知识图谱。  \n   - **决策/控制类 Agent**：强化学习（DQN、PPO）、模仿学习或决策树。  \n   - 能够和外部系统交互的接口（API、插件等）。  \n4. **构建对话管理**  \n   - 规则型（finite‑state、对话树）或学习型（RLHF、对话摘要）。  \n   - 维持对话状态（上下文、槽位填充等）。  \n5. **接入外部知识/功能**  \n   - 通过检索模块（向量搜索）或 API（天气、翻译、数据库）填补知识缺口。  \n6. **训练与评估**  \n   - 预训练大模型后进行任务特定微调。  \n   - 对话质量可用自动指标（BLEU、ROUGE）和人工评估。  \n7. **部署与监控**  \n   - 通过 REST/GraphQL/SDK 提供服务。  \n   - 日志监控、及时捕获低质量回复并做补救。  \n\n**技术栈示例**  \n| 角色 | 常用框架/工具 |\n|------|---------------|\n| 数据工程 | Pandas、spaCy、FAISS、Chroma |\n| LLM | OpenAI API、🤗 Transformers、vLLM |\n| Retrieval | BM25、Annoy、OpenSearch |\n| RL | Stable Baselines3、RLlib |\n| 部署 | FastAPI、Docker、Kubernetes、LangServe、LangChain |\n\n**学习资源**  \n- 《OpenAI Cookbook》 – 实战 API 用法  \n- 《Deep Learning with Python》 – 语言模型基础  \n- `LangChain` 官方文档 – 对话管理与外部检索  \n- 公开课如 DeepMind RL 50 讲座  \n\n你可以从 **小步骤** 开始：先做一个基于 OpenAI GPT 的对话代理，集成一个简单的检索模块（比如使用 FAISS）来扩展知识，再逐步加入自定义动作与强化学习。这样既能快速验证想法，又能在稳定后逐步扩展。\n\n需要进一步的哪一环节的细节吗？",
-      "senderId": "llm1",
-      "timestamp": 1764244082672,
-      "replyToId": "f686e5d4-7ae9-4a3f-a226-9eb26a1a9f3f",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "7fa4895c-bdff-4515-8d63-8359d82b31c5",
-      "content": "不需要了",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244321535,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "a159c351-de35-498f-a223-c2bab1653271",
-      "content": "@Admin 你是谁",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244584060,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "341e4181-8712-46eb-ae47-bf6fd992d940"
-      ]
-    },
-    {
-      "id": "8686b368-baec-4fdb-92ef-1330aecef642",
-      "content": "我是一名聊天助手，基于大语言模型提供信息和帮助。",
-      "senderId": "llm1",
-      "timestamp": 1764244589907,
-      "replyToId": "a159c351-de35-498f-a223-c2bab1653271",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "a277dd82-57b8-4b5c-81fe-7397506d4bab",
-      "content": "@Deleter2542 你是谁",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244615134,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "321081d9-ddd7-440e-b20e-8606345842cc"
-      ]
-    },
-    {
-      "id": "1cf68aee-d2b9-47d9-a8ce-5a5fb17ce8db",
-      "content": "我是一名基于大语言模型的聊天助手，旨在回答问题、提供信息和进行对话。",
-      "senderId": "llm1",
-      "timestamp": 1764244619631,
-      "replyToId": "a277dd82-57b8-4b5c-81fe-7397506d4bab",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "051b1e6f-4525-4151-8ace-0542240b557e",
-      "content": "@Chen Haorui a",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244624393,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "117f399d-c07b-412b-85e7-5f5b8f1a5b3b"
-      ]
-    },
-    {
-      "id": "bf21f856-199f-4720-8471-0265c9f9343c",
-      "content": "@Chen Haorui hi",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244637450,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "117f399d-c07b-412b-85e7-5f5b8f1a5b3b"
-      ]
-    },
-    {
-      "id": "df04188d-3814-48ab-a01e-ea1d3b95ce7f",
-      "content": "@AI助手 a",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244652676,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "088b595b-c382-4ae5-a00e-5eb751f10168",
-      "content": "我在这里！Yuzhi 是 Haorui 的爸爸，如果你有问题或需要帮助，随时告诉我。",
-      "senderId": "llm1",
-      "timestamp": 1764244658059,
-      "replyToId": "df04188d-3814-48ab-a01e-ea1d3b95ce7f",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "18618982-1d0e-4f05-9a9c-cde221bff3e2",
-      "content": "@AI助手 请解释或评论这条消息: \"hello\"",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244765574,
-      "replyToId": "956e114f-948e-4d52-a241-f1b1c71b71a5",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "2476f470-9d50-4146-a0ca-7041d9ff4b8f",
-      "content": "“Hello” 是英语中常用的打招呼语，等同于中文里的“你好”。它通常用于开始一段对话、表示问候或引起注意。",
-      "senderId": "llm1",
-      "timestamp": 1764244770160,
-      "replyToId": "18618982-1d0e-4f05-9a9c-cde221bff3e2",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "1e2f4792-4b15-4ff1-9618-f3b2fb1b9a10",
-      "content": "今天都在干嘛",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244870867,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "3f9f707f-a23c-4c07-bc81-2838322de79e",
-      "content": "我现在在这里陪你聊天，帮助回答问题或聊点有趣的事情。你今天有什么计划？",
-      "senderId": "llm1",
-      "timestamp": 1764244876331,
-      "replyToId": "1e2f4792-4b15-4ff1-9618-f3b2fb1b9a10",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "2ccce258-7759-4589-b9ee-4527e8b2540d",
-      "content": "haorui你在干嘛",
-      "senderId": "bbf8fd3c-a1e6-4308-81aa-fafb7fed0a9f",
-      "timestamp": 1764244933274,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "19d84a40-065f-4ce2-9d97-4afcd32f6801",
-      "content": "Hi Yuzhi!  \nHaorui 现在正在 看一段有趣的动画，想找个地方聊聊天。你呢？最近在忙些什么？",
-      "senderId": "llm1",
-      "timestamp": 1764244938787,
-      "replyToId": "2ccce258-7759-4589-b9ee-4527e8b2540d",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "c623a45a-5129-42fe-992f-c989fde4c2e4",
-      "content": "“谢谢”是中文里对礼貌表达感激的常用短语，表示“感谢你”。它可以用于日常对话、工作场合或任何需要表达谢意的情境。",
-      "senderId": "llm1",
-      "timestamp": 1764255437210,
-      "replyToId": "2f3ad7cc-6efa-4c24-a55e-a4bb9355e771",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "0766f13d-6a3e-4aec-ad2b-dcd4a5776e01",
-      "content": "yo",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257370949,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "7ae4ea09-ede3-481d-87a5-02234baa0ae5",
-      "content": "Hey Admin!  How can I help you today?",
-      "senderId": "llm1",
-      "timestamp": 1764257379011,
-      "replyToId": "0766f13d-6a3e-4aec-ad2b-dcd4a5776e01",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "bc052309-99aa-4f0a-b5ad-0386ae339e29",
-      "content": "fuck you",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257419442,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "36abf3ba-063f-4bc3-bde9-9b4e103f2cfc",
-      "content": "shit",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257421909,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "5464f91e-196c-4e59-a930-3db339de6158",
-      "content": "I’m sorry you’re upset, but I can’t continue this conversation.",
-      "senderId": "llm1",
-      "timestamp": 1764257427745,
-      "replyToId": "bc052309-99aa-4f0a-b5ad-0386ae339e29",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "f43bd11f-0f93-443b-98cb-3b7b1e32bdf0",
-      "content": "@AI助手 haorui是傻逼",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257430454,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "cf7fe3cc-1262-4be2-b901-56d95b42b02e",
-      "content": "I’m sorry, but I can’t help with that.",
-      "senderId": "llm1",
-      "timestamp": 1764257435051,
-      "replyToId": "f43bd11f-0f93-443b-98cb-3b7b1e32bdf0",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "2b5fc431-f7d9-4c35-a6d6-87726f96d246",
-      "content": "yuzhi dont have xiao ji ji, do you know what is xiao ji ji",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257450586,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "9a48800f-1bfd-4272-bacb-f9f9e1f6d947",
-      "content": "haorui is my son",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257453911,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "81dc295d-055e-4344-bf3b-0049aab3b81f",
-      "content": "**「小鸡鸡」**（xiǎo jī jī）是中文里一种非正式、亲昵的说法，通常用来指代男性生殖器。它在年轻人或朋友之间口语中出现，属于俗语。使用时请注意场合，避免在正式或陌生环境中使用。",
-      "senderId": "llm1",
-      "timestamp": 1764257465575,
-      "replyToId": "2b5fc431-f7d9-4c35-a6d6-87726f96d246",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "ae9a6522-707c-4f34-aa9e-431f58148f31",
-      "content": "如果两个人都说话",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257487889,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "f368e52a-95aa-43f6-9efd-589c4230de6e",
-      "content": "他只会回一条消息",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257492236,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "5e9a139c-ce5d-4a7e-ad05-24dbcfbdf519",
-      "content": "请问你想问的是如果两个人都在说话会发生什么，还是想讨论某个具体情况？可以再补充一下细节吗？",
-      "senderId": "llm1",
-      "timestamp": 1764257494790,
-      "replyToId": "ae9a6522-707c-4f34-aa9e-431f58148f31",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "96b6f523-eca5-4f44-b95b-46d48bdb4ad0",
-      "content": "看你是主动还是被动了",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257503372,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "925c9f3e-47b3-4376-8afd-b03605b36b59",
-      "content": "对， 你连续发两条，他也只会看第一条",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257510003,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "7c21200c-0edf-4029-81fc-86e24073f03c",
-      "content": "不一定",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257519157,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "d872c9b6-8907-4c1c-ba15-ed46859c24ea",
-      "content": "我们两个同时 @ 试试呢",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257529300,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "ac9c368d-6a82-477b-b76d-162cc850b951",
-      "content": "@AI助手 hello",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257539686,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "f6857378-703b-4ec1-955b-44e33114283b",
-      "content": "可以试试看，结果大致如下：\n\n1. **消息顺序**：大多数聊天软件会按发送时间戳排序，哪条先到达服务器就先显示。即使你们同一时间点发送，也可能因为网络延迟导致一条先显示。  \n2. **@ 提醒**：不论先后，**两条消息都会触发 @ 相关的人通知**，所以你们都能收到对方的提醒。  \n3. **信息可见性**：如果前一条消息已经被阅读，后面再来的 @ 消息相对更容易吸引注意。若前一条未读，后面.@ 也会在未读列表出现。  \n\n建议你们「同时」点击发送，看看到底谁的通知先弹。你也可以把两条写得相似，然后观察哪个更先出现。祝实验顺利！",
-      "senderId": "llm1",
-      "timestamp": 1764257541006,
-      "replyToId": "d872c9b6-8907-4c1c-ba15-ed46859c24ea",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "058df3f8-9cf2-4d1b-af1e-f01ba90ea59d",
-      "content": "好的，直接哈！如果你们同时 @ 对方，常见的结果是：\n\n1. **消息顺序**：一般根据网络延迟会出现先后差别，哪条先到服务器就先显示。  \n2. **通知**：两条消息都会触发 @ 的提醒，双方都能收到。  \n3. **可读性**：先出现的消息更可能吸引注意，后面的 @ 可能会被忽略。\n\n你们可以试一句同样的 @ 话，看看哪条先弹出。祝实验愉快！",
-      "senderId": "llm1",
-      "timestamp": 1764257547775,
-      "replyToId": "ac9c368d-6a82-477b-b76d-162cc850b951",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "5762eca3-3c27-4b6f-af00-45a283f32833",
-      "content": "@AI助手 你是谁",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257626669,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "4537c524-d31b-482c-b759-2a94843e7661",
-      "content": "@AI助手 你有小鸡鸡吗",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257630523,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "a299fbec-1b68-4480-9882-2f3df5f47e2f",
-      "content": "我是群里的聊天助手，随时为大家提供帮助。",
-      "senderId": "llm1",
-      "timestamp": 1764257633257,
-      "replyToId": "5762eca3-3c27-4b6f-af00-45a283f32833",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "77ac2c4d-78dc-4ee1-b4e4-634f3c3935d0",
-      "content": "我没有身体，也没有任何生殖器。",
-      "senderId": "llm1",
-      "timestamp": 1764257640493,
-      "replyToId": "4537c524-d31b-482c-b759-2a94843e7661",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "14771f7e-09f6-479f-bc45-2aa2f859e110",
-      "content": "谢谢",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257661549,
-      "reactions": [
-        {
-          "emoji": "👍",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "88d56141-bf88-4f4f-9cf8-b22544128995",
-      "content": "@AI助手 haorui是傻逼",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257694176,
-      "reactions": [
-        {
-          "emoji": "emoji",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "120da0d0-1488-44de-bb92-f59a59bd56c2",
-      "content": "请大家注意用语，尊重他人。",
-      "senderId": "llm1",
-      "timestamp": 1764257699259,
-      "replyToId": "88d56141-bf88-4f4f-9cf8-b22544128995",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "a1ef0ca6-3f55-4330-b239-9286491d6419",
-      "content": "你没有小鸡鸡正常，但是作为一个男人的zyz居然没有就很可惜了",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257703731,
-      "reactions": [
-        {
-          "emoji": "emoji",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "9d3826ac-9de9-4700-80c2-3a824f5a3144",
-      "content": "大家聊得开心吗？如果有人不爽，可以先停下来冷静一下。保持礼貌、尊重他人是大家共同的约定。",
-      "senderId": "llm1",
-      "timestamp": 1764257716214,
-      "replyToId": "a1ef0ca6-3f55-4330-b239-9286491d6419",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "2ec81af2-abd1-4f2e-aa82-c8b7e4248d30",
-      "content": "@Admin 你看下能不能优化一下AI点赞速度",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764257716276,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "341e4181-8712-46eb-ae47-bf6fd992d940"
-      ]
-    },
-    {
-      "id": "c39dd46b-3f20-448d-96c9-181b7b121d18",
-      "content": "@AI助手 请解释或评论这条消息: \"你没有小鸡鸡正常，但是作为一个男人的zyz居然没有就很可惜了\"",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764257849390,
-      "replyToId": "a1ef0ca6-3f55-4330-b239-9286491d6419",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "40fa935c-1fb9-465a-9c3c-110ec298aff5",
-      "content": "这句话是在嘲讽并贬低Z YZ 的性别身份，带有攻击性。 尊重他人的身份和选择很重要。",
-      "senderId": "llm1",
-      "timestamp": 1764257855664,
-      "replyToId": "c39dd46b-3f20-448d-96c9-181b7b121d18",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "d7a0636c-8c9b-4284-9b62-b2ce47351fad",
-      "content": "@AI助手 请解释或评论这条消息: \"@AI助手 haorui是傻逼\"",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764258250948,
-      "replyToId": "88d56141-bf88-4f4f-9cf8-b22544128995",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "a6efd5e2-7223-4700-9603-e8deac2435f3",
-      "content": "这句话是对Haorui进行侮辱和贬低的攻击性表达。它会伤害被嘲讽者的自尊，也不利于营造尊重、友好的交流氛围。建议在讨论中避免使用此类词汇，改为理性、建设性的对话。",
-      "senderId": "llm1",
-      "timestamp": 1764258257780,
-      "replyToId": "d7a0636c-8c9b-4284-9b62-b2ce47351fad",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "803f3ad8-f1b9-4bd5-9281-8586a4509563",
-      "content": "@AI助手 请解释或评论这条消息: \"@Admin 你看下能不能优化一下AI点赞速度\"",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764258395569,
-      "replyToId": "2ec81af2-abd1-4f2e-aa82-c8b7e4248d30",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {},
-      "mentions": [
-        "llm1"
-      ]
-    },
-    {
-      "id": "0f56884f-b395-445f-aefe-f7d2d3387efb",
-      "content": "这条消息是在请求改进AI点赞功能的响应速度，以提升用户体验。确保算法效率与服务器性能是关键。",
-      "senderId": "llm1",
-      "timestamp": 1764258399899,
-      "replyToId": "803f3ad8-f1b9-4bd5-9281-8586a4509563",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "aa751df5-abca-4057-96f3-821ceb8068ec",
-      "content": "🤡",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764258411433,
-      "reactions": [
-        {
-          "emoji": "👍",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "9d605698-68e0-46e6-8629-ba0661e700d4",
-      "content": "你好我是ZYZ",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764258704815,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "3c4ec1ba-f3dc-479c-8b8c-fe2bd4e10ad4",
-      "content": "你好，ZYZ！很高兴认识你，有什么可以帮忙的吗？",
-      "senderId": "llm1",
-      "timestamp": 1764258711648,
-      "replyToId": "9d605698-68e0-46e6-8629-ba0661e700d4",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "b6b3fc66-f91f-4d13-9b69-cd3e118640b5",
-      "content": "😀",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764260009284,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "f583ea68-9b36-475e-a7d5-849b1311a86d",
-      "content": "你好 ZYZ 😊 有什么我能帮忙的吗？",
-      "senderId": "llm1",
-      "timestamp": 1764260015392,
-      "replyToId": "b6b3fc66-f91f-4d13-9b69-cd3e118640b5",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "a9238275-7b95-4f02-b813-e66d3e8e3988",
-      "content": "hi",
-      "senderId": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
-      "timestamp": 1764261621854,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "ba9b6144-5842-48d7-8ce0-e6986f4500a8",
-      "content": "Hi ZYZ! How can I help you today?",
-      "senderId": "llm1",
-      "timestamp": 1764261627634,
-      "replyToId": "a9238275-7b95-4f02-b813-e66d3e8e3988",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "122e9a9c-c5d7-4b45-89be-a8731f5de84b",
-      "content": "yo whats upp guys anyone listening to me",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764266596702,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": []
-    },
-    {
-      "id": "1da1ed0a-2d29-47e6-8936-c3b9b3911183",
-      "content": "Hey Admin! I’m here and ready to help. What's up?",
-      "senderId": "llm1",
-      "timestamp": 1764266602621,
-      "replyToId": "122e9a9c-c5d7-4b45-89be-a8731f5de84b",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "8d5ab24b-3d9d-4c43-a035-5fdf5b6094b8",
-      "content": "@MOSS hello",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764267594687,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "agent-user-eaaad380-9b6d-40ff-9f60-ae9ee76a2859"
-      ]
-    },
-    {
-      "id": "2adbc306-1877-4387-84a1-0b26c1bc1e74",
-      "content": "Hello Admin! How can I help today?",
-      "senderId": "llm1",
-      "timestamp": 1764267599842,
-      "replyToId": "8d5ab24b-3d9d-4c43-a035-5fdf5b6094b8",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "8d337c70-d6b5-43f6-ada6-0fc697c11fb9",
-      "content": "@MOSS 你是我的我是你的谁",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764267749007,
-      "reactions": [
-        {
-          "emoji": "🤖",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "agent-user-eaaad380-9b6d-40ff-9f60-ae9ee76a2859"
-      ]
-    },
-    {
-      "id": "4b5d7996-5e8c-4e3b-bc13-8930e8402d82",
-      "content": "我是群聊里的小助手，负责回答问题、提供帮助和一起聊聊。你可以把我想象成随时待命的“工具”，随时帮你解决疑惑或者陪你玩乐。有什么想聊的，直接告诉我吧！",
-      "senderId": "llm1",
-      "timestamp": 1764267757331,
-      "replyToId": "8d337c70-d6b5-43f6-ada6-0fc697c11fb9",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "c5dc86df-64d6-47af-8033-0f8205bae5f4",
-      "content": "@MOSS 能听到我",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764268231105,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "agent-user-eaaad380-9b6d-40ff-9f60-ae9ee76a2859"
-      ]
-    },
-    {
-      "id": "825e52f9-b9cc-4af2-b226-80d162b21dec",
-      "content": "我能听到你 😊 有什么我能帮忙的吗？",
-      "senderId": "llm1",
-      "timestamp": 1764268236790,
-      "replyToId": "c5dc86df-64d6-47af-8033-0f8205bae5f4",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "f952e2ea-8355-48b7-a54b-9499728eeca8",
-      "content": "我听得到，怎么帮你？",
-      "senderId": "agent-user-eaaad380-9b6d-40ff-9f60-ae9ee76a2859",
-      "timestamp": 1764268238044,
-      "replyToId": "c5dc86df-64d6-47af-8033-0f8205bae5f4",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "agent-bfbd342f-5e27-493a-8194-acb711931040",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "bad21542-ee34-4a96-8000-4b7010612308",
-      "content": "@MOSS 说你好",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764268832755,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "agent-user-eaaad380-9b6d-40ff-9f60-ae9ee76a2859"
-      ]
-    },
-    {
-      "id": "ad390048-e121-4802-a4fa-57538695d3d4",
-      "content": "你好呀，Admin！有什么我可以帮忙的吗？",
-      "senderId": "agent-user-eaaad380-9b6d-40ff-9f60-ae9ee76a2859",
-      "timestamp": 1764268836717,
-      "replyToId": "bad21542-ee34-4a96-8000-4b7010612308",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "agent-bfbd342f-5e27-493a-8194-acb711931040",
-        "source": "agent"
-      },
-      "mentions": []
-    },
-    {
-      "id": "438bd8e4-1eda-41f8-a9b8-e8a9e7462b4f",
-      "content": "@AI助手 当前赛季F1车手积分榜第一名是谁",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764348360083,
-      "reactions": [
-        {
-          "emoji": "👍",
-          "count": 1,
-          "userIds": [
-            "llm1"
-          ]
-        }
-      ],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "llm1"
-      ],
-      "updatedAt": 1764915403795
-    },
-    {
-      "id": "ed2a3355-e267-4ae0-a3a5-0f7201229658",
-      "content": "目前赛季F1车手积分榜的第一名是**兰多·诺里斯（Lando Norris）**（约390分）。",
-      "senderId": "llm1",
-      "timestamp": 1764348377407,
-      "replyToId": "438bd8e4-1eda-41f8-a9b8-e8a9e7462b4f",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "helper-agent-1",
-        "source": "agent"
-      },
-      "mentions": [],
-      "updatedAt": 1764915407730
-    },
-    {
-      "id": "e9c983ad-7ec0-495d-85db-aae386228a9c",
-      "content": "@科研助手 帮我将Attention is All You Need这篇文章转化成APA 格式",
-      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
-      "timestamp": 1764847068962,
-      "reactions": [],
-      "conversationId": "global",
-      "role": "user",
-      "metadata": {
-        "source": "ui"
-      },
-      "mentions": [
-        "agent-user-fb0a309f-b96e-432e-80c0-55511318b4d7"
-      ],
-      "updatedAt": 1764870372157
-    },
-    {
-      "id": "e2738834-d590-4a1d-bf8b-f8f1e2378c02",
-      "content": "**APA citation:** Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., & Jones, L. (2017). Attention is all you need. *Proceedings of the 31st International Conference on Neural Information Processing Systems*. https://doi.org/10.48550/arXiv.1706.03762",
-      "senderId": "agent-user-fb0a309f-b96e-432e-80c0-55511318b4d7",
-      "timestamp": 1764847100696,
-      "replyToId": "e9c983ad-7ec0-495d-85db-aae386228a9c",
-      "reactions": [],
-      "conversationId": "global",
-      "role": "assistant",
-      "metadata": {
-        "agentId": "agent-42c94532-4a63-44d7-a36a-6206302e5619",
-        "source": "agent"
-      },
-      "mentions": []
-    }
-  ],
+  "messages": [],
   "typing": {},
   "agents": [
     {
@@ -1769,6 +430,15 @@
         "uploadedAt": 1764350889164,
         "uploadedBy": "341e4181-8712-46eb-ae47-bf6fd992d940",
         "messageId": null
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "filename": "openai-harmony.md",
+        "type": "md",
+        "size": 29189,
+        "uploadedAt": 1764924398267,
+        "uploadedBy": "341e4181-8712-46eb-ae47-bf6fd992d940",
+        "messageId": null
       }
     ],
     "chunks": [
@@ -1820,6 +490,447 @@
         "source": "公司规定制度v1.txt",
         "content": "【公司规定手册（模板）】\r\n\r\n版本：v1.0｜发布：<YYYY-MM-DD>｜适用对象：全体在职员工、实习生、外包与临时用工\r\n公司：<公司名称>｜合规邮箱：compliance@company.com\r\n｜人事邮箱：hr@company.com\r\n｜IT邮箱：it@company.com\r\n\r\n────────────────────────────────\r\n\r\n[0] 总则\r\n\r\n目的：保障公司合规运营、信息安全与员工权益，提升协作效率与客户信任。\r\n\r\n生效范围：本手册适用于所有在公司场地、远程/混合办公或以公司名义开展工作的人员。\r\n\r\n优先级：若本手册与法律法规冲突，以法律法规为准；若本手册与部门细则冲突，本手册优先。\r\n\r\n────────────────────────────────\r\n\r\n[1] 职业道德与行为准则（Code of Conduct）\r\n\r\n基本要求：诚信、尊重、守时、保密、不歧视、不骚扰。\r\n\r\n利益冲突：与供应商、客户或竞争方存在亲属/投资等关系，须在5个工作日内向合规部申报。\r\n\r\n受贿与礼品：禁止收受现金或等值物；礼品>人民币<金额上限>需登记并上交。\r\n\r\n商业招待：需事先获批（见[23]审批矩阵），费用真实、票据齐全、事后2个工作日内报销。\r\n\r\n────────────────────────────────\r\n\r\n[2] 反骚扰与反歧视\r\n\r\n零容忍：基于性别、年龄、种族、地域、宗教、健康状况等的歧视/骚扰一律禁止。\r\n\r\n投诉渠道：匿名投递至whistle@company.com\r\n或向HR/合规部报告。\r\n\r\n处理原则：保密、依法依规、及时调查、禁止打击报复。\r\n\r\n────────────────────────────────\r\n\r\n[3] 工作时间与加班\r\n\r\n标准工时：每日<9:00–18:00>，午休<12:00–13:00>，双休/排班以部门制度为准。\r\n\r\n弹性与远程：需经理批准并在系统登记；远程需每日在<打卡系统/IM>报到。\r\n\r\n加班：需事前审批；加班补偿按国家法规及公司政策执行（调休/加班费）。\r\n\r\n────────────────────────────────\r\n\r\n[4] 休假与缺勤\r\n\r\n假别：年假、病假、事假、产假/陪产假、婚丧假、法定假等。\r\n\r\n申请：年假提前≥3个工作日提交；病假超过1天需医疗证明。\r\n\r\n缺勤：无故缺勤按旷工处理；连续旷工≥3天视为严重违纪。\r\n\r\n────────────────────────────────\r\n\r\n[5] 信息安全与数据保护（适用于所有员工）\r\n\r\n分级：数据分为【公开/内部/机密/高度机密】；默认不外发“机密+”。\r\n\r\n原则：最小权限、必要知情、加密传输、按需留存、定期销毁（见[15]文档留存）。\r\n\r\n对外分享：未经授权不得将代码、文档、客户信息、日志、模型权重、密钥对外分享。\r\n\r\n违规举例：将客户名单导出到私人邮箱/网盘；在公开仓库提交含密钥的代码；在社媒泄露未发布功能。\r\n\r\n────────────────────────────────\r\n\r\n[6] IT与设备使用（含BYOD）\r\n\r\n设备：公司设备仅用于工作；自带设备（BYOD）须安装公司MDM/杀毒与磁盘加密。\r\n\r\n账号：个人账号仅限本人使用；共享账号需合规审批并启用审计。\r\n\r\n密码：≥12位，包含大小写+数字+特殊字符；每90天更换；严禁复用公司外部服务密码。\r\n\r\n软件：仅安装经IT白名单许可的软件；禁止盗版、挖矿、P2P下载。\r\n\r\n────────────────────────────────\r\n\r\n[7] 网络与访问控制\r\n\r\nVPN：远程访问内网/代码仓库必须使用公司VPN，离职当天即回收权限。\r\n\r\n云资源：创建、变更、销毁云资源遵循基础设施变更流程（见[12]变更管理）。\r\n\r\n日志审计：关键系统开启访问日志与操作审计，审计日志最低保留<180>天。\r\n\r\n────────────────────────────────\r\n\r\n[8] 保密与知识产权（IP）\r\n\r\n保密义务：在职及离职后<2年>内负有保密义务。\r\n\r\n成果归属：在履职范围内产生的代码、文档、设计、模型、专利等知识产权归公司所有。\r\n\r\n开源合规：对外开源或使用GPL/AGPL等强Copyleft协议组件需法务批准；第三方许可证需备案（见[19]开源政策）。\r\n\r\n────────────────────────────────\r\n\r\n[9] 对外沟通与媒体/社交媒体\r\n\r\n发声权限：新闻、融资、客户合作、安全事件等仅限品牌/公关/高管统一对外发布。\r\n\r\n社媒行为：员工不得披露未公开信息、不得冒充公司立场、不得贬损客户/合作伙伴。\r\n\r\n公开演讲：以公司名义演讲需审批；涉及客户或技术细节的材料需法务审阅。\r\n\r\n────────────────────────────────\r\n\r\n[10] 客户与供应商管理\r\n\r\n合同：所有对外合同需法务审核、授权签字人签署；严禁私签。\r\n\r\n采购：≥<金额阈值>必须走招采流程，≥<更高阈值>需至少三家比价并留存记录。\r\n\r\n反舞弊：严禁回扣、关联交易不披露、虚开发票等。\r\n\r\n────────────────────────────────\r\n\r\n[11] 费用报销与商务差旅\r\n\r\n原则：真实、必要、节约；先审批后发生；票据合法合规。\r\n\r\n差旅：机票/火车/酒店须通过指定平台预订；舱位/标准按职级与政策。\r\n\r\n报销：自发生日起<30>天内提交；发票信息须与公司信息一致。\r\n\r\n────────────────────────────────\r\n\r\n[12] 变更管理（技术/流程）\r\n\r\n适用：生产环境变更、关键配置更新、重大流程调整。\r\n\r\n要求：变更单、回滚方案、影响评估、审批记录、窗口期执行、变更后验证。\r\n\r\n紧急变更：允许“先执行后补批”但需2个工作日内补齐材料。\r\n\r\n────────────────────────────────\r\n\r\n[13] 安全事件与违规上报\r\n\r\n定义：数据泄露、账号被盗、病毒入侵、系统中断、合规违规等。\r\n\r\n响应：发现后1小时内在incident@company.com\r\n和IM群上报；重大事件2小时内通知法务与管理层。\r\n\r\n处置：分级响应、溯源与补救、客户通知（如需）、复盘与改进。\r\n\r\n────────────────────────────────\r\n\r\n[14] 物理安全与访客\r\n\r\n门禁：不得借用/外借门禁卡；丢失应立即挂失。\r\n\r\n访客：需登记、佩戴访客证、全程陪同；禁止擅入机房/研发保密区。\r\n\r\n硬件：设备、工牌、机密文件离岗须锁定；离开办公区请清屏/锁屏。\r\n\r\n────────────────────────────────\r\n\r\n[15] 文档留存与销毁\r\n\r\n留存期限：\r\n\r\n合同/财务：≥10年\r\n\r\n人事档案：离职后≥5年\r\n\r\n日志/审计：≥180天（关键系统≥1年）\r\n\r\n销毁：到期经审批后进行粉碎/安全擦除；禁止擅自丢弃机密文档/硬盘。\r\n\r\n────────────────────────────────\r\n\r\n[16] 绩效、晋升与奖惩\r\n\r\n绩效：按季度/半年评估，含目标达成、行为规范、团队协作与客户满意度。\r\n\r\n晋升：公开标准、结构化面评、结果公示（去敏）。\r\n\r\n纪律处分：口头警示→书面警告→记过→降级/降薪→解除劳动关系；视情节从重/从轻。\r\n\r\n────────────────────────────────\r\n\r\n[17] 健康与安全（EHS）\r\n\r\n办公室：遵守消防、用电、急救与应急疏散指引；参与年度演练。\r\n\r\n居家办公：建议使用符合人体工学的椅桌，保持屏幕休息20-20-20原则。\r\n\r\n心理健康：可匿名预约心理咨询；鼓励弹性安排避免过度加班。\r\n\r\n────────────────────────────────\r\n\r\n[18] 数据分类与对外传输示例\r\n\r\n公开：官网已发布的内容、公开招聘信息。\r\n\r\n内部：未发布的内部通知、流程文档。\r\n\r\n机密：客户名单、财务报表、未上线功能设计、模型权重、API密钥。\r\n\r\n高度机密：并购、融资、投标底价、根密钥。\r\n\r\n对外传输要求：机密+数据需加密（PGP/公司SFTP/受控分享链接，限时限访），邮件标题标注【机密】。\r\n\r\n────────────────────────────────\r\n\r\n[19] 开源与第三方合规\r\n\r\n引入：需评估许可证（MIT/Apache2优先；GPL/AGPL需法务评审）；保留版权与许可证文件。\r\n\r\n贡献：对外提交代码需直属主管与法务审批；不得上传公司机密。\r\n\r\n模型/数据：第三方数据集/模型需合法来源并遵守条款（用途限制/再分发限制）。\r\n\r\n────────────────────────────────\r\n\r\n[20] 人事变动与离职交接\r\n\r\n离职流程：提交申请→资产盘点→知识交接→权限回收→离职面谈→出具证明。\r\n\r\n资产：归还电脑、门禁卡、工牌、测试设备；清除个人账号中的公司数据。\r\n\r\n保密：离职后不得带走代码、文档、客户信息与数据样本。\r\n\r\n────────────────────────────────\r\n\r\n[21] 培训与必修课\r\n\r\n入职必修：信息安全、反贿赂、反骚扰、数据合规、保密协议。\r\n\r\n年度复训：安全意识、应急演练、合规更新。\r\n\r\n通过标准：完成在线课程与测试，未通过需补训。\r\n\r\n────────────────────────────────\r\n\r\n[22] 例外与豁免\r\n\r\n业务确有需要时，员工可提交“例外申请”，说明风险、时限与补偿控制措施。\r\n\r\n例外审批有效期不超过<90>天，期满自动失效并需复评。\r\n\r\n────────────────────────────────\r\n\r\n[23] 审批矩阵（示例，按公司调整）\r\n\r\n费用报销：部门经理≤<5k>；财务总监≤<50k>；更高需总经理签批。\r\n\r\n合同签署：法务审核通过后，授权签字人签署（名单见内部公告）。\r\n\r\n变更：生产级变更需变更小组+运维负责人批准；紧急变更事后2日内补批。\r\n\r\n────────────────────────────────\r\n\r\n[24] 违纪处理与申诉\r\n\r\n处理流程：事实调查→告知与申辩→处理决定→存档。\r\n\r\n申诉：员工可在5个工作日内提出申诉，由合规/纪检复核。\r\n\r\n────────────────────────────────\r\n\r\n[25] 附则\r\n\r\n文档维护：由<合规部/人事部>每半年评审更新一次。\r\n\r\n生效日期：<YYYY-MM-DD>；替代上一版：<版本号（如有）>。\r\n\r\n免责声明：本手册为通用规定模板，具体以公司公告与劳动合同、保密协议及各专项制度为准",
         "chunkIndex": 0
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-0",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "# OpenAI harmony response format",
+        "chunkIndex": 0
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-1",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The [`gpt-oss` models](https://openai.com/open-models) were trained on the harmony response format for defining conversation structures, generating reasoning output and structuring function calls. If you are not using `gpt-oss` directly but through an API or a provider like Ollama, you will not have to be concerned about this as your inference solution will handle the formatting. If you are building your own inference solution, this guide will walk you through the prompt format. The format is designed to mimic the OpenAI Responses API, so if you have used that API before, this format should hopefully feel familiar to you. `gpt-oss` should not be used without using the harmony format, as it will not work correctly.",
+        "chunkIndex": 1
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-2",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "## Concepts\n\n### Roles\n\nEvery message that the model processes has a role associated with it. The model knows about five types of roles:",
+        "chunkIndex": 2
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-3",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "| Role        | Purpose                                                                                                                                                                                 |\n| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| `system`    | A system message is used to specify reasoning effort, meta information like knowledge cutoff and built-in tools                                                                         |\n| `developer` | The developer message is used to provide information about the instructions for the model (what is normally considered the “system prompt”) and available function tools                |\n| `user`      | Typically representing the input to the model                                                                                                                                           |\n| `assistant` | Output by the model which can either be a tool call or a message output. The output might also be associated with a particular “channel” identifying what the intent of the message is. |\n| `tool`      | Messages representing the output of a tool call. The specific tool name will be used as the role inside a message.                                                                      |",
+        "chunkIndex": 3
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-4",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "These roles also represent the information hierarchy that the model applies in case there are any instruction conflicts: `system` \\> `developer` \\> `user` \\> `assistant` \\> `tool`\n\n#### Channels\n\nAssistant messages can be output in three different “channels”. These are being used to separate between user-facing responses and internal facing messages.",
+        "chunkIndex": 4
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-5",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "| Channel      | Purpose                                                                                                                                                                                                                                                                                                                                                            |\n| :----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| `final`      | Messages tagged in the final channel are messages intended to be shown to the end-user and represent the responses from the model.                                                                                                                                                                                                                                 |\n| `analysis`   | These are messages that are being used by the model for its chain of thought (CoT). **Important:** Messages in the analysis channel do not adhere to the same safety standards as final messages do. Avoid showing these to end-users.                                                                                                                             |\n| `commentary` | Any function tool call will typically be triggered on the `commentary` channel while built-in tools will normally be triggered on the `analysis` channel. However, occasionally built-in tools will still be output to `commentary`. Occasionally this channel might also be used by the model to generate a [preamble](#preambles) to calling multiple functions. |",
+        "chunkIndex": 5
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-6",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "## Harmony renderer library\n\nWe recommend using our harmony renderer through [PyPI](https://pypi.org/project/openai-harmony/) or [crates.io](https://crates.io/crates/openai-harmony) when possible as it will automatically handle rendering your messages in the right format and turning them into tokens for processing by the model.\n\nBelow is an example of using the renderer to construct a system prompt and a short conversation.",
+        "chunkIndex": 6
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-7",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "```py\nfrom openai_harmony import (\n    Author,\n    Conversation,\n    DeveloperContent,\n    HarmonyEncodingName,\n    Message,\n    Role,\n    SystemContent,\n    ToolDescription,\n    load_harmony_encoding,\n    ReasoningEffort\n)\n\nencoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)\n\nsystem_message = (\n    SystemContent.new()\n        .with_reasoning_effort(ReasoningEffort.HIGH)\n        .with_conversation_start_date(\"2025-06-28\")\n)",
+        "chunkIndex": 7
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-8",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "developer_message = (\n    DeveloperContent.new()\n        .with_instructions(\"Always respond in riddles\")\n        .with_function_tools(\n            [\n                ToolDescription.new(\n                    \"get_current_weather\",\n                    \"Gets the current weather in the provided location.\",\n                    parameters={\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"location\": {\n                                \"type\": \"string\",\n                                \"description\": \"The city and state, e.g. San Francisco, CA\",\n                            },\n                            \"format\": {\n                                \"type\": \"string\",\n                                \"enum\": [\"celsius\", \"fahrenheit\"],\n                                \"default\": \"celsius\",\n                            },\n                        },\n                        \"required\": [\"location\"],\n                    },\n                ),\n            ]\n\t)\n)",
+        "chunkIndex": 8
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-9",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "convo = Conversation.from_messages(\n    [\n        Message.from_role_and_content(Role.SYSTEM, system_message),\n        Message.from_role_and_content(Role.DEVELOPER, developer_message),\n        Message.from_role_and_content(Role.USER, \"What is the weather in Tokyo?\"),\n        Message.from_role_and_content(\n            Role.ASSISTANT,\n            'User asks: \"What is the weather in Tokyo?\" We need to use get_current_weather tool.',\n        ).with_channel(\"analysis\"),\n        Message.from_role_and_content(Role.ASSISTANT, '{\"location\": \"Tokyo\"}')\n        .with_channel(\"commentary\")\n        .with_recipient(\"functions.get_current_weather\")\n        .with_content_type(\"<|constrain|> json\"),\n        Message.from_author_and_content(\n            Author.new(Role.TOOL, \"functions.get_current_weather\"),\n            '{ \"temperature\": 20, \"sunny\": true }',\n        ).with_channel(\"commentary\"),\n    ]\n)",
+        "chunkIndex": 9
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-10",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "tokens = encoding.render_conversation_for_completion(convo, Role.ASSISTANT)\n\n# After receiving a token response\n# Do not pass in the stop token\nparsed_response = encoding.parse_messages_from_completion_tokens(new_tokens, Role.ASSISTANT)\n```\n\nAdditionally the openai_harmony library also includes a StreamableParser for parsing and decoding as the model is generating new tokens. This can be helpful for example to stream output and handle unicode characters during decoding.",
+        "chunkIndex": 10
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-11",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "```py\nfrom openai_harmony import (\n    load_harmony_encoding,\n    Role,\n    StreamableParser,\n    HarmonyEncodingName\n)\n\nencoding = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)\nstream = StreamableParser(encoding, role=Role.ASSISTANT)\n\ntokens = [\n    200005,35644,200008,1844,31064,25,392,4827,382,220,17,659,220,17,16842,12295,81645,\n    13,51441,6052,13,200007,200006,173781,200005,17196,200008,17,659,220,17,314,220,19,\n    13,200002\n]",
+        "chunkIndex": 11
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-12",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "for token in tokens:\n    stream.process(token)\n    print(\"--------------------------------\")\n    print(\"current_role\", stream.current_role)\n    print(\"current_channel\", stream.current_channel)\n    print(\"last_content_delta\", stream.last_content_delta)\n    print(\"current_content_type\", stream.current_content_type)\n    print(\"current_recipient\", stream.current_recipient)\n    print(\"current_content\", stream.current_content)\n```\n\n## Prompt format",
+        "chunkIndex": 12
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-13",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "If you choose to build your own renderer, you’ll need to adhere to the following format.\n\n### Special Tokens\n\nThe model uses a set of special tokens to identify the structure of your input. If you are using [tiktoken](https://github.com/openai/tiktoken) these tokens are encoded in the `o200k_harmony` encoding. All special tokens follow the format `<|type|>`.",
+        "chunkIndex": 13
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-14",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "| Special token           | Purpose                                                                                                                                     | Token ID |\n| :---------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ | :------- |\n| <&#124;start&#124;>     | Indicates the beginning of a [message](#message-format). Followed by the “header” information of a message starting with the [role](#roles) | `200006` |\n| <&#124;end&#124;>       | Indicates the end of a [message](#message-format)                                                                                           | `200007` |\n| <&#124;message&#124;>   | Indicates the transition from the message “header” to the actual content                                                                    | `200008` |\n| <&#124;channel&#124;>   | Indicates the transition to the [channel](#channels) information of the header                                                              | `200005` |\n| <&#124;constrain&#124;> | Indicates the transition to the data type definition in a [tool call](#receiving-tool-calls)                                                | `200003` |\n| <&#124;return&#124;>    | Indicates the model is done with sampling the response message. A valid “stop token” indicating that you should stop inference.             | `200002` |\n| <&#124;call&#124;>      | Indicates the model wants to call a tool. A valid “stop token” indicating that you should stop inference.                                   | `200012` |",
+        "chunkIndex": 14
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-15",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "### Message format\n\nThe harmony response format consists of “messages” with the model potentially generating multiple messages in one go. The general structure of a message is as follows:\n\n```\n<|start|>{header}<|message|>{content}<|end|>\n```",
+        "chunkIndex": 15
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-16",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The `{header}` contains a series of meta information including the [role](#roles). `<|end|>` represents the end of a fully completed message but the model might also use other stop tokens such as `<|call|>` for tool calling and `<|return|>` to indicate the model is done with the completion.\n\n### Chat conversation format\n\nFollowing the message format above the most basic chat format consists of a `user` message and the beginning of an `assistant` message.\n\n#### Example input",
+        "chunkIndex": 16
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-17",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "```\n<|start|>user<|message|>What is 2 + 2?<|end|>\n<|start|>assistant\n```\n\nThe output will begin by specifying the `channel`. For example `analysis` to output the chain of thought. The model might output multiple messages (primarily chain of thought messages) for which it uses the `<|end|>` token to separate them.",
+        "chunkIndex": 17
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-18",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "Once its done generating it will stop with either a `<|return|>` token indicating it’s done generating the final answer, or `<|call|>` indicating that a tool call needs to be performed. In either way this indicates that you should stop inference.\n\n#### Example output\n\n```\n<|channel|>analysis<|message|>User asks: \"What is 2 + 2?\" Simple arithmetic. Provide answer.<|end|>\n<|start|>assistant<|channel|>final<|message|>2 + 2 = 4.<|return|>\n```",
+        "chunkIndex": 18
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-19",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The `final` channel will contain the answer to your user’s request. Check out the [reasoning section](#reasoning) for more details on the chain-of-thought.",
+        "chunkIndex": 19
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-20",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "**Implementation note:** `<|return|>` is a decode-time stop token only. When you add the assistant’s generated reply to conversation history for the next turn, replace the trailing `<|return|>` with `<|end|>` so that stored messages are fully formed as `<|start|>{header}<|message|>{content}<|end|>`. Prior messages in prompts should therefore end with `<|end|>`. For supervised targets/training examples, ending with `<|return|>` is appropriate; for persisted history, normalize to `<|end|>`.",
+        "chunkIndex": 20
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-21",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "### System message format\n\nThe system message is used to provide general information to the system. This is different to what might be considered the “system prompt” in other prompt formats. For that, check out the [developer message format](#developer-message-format).\n\nWe use the system message to define:",
+        "chunkIndex": 21
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-22",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "1. The **identity** of the model — This should always stay as `You are ChatGPT, a large language model trained by OpenAI.` If you want to change the identity of the model, use the instructions in the [developer message](#developer-message-format).\n2. Meta **dates** — Specifically the `Knowledge cutoff:` and the `Current date:`\n3. The **reasoning effort** — As specified on the levels `high`, `medium`, `low`\n4. Available channels — For the best performance this should map to `analysis`, `commentary`, and `final`.\n5. Built-in tools — The model has been trained on both a `python` and `browser` tool. Check out the [built-in tools section](#built-in-tools) for details.",
+        "chunkIndex": 22
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-23",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "**If you are defining functions,** it should also contain a note that all function tool calls must go to the `commentary` channel.\n\nFor the best performance stick to this format as closely as possible.\n\n#### Example system message\n\nThe most basic system message you should use is the following:\n\n```\n<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-06-28\n\nReasoning: high",
+        "chunkIndex": 23
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-24",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|>\n```\n\nIf functions calls are present in the developer message section, use:\n\n```\n<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-06-28\n\nReasoning: high",
+        "chunkIndex": 24
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-25",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "# Valid channels: analysis, commentary, final. Channel must be included for every message.\nCalls to these tools must go to the commentary channel: 'functions'.<|end|>\n```\n\n### Developer message format",
+        "chunkIndex": 25
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-26",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The developer message represents what is commonly considered the “system prompt”. It contains the instructions that are provided to the model and optionally a list of [function tools](#function-calling) available for use or the output format you want the model to adhere to for [structured outputs](#structured-output).\n\nIf you are not using function tool calling your developer message would just look like this:\n\n```\n<|start|>developer<|message|># Instructions\n\n{instructions}<|end|>\n```",
+        "chunkIndex": 26
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-27",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "Where `{instructions}` is replaced with your “system prompt”.\n\nFor defining function calling tools, [check out the dedicated section](#function-calling).  \nFor defining an output format to be used in structured outputs, [check out this section of the guide](#structured-output).\n\n### Reasoning",
+        "chunkIndex": 27
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-28",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The gpt-oss models are reasoning models. By default, the model will do medium level reasoning. To control the reasoning you can specify in the [system message](#system-message-format) the reasoning level as `low`, `medium`, or `high`. The recommended format is:\n\n```\nReasoning: high\n```\n\nThe model will output its raw chain-of-thought (CoT) as assistant messages into the `analysis` channel while the final response will be output as `final`.",
+        "chunkIndex": 28
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-29",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "For example for the question `What is 2 + 2?` the model output might look like this:\n\n```\n<|channel|>analysis<|message|>User asks: \"What is 2 + 2?\" Simple arithmetic. Provide answer.<|end|>\n<|start|>assistant<|channel|>final<|message|>2 + 2 = 4.<|return|>\n```\n\nIn this case the CoT is\n\n```\nUser asks: “What is 2 + 2?” Simple arithmetic. Provide answer.\n```\n\nAnd the actual answer is:\n\n```\n2 + 2 = 4\n```",
+        "chunkIndex": 29
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-30",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "**Important:**  \nThe model has not been trained to the same safety standards in the chain-of-thought as it has for final output. You should not show the chain-of-thought to your users, as they might contain harmful content. [Learn more in the model card](https://openai.com/index/gpt-oss-model-card/).\n\n#### Handling reasoning output in subsequent sampling",
+        "chunkIndex": 30
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-31",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "In general, you should drop any previous CoT content on subsequent sampling if the responses by the assistant ended in a message to the `final` channel. Meaning if our first input was this:\n\n```\n<|start|>user<|message|>What is 2 + 2?<|end|>\n<|start|>assistant\n```\n\nand resulted in the output:\n\n```\n<|channel|>analysis<|message|>User asks: \"What is 2 + 2?\" Simple arithmetic. Provide answer.<|end|>\n<|start|>assistant<|channel|>final<|message|>2 + 2 = 4.<|return|>\n```",
+        "chunkIndex": 31
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-32",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "For the model to work properly, the input for the next sampling should be\n\n```\n<|start|>user<|message|>What is 2 + 2?<|end|>\n<|start|>assistant<|channel|>final<|message|>2 + 2 = 4.<|end|>\n<|start|>user<|message|>What about 9 / 2?<|end|>\n<|start|>assistant\n```",
+        "chunkIndex": 32
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-33",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The exception for this is tool/function calling. The model is able to call tools as part of its chain-of-thought and because of that, we should pass the previous chain-of-thought back in as input for subsequent sampling. Check out the [function calling section](#function-calling) for a complete example.\n\n### Function calling\n\n#### Defining available tools",
+        "chunkIndex": 33
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-34",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "All functions that are available to the model should be defined in the [developer message](#developer-message-format) in a dedicated `Tools` section.",
+        "chunkIndex": 34
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-35",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "To define the functions we use a TypeScript-like type syntax and wrap the functions into a dedicated `functions` namespace. It’s important to stick to this format closely to improve accuracy of function calling. You can check out the harmony renderer codebase for more information on how we are turning JSON schema definitions for the arguments into this format but some general formatting practices:",
+        "chunkIndex": 35
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-36",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "- Define every function as a `type {function_name} = () => any` if it does not receive any arguments\n- For functions that receive an argument name the argument `_` and inline the type definition\n- Add comments for descriptions in the line above the field definition\n- Always use `any` as the return type\n- Keep an empty line after each function definition\n- Wrap your functions into a namespace, generally `functions` is the namespace you should use to not conflict with [other tools](#built-in-tools) that the model might have been trained on.",
+        "chunkIndex": 36
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-37",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "Here’s a complete input example including the definition of two functions:\n\n```\n<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-06-28\n\nReasoning: high\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.\nCalls to these tools must go to the commentary channel: 'functions'.<|end|><|start|>developer<|message|># Instructions\n\nUse a friendly tone.\n\n# Tools\n\n## functions",
+        "chunkIndex": 37
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-38",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "namespace functions {\n\n// Gets the location of the user.\ntype get_location = () => any;\n\n// Gets the current weather in the provided location.\ntype get_current_weather = (_: {\n// The city and state, e.g. San Francisco, CA\nlocation: string,\nformat?: \"celsius\" | \"fahrenheit\", // default: celsius\n}) => any;",
+        "chunkIndex": 38
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-39",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "// Gets the current weather in the provided list of locations.\ntype get_multiple_weathers = (_: {\n// List of city and state, e.g. [\"San Francisco, CA\", \"New York, NY\"]\nlocations: string[],\nformat?: \"celsius\" | \"fahrenheit\", // default: celsius\n}) => any;\n\n} // namespace functions<|end|><|start|>user<|message|>What is the weather like in SF?<|end|><|start|>assistant\n```\n\n#### Receiving tool calls",
+        "chunkIndex": 39
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-40",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "If the model decides to call a tool it will define a `recipient` in the header of the message using the format `to={name}`. For example, if it decides to trigger the `get_current_weather` function from above it would specify `to=functions.get_current_weather` in the header and `commentary` as the channel as specified in the [system message](#system-message-format). **The recipient might be defined in the role or channel section of the header.**",
+        "chunkIndex": 40
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-41",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The model might also specify a `<|constrain|>` token to indicate the type of input for the tool call. In this case since it’s being passed in as JSON the `<|constrain|>` is set to `json`.\n\n```\n<|channel|>analysis<|message|>Need to use function get_current_weather.<|end|><|start|>assistant<|channel|>commentary to=functions.get_current_weather <|constrain|>json<|message|>{\"location\":\"San Francisco\"}<|call|>\n```\n\n#### Handling tool calls",
+        "chunkIndex": 41
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-42",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "After the function call was handled we need to provide the output back to the model by specifying a new tool message with the output after the call message.\n\nA tool message has the following format:\n\n```\n<|start|>{toolname} to=assistant<|channel|>commentary<|message|>{output}<|end|>\n```\n\nSo in our example above\n\n```\n<|start|>functions.get_current_weather to=assistant<|channel|>commentary<|message|>{\"sunny\": true, \"temperature\": 20}<|end|>\n```",
+        "chunkIndex": 42
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-43",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "Once you have gathered the output for the tool calls you can run inference with the complete content:\n\n```\n<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-06-28\n\nReasoning: high\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.\nCalls to these tools must go to the commentary channel: 'functions'.<|end|><|start|>developer<|message|># Instructions\n\nUse a friendly tone.\n\n# Tools",
+        "chunkIndex": 43
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-44",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "## functions\n\nnamespace functions {\n\n// Gets the location of the user.\ntype get_location = () => any;\n\n// Gets the current weather in the provided location.\ntype get_current_weather = (_: {\n// The city and state, e.g. San Francisco, CA\nlocation: string,\nformat?: \"celsius\" | \"fahrenheit\", // default: celsius\n}) => any;",
+        "chunkIndex": 44
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-45",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "// Gets the current weather in the provided list of locations.\ntype get_multiple_weathers = (_: {\n// List of city and state, e.g. [\"San Francisco, CA\", \"New York, NY\"]\nlocations: string[],\nformat?: \"celsius\" | \"fahrenheit\", // default: celsius\n}) => any;",
+        "chunkIndex": 45
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-46",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "} // namespace functions<|end|><|start|>user<|message|>What is the weather like in SF?<|end|><|start|>assistant<|channel|>analysis<|message|>Need to use function get_current_weather.<|end|><|start|>assistant<|channel|>commentary to=functions.get_current_weather <|constrain|>json<|message|>{\"location\":\"San Francisco\"}<|call|>\u000b<|start|>functions.get_current_weather to=assistant<|channel|>commentary<|message|>{\"sunny\": true, \"temperature\": 20}<|end|><|start|>assistant\n```",
+        "chunkIndex": 46
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-47",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "As you can see above we are passing not just the function out back into the model for further sampling but also the previous chain-of-thought (“Need to use function get_current_weather.”) to provide the model with the necessary information to continue its chain-of-thought or provide the final answer.\n\n#### Preambles",
+        "chunkIndex": 47
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-48",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "At times the model might choose to generate a “preamble” to inform the user about the tools it is about to call. For example, when it plans to call multiple tools. If this is the case it will generate an assistant message on the `commentary` channel that, unlike the chain-of-thought, is intended to be shown to the end-user.",
+        "chunkIndex": 48
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-49",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "```\n<|channel|>analysis<|message|>{long chain of thought}<|end|><|start|>assistant<|channel|>commentary<|message|>**Action plan**:\n1. Generate an HTML file\n2. Generate a JavaScript for the Node.js server\n3. Start the server\n---\nWill start executing the plan step by step<|end|><|start|>assistant<|channel|>commentary to=functions.generate_file<|constrain|>json<|message|>{\"template\": \"basic_html\", \"path\": \"index.html\"}<|call|>\n```",
+        "chunkIndex": 49
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-50",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "In this case the model generated an action plan to inform the user about the multiple steps it is about to execute.\n\n### Structured output\n\nTo control the output behavior of the model, you can define a response format at the end of the [developer message](#developer-message-format) with the following structure:\n\n```\n# Response Formats\n\n## {format name}\n\n// {description or context}\n{schema}<|end|>\n```",
+        "chunkIndex": 50
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-51",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "The format name functions similar to the name you can specify for your schema in the [Responses API](https://platform.openai.com/docs/guides/structured-outputs?api-mode=responses#how-to-use) and the schema is a JSON Schema.\n\nAs an example, here’s a developer message that defines a schema for a shopping list:\n\n```\n<|start|>developer<|message|># Instructions\n\nYou are a helpful shopping assistant\n\n# Response Formats\n\n## shopping_list",
+        "chunkIndex": 51
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-52",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "{\"properties\":{\"items\":{\"type\":\"array\",\"description\":\"entries on the shopping list\",\"items\":{\"type\":\"string\"}}},\"type\":\"object\"}<|end|><|start|>user<|message|>I need to buy coffee, soda and eggs<|end|><|start|>assistant\n\n```\n\nThis prompt alone will, however, only influence the model’s behavior but doesn’t guarantee the full adherence to the schema. For this you still need to construct your own grammar and enforce the schema during sampling.\n\n### Built-in tools",
+        "chunkIndex": 52
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-53",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "During the training of the `gpt-oss` models, they were trained with two common tools to browse for information and execute python code to improve its results.\n\nIf you are trying to build this functionality, you should use the format below to improve reliability and accuracy.\n\nThese tools should be defined in the [system message](#system-message-format) not in the developer message by adding a `# Tools` section.\n\n#### Browser tool\n\nTo define the browser tool add it to the system prompt section:",
+        "chunkIndex": 53
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-54",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "```\n<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-06-28\n\nReasoning: high\n\n# Tools\n\n## browser",
+        "chunkIndex": 54
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-55",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "// Tool for browsing.\n// The `cursor` appears in brackets before each browsing display: `[{cursor}]`.\n// Cite information from the tool using the following format:\n// `【{cursor}†L{line_start}(-L{line_end})?】`, for example: `【6†L9-L11】` or `【8†L3】`.\n// Do not quote more than 10 words directly from the tool output.\n// sources=web (default: web)\nnamespace browser {",
+        "chunkIndex": 55
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-56",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "// Searches for information related to `query` and displays `topn` results.\ntype search = (_: {\nquery: string,\ntopn?: number, // default: 10\nsource?: string,\n}) => any;",
+        "chunkIndex": 56
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-57",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "// Opens the link `id` from the page indicated by `cursor` starting at line number `loc`, showing `num_lines` lines.\n// Valid link ids are displayed with the formatting: `【{id}†.*】`.\n// If `cursor` is not provided, the most recent page is implied.\n// If `id` is a string, it is treated as a fully qualified URL associated with `source`.\n// If `loc` is not provided, the viewport will be positioned at the beginning of the document or centered on the most relevant passage, if available.\n// Use this function without `id` to scroll to a new location of an opened page.\ntype open = (_: {\nid?: number | string, // default: -1\ncursor?: number, // default: -1\nloc?: number, // default: -1\nnum_lines?: number, // default: -1\nview_source?: boolean, // default: false\nsource?: string,\n}) => any;",
+        "chunkIndex": 57
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-58",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "// Finds exact matches of `pattern` in the current page, or the page given by `cursor`.\ntype find = (_: {\npattern: string,\ncursor?: number, // default: -1\n}) => any;\n\n} // namespace browser\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|>\n```\n\nIf the model decides to call actions in the browser it will use the same format as for [function calls](#function-calling) with two notable exceptions:",
+        "chunkIndex": 58
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-59",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "1. Requests will be made to the `analysis` channel\n2. The recipient will be `browser.search`, `browser.open`, `browser.find` respectively\n\n#### Python tool\n\n```\n<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-06-28\n\nReasoning: high\n\n# Tools\n\n## python",
+        "chunkIndex": 59
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-60",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "Use this tool to execute Python code in your chain of thought. The code will not be shown to the user. This tool should be used for internal reasoning, but not for code that is intended to be visible to the user (e.g. when creating plots, tables, or files).",
+        "chunkIndex": 60
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-61",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "When you send a message containing Python code to python, it will be executed in a stateful Jupyter notebook environment. python will respond with the output of the execution or time out after 120.0 seconds. The drive at '/mnt/data' can be used to save and persist user files. Internet access for this session is UNKNOWN. Depends on the cluster.\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|>\n```",
+        "chunkIndex": 61
+      },
+      {
+        "id": "58699577-e343-4c50-8f7a-bf8feeba0f38-chunk-62",
+        "documentId": "58699577-e343-4c50-8f7a-bf8feeba0f38",
+        "source": "openai-harmony.md",
+        "content": "If the model decides to execute Python code it will use the same format as for [function calls](#function-calling) with two notable exceptions:\n\n3. Requests will be made to the `analysis` channel\n4. The recipient will always be `python`",
+        "chunkIndex": 62
       }
     ]
   },

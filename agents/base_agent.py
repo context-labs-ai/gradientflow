@@ -173,10 +173,10 @@ class BaseAgentService(ABC):
         return messages, users
 
     def send_message(
-        self, content: str, reply_to_id: Optional[str] = None
+        self, content: str, reply_to_id: Optional[str] = None, metadata: Optional[Dict] = None
     ) -> bool:
-        """Send a message."""
-        return self.api_client.send_message(content, reply_to_id)
+        """Send a message with optional metadata (e.g., tool_results for RAG citations)."""
+        return self.api_client.send_message(content, reply_to_id, metadata)
 
     def send_heartbeat(self) -> bool:
         """Send heartbeat signal."""
@@ -402,13 +402,14 @@ class BaseAgentService(ABC):
         current_msg: Dict,
         mode: str = "passive",
         users: List[Dict] = None,
-    ) -> Tuple[bool, str]:
+    ) -> Tuple[bool, str, Optional[Dict]]:
         """
         Generate a reply using LLM.
         Must be implemented by subclasses.
 
         Returns:
-            Tuple of (only_tools, reply_text)
+            Tuple of (only_tools, reply_text, tool_results_metadata)
+            tool_results_metadata contains tool execution results for RAG citations etc.
         """
         pass
 
@@ -467,7 +468,7 @@ class BaseAgentService(ABC):
             context = self.build_context(messages, users, message)
 
             # Generate reply
-            only_tools, reply = self.generate_reply(
+            only_tools, reply, tool_metadata = self.generate_reply(
                 context, message, mode="passive", users=users
             )
 
@@ -481,7 +482,7 @@ class BaseAgentService(ABC):
             if only_tools:
                 print(f"[Agent] Only tool actions, no text reply")
             elif reply:
-                self.send_message(reply, reply_to_id=msg_id)
+                self.send_message(reply, reply_to_id=msg_id, metadata=tool_metadata)
 
             self.processed_message_ids.add(msg_id)
         finally:
@@ -553,7 +554,7 @@ class BaseAgentService(ABC):
                 users = fresh_users
 
             context = self.build_context(messages, users, message)
-            only_tools, response = self.generate_reply(
+            only_tools, response, tool_metadata = self.generate_reply(
                 context, message, mode="proactive", users=users
             )
 
@@ -568,7 +569,7 @@ class BaseAgentService(ABC):
                 return False
 
             if not only_tools and response.strip():
-                self.send_message(response, reply_to_id=msg_id)
+                self.send_message(response, reply_to_id=msg_id, metadata=tool_metadata)
 
             self.last_proactive_time = now
             self.reacted_message_ids.add(msg_id)

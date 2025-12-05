@@ -70,7 +70,7 @@ export const ActionButtons: React.FC<ActionButtonsProps> = React.memo(({
                     />
                 </>
             )}
-            {isOwnMessage && onDelete && (
+            {onDelete && (
                 <button className="action-btn delete-btn" onClick={onDelete} title="删除">
                     <Trash2 size={16} />
                 </button>

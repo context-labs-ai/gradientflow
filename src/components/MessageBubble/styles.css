@@ -76,8 +76,12 @@
     transition: all 0.2s ease;
     border: 1px solid transparent;
     display: inline-flex;
-    gap: 8px;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bubble:has(.attachment-card) {
+    padding-bottom: 10px;
 }
 
 .bubble-text {
@@ -118,8 +122,8 @@
     align-items: center;
     gap: 4px;
     flex-shrink: 0;
-    margin-left: 8px;
-    margin-bottom: -2px;
+    align-self: flex-end;
+    margin-top: 2px;
 }
 
 .bubble-timestamp {
@@ -619,4 +623,189 @@
 
 .delete-action-btn.confirm:hover {
     background: #dc2626;
+}
+
+/* RAG Citations */
+.rag-citations {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(139, 92, 246, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    font-size: 0.8rem;
+}
+
+.rag-citations-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+}
+
+.rag-citations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rag-citation-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 6px;
+}
+
+.rag-citation-name {
+    color: #4b5563;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.rag-citation-score {
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 0.7rem;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.rag-citations-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    color: #7c3aed;
+    font-size: 0.7rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.rag-citations-toggle:hover {
+    background: rgba(139, 92, 246, 0.1);
+}
+
+/* Attachment Card */
+.attachment-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    margin-top: 4px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+    min-width: 220px;
+    max-width: 300px;
+}
+
+.attachment-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+}
+
+.attachment-card.own {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(224,242,254,0.6) 100%);
+    border-color: rgba(14,165,233,0.15);
+}
+
+.attachment-icon-wrapper {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border-radius: 10px;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.attachment-card.own .attachment-icon-wrapper {
+    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.attachment-ext {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    font-size: 0.55rem;
+    font-weight: 700;
+    background: white;
+    color: #6366f1;
+    padding: 1px 4px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.attachment-card.own .attachment-ext {
+    color: #0ea5e9;
+}
+
+.attachment-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.attachment-filename {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.attachment-size {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.attachment-rag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #7c3aed;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.attachment-rag-badge svg {
+    flex-shrink: 0;
 }

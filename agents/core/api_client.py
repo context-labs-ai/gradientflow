@@ -211,7 +211,7 @@ class AgentAPIClient:
             return [], []
 
     def send_message(
-        self, content: str, reply_to_id: Optional[str] = None
+        self, content: str, reply_to_id: Optional[str] = None, metadata: Optional[Dict] = None
     ) -> bool:
         """
         Send a message via Agent API.
@@ -219,6 +219,7 @@ class AgentAPIClient:
         Args:
             content: Message content
             reply_to_id: Optional message ID to reply to
+            metadata: Optional metadata (e.g., tool_results for RAG citations)
 
         Returns:
             True if successful, False otherwise
@@ -226,6 +227,8 @@ class AgentAPIClient:
         payload = {"content": content, "conversationId": self.conversation_id}
         if reply_to_id:
             payload["replyToId"] = reply_to_id
+        if metadata:
+            payload["metadata"] = metadata
 
         try:
             resp = self._session.post(

@@ -24,7 +24,11 @@ _chroma_client = None
 _collection = None
 
 # Configuration
-CHROMA_DB_PATH = os.path.join(os.path.dirname(__file__), "..", "server", "chroma_rag_db")
+# Use environment variable for cloud deployment, fallback to local path
+CHROMA_DB_PATH = os.environ.get(
+    "CHROMA_DB_PATH",
+    os.path.join(os.path.dirname(__file__), "..", "server", "chroma_rag_db")
+)
 COLLECTION_NAME = "knowledge_base"
 CHUNK_SIZE = 500  # characters per chunk
 CHUNK_OVERLAP = 50  # overlap between chunks
@@ -378,7 +382,10 @@ if __name__ == "__main__":
         print(f"Stats: {stats}")
     else:
         # Run API server
+        # Support Railway's PORT environment variable
+        port = int(os.environ.get("PORT", args.port))
         app = create_flask_app()
-        print(f"[RAG] Starting RAG API server on port {args.port}")
+        print(f"[RAG] Starting RAG API server on port {port}")
         print(f"[RAG] Using ChromaDB with persistent storage at: {CHROMA_DB_PATH}")
-        app.run(host="0.0.0.0", port=args.port, debug=False)
+        print(f"[RAG] Environment: {'CLOUD' if os.environ.get('RAILWAY_ENVIRONMENT') else 'LOCAL'}")
+        app.run(host="0.0.0.0", port=port, debug=False)

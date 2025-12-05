@@ -1,0 +1,1 @@
+web: python rag_service.py --port $PORT

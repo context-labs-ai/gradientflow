@@ -14,6 +14,8 @@ import { ActionButtons } from './ActionButtons';
 import { ReplyContext } from './ReplyContext';
 import { ReactionList } from './ReactionList';
 import { MessageContent } from './MessageContent';
+import { RagCitations } from './RagCitations';
+import { AttachmentCard, stripAttachmentText } from './AttachmentCard';
 import './styles.css';
 import dayjs from 'dayjs';
 import toast from 'react-hot-toast';
@@ -125,7 +127,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
     };
 
     const openDeleteConfirm = () => {
-        if (!isOwnMessage) return;
         setDeleteError(null);
         setShowDeleteConfirm(true);
     };
@@ -137,7 +138,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
     };
 
     const handleDeleteConfirm = async () => {
-        if (!isOwnMessage || isDeleting) return;
+        if (isDeleting) return;
         const conversation = message.conversationId || DEFAULT_CONVERSATION_ID;
         try {
             setIsDeleting(true);
@@ -206,6 +207,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
     const hasReacted = (emoji: string) =>
         Boolean(currentUserId && message.reactions.some(r => r.emoji === emoji && r.userIds.includes(currentUserId)));
     const shouldShowActions = isHovered || showDeleteConfirm || showAgentSelector;
+
+    // Check for attachment and prepare cleaned content
+    const hasAttachment = Boolean(message.metadata?.attachment);
+    const displayContent = useMemo(() => {
+        if (hasAttachment) {
+            return stripAttachmentText(message.content);
+        }
+        return message.content;
+    }, [message.content, hasAttachment]);
     const exitAnimation = useMemo(() => {
         if (prefersReducedMotion) {
             return { opacity: 0, y: -4 };
@@ -265,7 +275,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
                 )}
 
                 <div className={clsx('bubble', isOwnMessage ? 'own' : 'other', isAgentSender && 'agent', isHovered && 'hovered')}>
-                    <MessageContent content={message.content} users={state.users} />
+                    {displayContent && <MessageContent content={displayContent} users={state.users} />}
+                    {hasAttachment && <AttachmentCard message={message} isOwnMessage={isOwnMessage} />}
                     <div className="bubble-meta">
                         {message.editedAt && <span className="message-edited">(已编辑)</span>}
                         <span className="bubble-timestamp" aria-label={fullTimeLabel} title={fullTimeLabel}>
@@ -274,6 +285,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
                         <MessageStatus status={message.status} isOwnMessage={isOwnMessage} />
                     </div>
                 </div>
+
+                {/* RAG Citations - Show sources used by agent */}
+                {isAgentSender && <RagCitations message={message} />}
 
                 <ReactionList
                     reactions={message.reactions}
@@ -311,7 +325,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({ message
                                 />
                                 <ActionButtons
                                     onReply={handleReply}
-                                    onDelete={isOwnMessage ? openDeleteConfirm : undefined}
+                                    onDelete={openDeleteConfirm}
                                     onAskAI={hasActiveAgent ? handleAskAI : undefined}
                                     isOwnMessage={isOwnMessage}
                                     showAskAI={!isAgentSender && state.agents.length > 0}
