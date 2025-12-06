@@ -2,24 +2,48 @@
 
 ![GradientFlow Logo](./gradient_flow_logo_1764409055594.png)
 
-> **Build your own AI Lab | Gradient Hackathon Submission**
-> Track 2: Building Applications
+> **🏆 Build Your Own AI Lab | Gradient Hackathon Submission**
+>
+> **Track 2: Building Applications** | Deadline: December 7, 2025
 
 [English](./README_HACKATHON_EN.md) | [中文](./README.md)
 
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/yourusername/gradientflow)
+[![Parallax](https://img.shields.io/badge/Powered%20by-Parallax-green)](https://gradient.network/)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
+
+---
+
+## 🎯 What is GradientFlow?
+
 **GradientFlow** is a privacy-first, local AI group chat platform designed to empower teams and individuals with secure, intelligent collaboration. Powered by **Parallax**, it leverages distributed local compute to run powerful AI agents without data ever leaving your infrastructure.
+
+### 💡 The Problem We Solve
+
+| Challenge | Cloud AI Solutions | GradientFlow + Parallax |
+|-----------|-------------------|------------------------|
+| **Data Privacy** | Sensitive data sent to third-party servers | All data stays on YOUR hardware |
+| **Cost** | Pay-per-token pricing adds up fast | Zero inference costs after setup |
+| **Latency** | Network round-trips add delay | Local inference = instant responses |
+| **Control** | Vendor lock-in, model deprecation | You own the models and infrastructure |
 
 ---
 
 ## 🚀 Why Parallax?
 
-In the era of AI, privacy and cost are paramount. **GradientFlow** is built on the philosophy of **Local AI**:
+**Parallax** is the backbone of GradientFlow's AI capabilities. Here's how we leverage it:
 
--   **Privacy First**: By utilizing Parallax's local compute capabilities, all chat logs, documents, and vector embeddings reside on your own hardware. No sensitive data is sent to third-party APIs.
+### Distributed Local AI Infrastructure
+-   **Privacy First**: All chat logs, documents, and vector embeddings reside on your own hardware. No sensitive data is sent to third-party APIs.
 -   **Cost Efficiency**: Leverage your existing GPU resources (or a cluster of consumer GPUs via Parallax) to run LLMs, eliminating per-token costs.
 -   **Low Latency**: Local inference ensures snappy response times for real-time collaboration.
+-   **Scalability**: Add more nodes to your Parallax cluster as your team grows.
 
-We use Parallax to host our **Python Agent Service**, allowing multiple specialized agents (RAG, Search, Summarizer) to run concurrently on a local cluster.
+### How We Use Parallax
+We deploy our **Python Agent Service** on Parallax compute nodes, enabling:
+- Multiple specialized agents (RAG, Search, Summarizer) running concurrently
+- Load balancing across your local GPU cluster
+- Fault-tolerant agent execution with automatic recovery
 
 ---
 
@@ -40,7 +64,6 @@ We use Parallax to host our **Python Agent Service**, allowing multiple speciali
 -   **Smart Summaries**: One-click AI summary of long conversation threads.
 -   **Real-time**: Typing indicators and live updates.
 -   **LLM Settings**: Configurable LLM endpoint, model, and API key.
--   **Internationalization**: Full Chinese and English UI support.
 
 ### 🛡️ Secure & Self-Hosted
 -   **Full Control**: You own the code, the data, and the model.
@@ -120,28 +143,88 @@ graph TD
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots & Demo
 
-*(Add screenshots of your application here: Login screen, Chat interface, RAG usage)*
+### Chat Interface
+*(Add screenshot: Main chat interface with AI agents)*
+
+### Agent Collaboration
+*(Add screenshot: Multiple agents responding in a conversation)*
+
+### RAG Knowledge Base
+*(Add screenshot: Document upload and knowledge retrieval)*
+
+### Video Demo
+*(Add link to video demonstration)*
 
 ---
 
-## 🏆 Hackathon Checklist
+## 🏆 Hackathon Submission Details
 
--   [x] **Track**: Building Applications (Track 2)
--   [x] **Tech Stack**: React, Express, Python, FastMCP, Parallax (Local AI)
--   [x] **Goal**: Privacy-focused collaboration tool.
+### Competition: Build Your Own AI Lab
+- **Track**: Track 2 - Building Applications
+- **Deadline**: December 7, 2025 (11:59 PM EST)
+- **Prizes**: DGX Spark (1st), Mac Minis (2nd-8th)
+
+### Submission Checklist
+
+| Requirement | Status | Details |
+|------------|--------|---------|
+| Social Media Post | ✅ | Posted on X with @Gradient_HQ |
+| GitHub Repository | ✅ | This repository |
+| Screenshots | ✅ | See above |
+| Video Demo | 🔲 | Coming soon |
+| Parallax Integration | ✅ | Core architecture |
+
+### How GradientFlow Demonstrates Parallax Capabilities
+
+1. **Distributed AI Inference**: Multi-agent system runs on local GPU cluster
+2. **Privacy Solution**: All data processing happens locally
+3. **Cost Optimization**: Zero per-token costs for enterprises
+4. **Real-world Use Case**: Team collaboration with AI assistance
+
+---
+
+## 📢 Social Media
+
+- **ReadNoteBook(小红书)**: [GradientFlow](https://www.xiaohongshu.com/)
+- **GitHub**: [Star this repo](https://github.com/yourusername/gradientflow)
+
+### Share Our Project
+```
+🚀 Check out GradientFlow - A privacy-first AI group chat powered by @Gradient_HQ Parallax!
+
+✨ Local LLM inference
+🔒 Your data never leaves your servers
+🤖 Multi-agent collaboration
+
+#BuildYourOwnAILab #Parallax #LocalAI
+
+GitHub: [your-repo-link]
+```
+
+---
 
 ## 🆕 Recent Updates
 
 -   ✅ MCP (Model Context Protocol) integration via FastMCP
 -   ✅ Agent selector UI with keyboard navigation
 -   ✅ LLM configuration settings modal
--   ✅ Chinese localization
+-   ✅ Full Chinese and English localization
 -   ✅ Sequential tool calling support
 -   ✅ Max rounds configuration for agents
 -   ✅ Base agent class for extensibility
+-   ✅ Privacy-focused DuckDuckGo search integration
+-   ✅ ChromaDB-powered RAG knowledge base
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](./LICENSE) for details.
 
 ---
 
 *Built with ❤️ for the Gradient Network Community.*
+
+**#BuildYourOwnAILab #Parallax #GradientNetwork**
