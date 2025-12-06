@@ -155,7 +155,7 @@ graph TD
 ## 📸 截图展示 & 演示
 
 ### 产品界面
-<img src="./image_demo.png" alt="GradientFlow Demo" width="800">
+<img src="./GradientBoard.png" alt="GradientFlow Demo" width="800">
 
 ### 视频演示
 <video src="./GradientFlow_Demo.mp4" controls width="800"></video>
@@ -170,7 +170,7 @@ graph TD
 
 | 要求 | 状态 | 详情 |
 |-----|------|------|
-| 社交媒体发布 | ✅ | 已在 X 上发布并 @Gradient_HQ |
+| 社交媒体发布 | ✅ | 已在小红书发布并 tag Parallax |
 | GitHub 仓库 | ✅ | 本仓库 |
 | 截图 | ✅ | 见上方 |
 | 视频演示 | ✅ | 见上方 |
