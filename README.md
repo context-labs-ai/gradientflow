@@ -1,6 +1,6 @@
 # GradientFlow
 
-![GradientFlow Logo](./gradient_flow_logo_1764409055594.png)
+<img src="./gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
 
 > **🏆 打造你的专属 AI 实验室 | Gradient 黑客松参赛作品**
 >
@@ -11,6 +11,14 @@
 [![GitHub](https://img.shields.io/badge/GitHub-代码仓库-blue?logo=github)](https://github.com/yourusername/gradientflow)
 [![Parallax](https://img.shields.io/badge/Powered%20by-Parallax-green)](https://gradient.network/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
+
+---
+
+## 🔗 链接
+
+- **在线演示**: [gradientflow-chat-production.up.railway.app](https://gradientflow-chat-production.up.railway.app/)
+- **小红书**: [GradientFlow](http://xhslink.com/o/1CF3tnSUnuE)
+- **GitHub**: [给本仓库点星](https://github.com/yourusername/gradientflow)
 
 ---
 
@@ -146,14 +154,8 @@ graph TD
 
 ## 📸 截图展示 & 演示
 
-### 聊天界面
-*(添加截图：带有 AI Agent 的主聊天界面)*
-
-### Agent 协作
-*(添加截图：多个 Agent 在对话中响应)*
-
-### RAG 知识库
-*(添加截图：文档上传和知识检索)*
+### 产品界面
+<img src="./image_demo.png" alt="GradientFlow Demo" width="800">
 
 ### 视频演示
 *(添加视频演示链接)*
@@ -161,11 +163,6 @@ graph TD
 ---
 
 ## 🏆 黑客松提交详情
-
-### 比赛：Build Your Own AI Lab
-- **赛道**：赛道 2 - 应用构建
-- **截止日期**：2025年12月7日 (美东时间 11:59 PM)
-- **奖品**：DGX Spark (第1名), Mac Minis (第2-8名)
 
 ### 提交清单
 
@@ -183,26 +180,6 @@ graph TD
 2. **隐私解决方案**：所有数据处理在本地完成
 3. **成本优化**：企业级零 Token 费用
 4. **真实用例**：带有 AI 辅助的团队协作
-
----
-
-## 📢 社交媒体
-
-- **小红书**: [GradientFlow](https://www.xiaohongshu.com/)
-- **GitHub**: [给本仓库点星](https://github.com/yourusername/gradientflow)
-
-### 分享我们的项目
-```
-🚀 看看 GradientFlow - 由 @Gradient_HQ Parallax 驱动的隐私优先、AI 原生 Workspace 平台！
-
-✨ 本地 LLM 推理
-🔒 您的数据永远不会离开您的服务器
-🤖 多 Agent 协作
-
-#BuildYourOwnAILab #Parallax #LocalAI
-
-GitHub: [your-repo-link]
-```
 
 ---
 

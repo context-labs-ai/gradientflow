@@ -1,6 +1,6 @@
 # GradientFlow
 
-![GradientFlow Logo](./gradient_flow_logo_1764409055594.png)
+<img src="./gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
 
 > **🏆 Build Your Own AI Lab | Gradient Hackathon Submission**
 >
@@ -11,6 +11,14 @@
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/yourusername/gradientflow)
 [![Parallax](https://img.shields.io/badge/Powered%20by-Parallax-green)](https://gradient.network/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
+
+---
+
+## 🔗 Links
+
+- **Live Demo**: [gradientflow-chat-production.up.railway.app](https://gradientflow-chat-production.up.railway.app/)
+- **Xiaohongshu (小红书)**: [GradientFlow](http://xhslink.com/o/1CF3tnSUnuE)
+- **GitHub**: [Star this repo](https://github.com/yourusername/gradientflow)
 
 ---
 
@@ -146,14 +154,8 @@ graph TD
 
 ## 📸 Screenshots & Demo
 
-### Chat Interface
-*(Add screenshot: Main chat interface with AI agents)*
-
-### Agent Collaboration
-*(Add screenshot: Multiple agents responding in a conversation)*
-
-### RAG Knowledge Base
-*(Add screenshot: Document upload and knowledge retrieval)*
+### Product Interface
+<img src="./image_demo.png" alt="GradientFlow Demo" width="800">
 
 ### Video Demo
 *(Add link to video demonstration)*
@@ -161,11 +163,6 @@ graph TD
 ---
 
 ## 🏆 Hackathon Submission Details
-
-### Competition: Build Your Own AI Lab
-- **Track**: Track 2 - Building Applications
-- **Deadline**: December 7, 2025 (11:59 PM EST)
-- **Prizes**: DGX Spark (1st), Mac Minis (2nd-8th)
 
 ### Submission Checklist
 
