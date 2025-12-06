@@ -167,7 +167,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                 <div className="form-group">
                                     <label className="input-label">
                                         <span>API Key</span>
-                                        <span className="optional-tag">可选</span>
+                                        <span className="optional-tag">视情况而定</span>
                                     </label>
                                     <div className="input-wrapper">
                                         <div className="input-icon-left">
@@ -177,7 +177,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                             type="password"
                                             value={apiKey}
                                             onChange={(e) => setApiKey(e.target.value)}
-                                            placeholder={hasStoredKey ? '••••••••••••••••' : 'sk-...'}
+                                            placeholder={hasStoredKey ? '••••••••••••••••' : 'sk-xxx 或 not-needed'}
                                             disabled={loading}
                                             className="settings-input has-icon"
                                         />
@@ -193,6 +193,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                             <span className="checkbox-label">清空已存 Key</span>
                                         </label>
                                         <span className="hint-text">留空则保留已存 Key</span>
+                                    </div>
+                                    <div className="api-key-hint">
+                                        <span>OpenAI/Anthropic/Azure 必填 | Ollama/Parallax 等自托管服务填 <code>not-needed</code> 或留空</span>
                                     </div>
                                 </div>
                             </div>
@@ -445,6 +448,25 @@ const styles = `
 .hint-text {
     font-size: 0.75rem;
     color: #9ca3af;
+}
+
+.api-key-hint {
+    font-size: 0.75rem;
+    color: #6b7280;
+    background: #f9fafb;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    margin-top: 4px;
+}
+
+.api-key-hint code {
+    background: #e5e7eb;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #374151;
 }
 
 .error-banner {

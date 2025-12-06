@@ -129,6 +129,16 @@ export interface Message {
   editedAt?: number; // Timestamp of last edit
 }
 
+export interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+  sourceMessageId: string | null;
+  senderId: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface ChatState {
   currentUser: User | null;
   users: User[];

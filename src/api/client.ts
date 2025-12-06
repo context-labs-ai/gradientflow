@@ -126,5 +126,25 @@ export const api = {
                 }>;
             }>('/agents/looking'),
     },
+    todos: {
+        list: () => request<{ todos: Todo[] }>('/todos'),
+        create: (payload: { text: string; sourceMessageId?: string; senderId?: string }) =>
+            request<{ todo: Todo }>('/todos', {
+                method: 'POST',
+                body: JSON.stringify(payload),
+            }),
+        update: (todoId: string, payload: { completed?: boolean; text?: string }) =>
+            request<{ todo: Todo }>(`/todos/${todoId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(payload),
+            }),
+        delete: (todoId: string) =>
+            request<{ deletedTodoId: string }>(`/todos/${todoId}`, { method: 'DELETE' }),
+        sync: (todos: Array<{ text: string; sourceMessageId: string; senderId?: string; timestamp?: number }>) =>
+            request<{ todos: Todo[]; newCount: number; syncedIds: string[] }>('/todos/sync', {
+                method: 'POST',
+                body: JSON.stringify({ todos }),
+            }),
+    },
 };
-import { Agent, AgentConfigPayload, DEFAULT_CONVERSATION_ID, Message, User } from '../types/chat';
+import { Agent, AgentConfigPayload, DEFAULT_CONVERSATION_ID, Message, Todo, User } from '../types/chat';

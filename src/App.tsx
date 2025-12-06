@@ -15,6 +15,23 @@ const mergeUsers = (users: User[]) => {
     return Array.from(map.values());
 };
 
+// Browser notification helper
+const requestNotificationPermission = () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+};
+
+const sendNotification = (title: string, body: string, icon?: string) => {
+    if (
+        'Notification' in window &&
+        Notification.permission === 'granted' &&
+        document.hidden
+    ) {
+        new Notification(title, { body, icon: icon || '/favicon.ico' });
+    }
+};
+
 const LoadingScreen = ({ text, error, onRetry }: { text: string; error?: string | null; onRetry?: () => void }) => (
     <div className="loading-screen">
         <div className="spinner" />
@@ -130,6 +147,8 @@ const AppShell = () => {
                 type: 'HYDRATE',
                 payload: { currentUser: me.user, users: allUsers, messages, agents: agentsRes?.agents || [] },
             });
+            // Request notification permission after login
+            requestNotificationPermission();
         } catch (err: any) {
             console.error('Bootstrap failed', err);
             setError(err?.message || '加载会话失败');
@@ -190,6 +209,20 @@ const AppShell = () => {
                     if (res.messages.length) {
                         updateLastFetchedTimestamp(res.messages);
                         dispatch({ type: 'UPSERT_MESSAGES', payload: res.messages });
+
+                        // Send browser notification for new messages from others
+                        const otherMessages = res.messages.filter(
+                            (m) => m.senderId !== state.currentUser?.id
+                        );
+                        if (otherMessages.length > 0) {
+                            const latestMsg = otherMessages[otherMessages.length - 1];
+                            const sender = state.users.find((u) => u.id === latestMsg.senderId);
+                            const senderName = sender?.name || '新消息';
+                            const preview = latestMsg.content.length > 50
+                                ? latestMsg.content.slice(0, 50) + '...'
+                                : latestMsg.content;
+                            sendNotification(senderName, preview, sender?.avatar);
+                        }
                     }
                     if (res.users.length) {
                         const newUsers = res.users.filter((u) => !knownUserIdsRef.current.has(u.id));

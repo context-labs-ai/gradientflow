@@ -28,11 +28,15 @@ import {
     MessageCircle,
     Database,
     Trash2,
+    Plus,
+    Pencil,
+    Check,
 } from 'lucide-react';
 import { api } from '../api/client';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { useChat } from '../context/ChatContext';
+import type { Todo } from '../types/chat';
 
 // Types
 type TabType = 'content' | 'tasks' | 'participants' | 'search';
@@ -104,12 +108,24 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     const [summaryCopyStatus, setSummaryCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [summaryLanguage, setSummaryLanguage] = useState<'zh' | 'en'>('zh');
     const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+    const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const abortControllerRef = useRef<AbortController | null>(null);
     const reasoningRef = useRef<HTMLDivElement>(null);
 
-    // Tasks state
-    const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>({});
+    // Tasks state - now using backend storage
+    const [backendTodos, setBackendTodos] = useState<Todo[]>([]);
+    const [todosLoading, setTodosLoading] = useState(false);
     const [taskCopyStatus, setTaskCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [togglingTodo, setTogglingTodo] = useState<string | null>(null);
+    const lastSyncedMessagesRef = useRef<string>('');
+    // Create/Edit/Delete todo state
+    const [newTodoText, setNewTodoText] = useState('');
+    const [isCreatingTodo, setIsCreatingTodo] = useState(false);
+    const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
+    const [editTodoText, setEditTodoText] = useState('');
+    const [savingEdit, setSavingEdit] = useState(false);
+    const [deletingTodoId, setDeletingTodoId] = useState<string | null>(null);
+    const newTodoInputRef = useRef<HTMLInputElement>(null);
 
     // Document delete state
     const [deletingDocs, setDeletingDocs] = useState<Record<string, boolean>>({});
@@ -118,20 +134,18 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     // LLM config status
     const [llmStatus, setLlmStatus] = useState<'idle' | 'loading' | 'configured' | 'not-configured' | 'error'>('idle');
 
-    // Check LLM status
+    // Check LLM status from backend
     useEffect(() => {
         const checkLLMStatus = async () => {
+            if (!isOpen) return;
             setLlmStatus('loading');
             try {
-                const llmConfig = localStorage.getItem('llm-config');
-                if (llmConfig) {
-                    const config = JSON.parse(llmConfig);
-                    if (config.apiKey && config.model) {
-                        setLlmStatus('configured');
-                        return;
-                    }
+                const config = await api.llm.getConfig();
+                if (config.endpoint && config.hasApiKey) {
+                    setLlmStatus('configured');
+                } else {
+                    setLlmStatus('not-configured');
                 }
-                setLlmStatus('not-configured');
             } catch {
                 setLlmStatus('error');
             }
@@ -139,8 +153,25 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         checkLLMStatus();
     }, [isOpen]);
 
+    // Fetch todos from backend when sidebar opens
+    useEffect(() => {
+        const fetchTodos = async () => {
+            if (!isOpen) return;
+            setTodosLoading(true);
+            try {
+                const res = await api.todos.list();
+                setBackendTodos(res.todos);
+            } catch (err) {
+                console.error('Failed to fetch todos:', err);
+            } finally {
+                setTodosLoading(false);
+            }
+        };
+        fetchTodos();
+    }, [isOpen]);
+
     // Extract data from messages
-    const { documents, links, media, todos } = useMemo(() => {
+    const { documents, links, media, extractedTodos } = useMemo(() => {
         const docs: ExtractedDocument[] = [];
         const lnks: ExtractedLink[] = [];
         const imgs: ExtractedMedia[] = [];
@@ -208,29 +239,58 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             documents: docs.sort((a, b) => b.timestamp - a.timestamp),
             links: lnks.sort((a, b) => b.timestamp - a.timestamp),
             media: imgs.sort((a, b) => b.timestamp - a.timestamp),
-            todos: todoItems.sort((a, b) => b.timestamp - a.timestamp),
+            extractedTodos: todoItems.sort((a, b) => b.timestamp - a.timestamp),
         };
     }, [state.messages]);
 
-    // Group todos by sender
+    // Sync extracted todos to backend when messages change
+    useEffect(() => {
+        if (!isOpen || extractedTodos.length === 0) return;
+
+        // Create a hash of current extracted todos to detect changes
+        const currentHash = extractedTodos.map(t => `${t.id}:${t.text}`).join('|');
+        if (currentHash === lastSyncedMessagesRef.current) return;
+
+        const syncTodos = async () => {
+            try {
+                // Convert extracted todos to sync format (need sourceMessageId from the id)
+                const todosToSync = extractedTodos.map(t => ({
+                    text: t.text,
+                    sourceMessageId: t.id.split('-')[0], // Extract message ID from "msgId-index"
+                    senderId: t.senderId,
+                    timestamp: t.timestamp,
+                }));
+
+                const res = await api.todos.sync(todosToSync);
+                setBackendTodos(res.todos);
+                lastSyncedMessagesRef.current = currentHash;
+            } catch (err) {
+                console.error('Failed to sync todos:', err);
+            }
+        };
+
+        syncTodos();
+    }, [isOpen, extractedTodos]);
+
+    // Group todos by sender (using backend todos)
     const groupedTodos = useMemo(() => {
-        const groups: Map<string, { sender: typeof state.users[0] | undefined; todos: ExtractedTodo[]; lastActive: number }> = new Map();
-        todos.forEach((todo) => {
+        const groups: Map<string, { sender: typeof state.users[0] | undefined; todos: Todo[]; lastActive: number }> = new Map();
+        backendTodos.forEach((todo) => {
             const sender = state.users.find((u) => u.id === todo.senderId);
             const key = todo.senderId;
             if (!groups.has(key)) {
-                groups.set(key, { sender, todos: [], lastActive: todo.timestamp });
+                groups.set(key, { sender, todos: [], lastActive: todo.createdAt });
             }
             const group = groups.get(key)!;
             group.todos.push(todo);
-            group.lastActive = Math.max(group.lastActive, todo.timestamp);
+            group.lastActive = Math.max(group.lastActive, todo.createdAt);
         });
         return Array.from(groups.values()).sort((a, b) => b.lastActive - a.lastActive);
-    }, [todos, state.users]);
+    }, [backendTodos, state.users]);
 
     const pendingTaskCount = useMemo(() => {
-        return todos.filter((t) => !completedTasks[t.id]).length;
-    }, [todos, completedTasks]);
+        return backendTodos.filter((t) => !t.completed).length;
+    }, [backendTodos]);
 
     // Participants
     const participants = useMemo(() => {
@@ -281,12 +341,24 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         }
     };
 
-    const toggleTaskCompletion = (taskId: string) => {
-        setCompletedTasks((prev) => ({ ...prev, [taskId]: !prev[taskId] }));
+    const toggleTaskCompletion = async (todoId: string) => {
+        const todo = backendTodos.find(t => t.id === todoId);
+        if (!todo || togglingTodo === todoId) return;
+
+        setTogglingTodo(todoId);
+        try {
+            const res = await api.todos.update(todoId, { completed: !todo.completed });
+            setBackendTodos(prev => prev.map(t => t.id === todoId ? res.todo : t));
+        } catch (err) {
+            console.error('Failed to toggle todo:', err);
+            toast.error('更新失败');
+        } finally {
+            setTogglingTodo(null);
+        }
     };
 
     const copyTasksToClipboard = async () => {
-        const pendingTasks = todos.filter((t) => !completedTasks[t.id]);
+        const pendingTasks = backendTodos.filter((t) => !t.completed);
         const text = pendingTasks.map((t) => `- [ ] ${t.text}`).join('\n');
         try {
             await navigator.clipboard.writeText(text);
@@ -295,6 +367,73 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         } catch {
             setTaskCopyStatus('error');
             setTimeout(() => setTaskCopyStatus('idle'), 2000);
+        }
+    };
+
+    const handleCreateTodo = async () => {
+        const text = newTodoText.trim();
+        if (!text || isCreatingTodo) return;
+
+        setIsCreatingTodo(true);
+        try {
+            const res = await api.todos.create({ text });
+            setBackendTodos(prev => [res.todo, ...prev]);
+            setNewTodoText('');
+            toast.success('待办已添加');
+        } catch (err) {
+            console.error('Failed to create todo:', err);
+            toast.error('添加失败');
+        } finally {
+            setIsCreatingTodo(false);
+        }
+    };
+
+    const handleStartEdit = (todo: Todo) => {
+        setEditingTodoId(todo.id);
+        setEditTodoText(todo.text);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingTodoId(null);
+        setEditTodoText('');
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingTodoId || savingEdit) return;
+        const text = editTodoText.trim();
+        if (!text) {
+            toast.error('待办内容不能为空');
+            return;
+        }
+
+        setSavingEdit(true);
+        try {
+            const res = await api.todos.update(editingTodoId, { text });
+            setBackendTodos(prev => prev.map(t => t.id === editingTodoId ? res.todo : t));
+            setEditingTodoId(null);
+            setEditTodoText('');
+            toast.success('待办已更新');
+        } catch (err) {
+            console.error('Failed to update todo:', err);
+            toast.error('更新失败');
+        } finally {
+            setSavingEdit(false);
+        }
+    };
+
+    const handleDeleteTodo = async (todoId: string) => {
+        if (deletingTodoId === todoId) return;
+
+        setDeletingTodoId(todoId);
+        try {
+            await api.todos.delete(todoId);
+            setBackendTodos(prev => prev.filter(t => t.id !== todoId));
+            toast.success('待办已删除');
+        } catch (err) {
+            console.error('Failed to delete todo:', err);
+            toast.error('删除失败');
+        } finally {
+            setDeletingTodoId(null);
         }
     };
 
@@ -326,27 +465,144 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     };
 
     const generateSummary = async () => {
-        // Placeholder - actual LLM integration would go here
+        // Check if LLM is configured
+        if (llmStatus !== 'configured') {
+            setSummaryError('请先配置 LLM API（点击上方"前往设置"）');
+            return;
+        }
+
+        // Prepare messages for summarization
+        const messageTexts = state.messages.slice(-50).map((msg) => {
+            const sender = state.users.find((u) => u.id === msg.senderId);
+            return `[${sender?.name || '未知'}]: ${msg.content}`;
+        });
+
+        if (messageTexts.length === 0) {
+            setSummaryError('没有可总结的消息');
+            return;
+        }
+
         setLoadingSummary(true);
         setSummaryError(null);
         setSummary('');
         setReasoning('');
         setIsStreaming(true);
-        setStreamingPhase('reasoning');
+        setStreamingPhase('idle'); // Start idle, will switch based on channel
+
+        // Create abort controller
+        abortControllerRef.current = new AbortController();
+
+        const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '' : 'http://localhost:4000');
 
         try {
-            // Simulate streaming
-            await new Promise((r) => setTimeout(r, 1500));
-            setReasoning('分析聊天记录...\n识别关键信息点...');
-            await new Promise((r) => setTimeout(r, 1000));
-            setStreamingPhase('output');
-            setSummary('这是一个示例总结。实际使用时需要配置 LLM API。');
+            const response = await fetch(`${API_BASE}/messages/summarize`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: messageTexts,
+                    language: summaryLanguage,
+                }),
+                signal: abortControllerRef.current.signal,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `请求失败: ${response.status}`);
+            }
+
+            // Process SSE stream
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error('无法读取响应流');
+            }
+
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let reasoningContent = '';
+            let finalContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+
+                // Process complete SSE lines
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6).trim();
+                        if (data === '[DONE]') continue;
+
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (parsed.error) {
+                                throw new Error(parsed.details || parsed.error);
+                            }
+
+                            // Handle channel switch events
+                            if (parsed.type === 'channel_switch') {
+                                if (parsed.content === 'analysis') {
+                                    // Entering reasoning/analysis phase
+                                    setStreamingPhase('reasoning');
+                                    reasoningContent = '';
+                                    setReasoning('');
+                                } else if (parsed.content === 'final') {
+                                    // Entering final output phase - clear reasoning
+                                    setStreamingPhase('output');
+                                    setReasoning(''); // Clear reasoning display
+                                    finalContent = '';
+                                    setSummary('');
+                                }
+                            }
+                            // Handle reasoning content
+                            else if (parsed.type === 'reasoning' && parsed.content) {
+                                reasoningContent += parsed.content;
+                                setReasoning(reasoningContent);
+                            }
+                            // Handle final output content
+                            else if (parsed.type === 'final' && parsed.content) {
+                                finalContent += parsed.content;
+                                setSummary(finalContent);
+                            }
+                            // Handle legacy chunk format (for non-harmony models)
+                            else if (parsed.type === 'chunk' && parsed.content) {
+                                // Skip if content contains harmony tokens - wait for proper channel parsing
+                                if (/<\|/.test(parsed.content) || /<\|/.test(finalContent)) {
+                                    continue;
+                                }
+                                // If we haven't detected any channel, show as output directly
+                                finalContent += parsed.content;
+                                setSummary(finalContent);
+                                setStreamingPhase('output');
+                            }
+                        } catch (e) {
+                            if (e instanceof Error && e.message !== 'Unexpected end of JSON input') {
+                                console.warn('SSE parse error:', e);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!finalContent && !reasoningContent) {
+                setSummaryError('未收到总结内容');
+            }
         } catch (err) {
-            setSummaryError('生成总结失败');
+            if (err instanceof Error && err.name === 'AbortError') {
+                // User cancelled
+                return;
+            }
+            console.error('Summary generation failed:', err);
+            setSummaryError(err instanceof Error ? err.message : '生成总结失败');
         } finally {
             setLoadingSummary(false);
             setIsStreaming(false);
             setStreamingPhase('idle');
+            abortControllerRef.current = null;
         }
     };
 
@@ -606,7 +862,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             style={{ marginLeft: 'auto' }}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                // Open modal if needed
+                                setIsSummaryModalOpen(true);
                             }}
                             title="全屏查看"
                         >
@@ -733,13 +989,45 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     </button>
                 </div>
 
-                {todos.length === 0 ? (
+                {/* Add new todo input */}
+                <div className="todo-add-form">
+                    <input
+                        ref={newTodoInputRef}
+                        type="text"
+                        className="todo-add-input"
+                        placeholder="添加新待办..."
+                        value={newTodoText}
+                        onChange={(e) => setNewTodoText(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleCreateTodo();
+                            }
+                        }}
+                        disabled={isCreatingTodo}
+                    />
+                    <button
+                        className="todo-add-btn"
+                        onClick={handleCreateTodo}
+                        disabled={!newTodoText.trim() || isCreatingTodo}
+                        title="添加待办"
+                    >
+                        {isCreatingTodo ? <Loader2 size={16} className="spin" /> : <Plus size={16} />}
+                    </button>
+                </div>
+
+                {todosLoading ? (
+                    <div className="empty-state">
+                        <Loader2 size={20} className="spin" />
+                        <div className="empty-title">加载中...</div>
+                    </div>
+                ) : backendTodos.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-illustration">
                             <CheckSquare size={20} />
                         </div>
                         <div className="empty-title">暂无待办事项</div>
-                        <div className="empty-hint">聊天中提到的任务会自动出现在这里</div>
+                        <div className="empty-hint">在上方输入框添加，或在聊天中提及任务</div>
                     </div>
                 ) : (
                     <div className="tasks-list">
@@ -761,16 +1049,97 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 {group.todos.map((todo) => (
                                     <div
                                         key={todo.id}
-                                        className={clsx('task-item', completedTasks[todo.id] && 'completed')}
-                                        onClick={() => toggleTaskCompletion(todo.id)}
+                                        className={clsx(
+                                            'task-item',
+                                            todo.completed && 'completed',
+                                            togglingTodo === todo.id && 'toggling',
+                                            editingTodoId === todo.id && 'editing'
+                                        )}
                                     >
-                                        <div className={clsx('task-checkbox', completedTasks[todo.id] && 'checked')}>
-                                            {completedTasks[todo.id] && <CheckSquare size={14} />}
-                                        </div>
-                                        <div className="task-content">
-                                            <div className="task-text">{todo.text}</div>
-                                            <div className="task-meta">{formatTime(todo.timestamp)}</div>
-                                        </div>
+                                        {editingTodoId === todo.id ? (
+                                            /* Edit mode */
+                                            <div className="task-edit-form">
+                                                <input
+                                                    type="text"
+                                                    className="task-edit-input"
+                                                    value={editTodoText}
+                                                    onChange={(e) => setEditTodoText(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleSaveEdit();
+                                                        } else if (e.key === 'Escape') {
+                                                            handleCancelEdit();
+                                                        }
+                                                    }}
+                                                    autoFocus
+                                                    disabled={savingEdit}
+                                                />
+                                                <div className="task-edit-actions">
+                                                    <button
+                                                        className="task-action-btn save"
+                                                        onClick={handleSaveEdit}
+                                                        disabled={savingEdit}
+                                                        title="保存"
+                                                    >
+                                                        {savingEdit ? <Loader2 size={14} className="spin" /> : <Check size={14} />}
+                                                    </button>
+                                                    <button
+                                                        className="task-action-btn cancel"
+                                                        onClick={handleCancelEdit}
+                                                        disabled={savingEdit}
+                                                        title="取消"
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* Normal mode */
+                                            <>
+                                                <div
+                                                    className={clsx('task-checkbox', todo.completed && 'checked')}
+                                                    onClick={() => toggleTaskCompletion(todo.id)}
+                                                >
+                                                    {togglingTodo === todo.id ? (
+                                                        <Loader2 size={14} className="spin" />
+                                                    ) : todo.completed ? (
+                                                        <CheckSquare size={14} />
+                                                    ) : null}
+                                                </div>
+                                                <div className="task-content" onClick={() => toggleTaskCompletion(todo.id)}>
+                                                    <div className="task-text">{todo.text}</div>
+                                                    <div className="task-meta">{formatTime(todo.createdAt)}</div>
+                                                </div>
+                                                <div className="task-actions">
+                                                    <button
+                                                        className="task-action-btn edit"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleStartEdit(todo);
+                                                        }}
+                                                        title="编辑"
+                                                    >
+                                                        <Pencil size={12} />
+                                                    </button>
+                                                    <button
+                                                        className="task-action-btn delete"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteTodo(todo.id);
+                                                        }}
+                                                        disabled={deletingTodoId === todo.id}
+                                                        title="删除"
+                                                    >
+                                                        {deletingTodoId === todo.id ? (
+                                                            <Loader2 size={12} className="spin" />
+                                                        ) : (
+                                                            <Trash2 size={12} />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </motion.div>
@@ -989,6 +1358,60 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     {activeTab === 'participants' && renderParticipantsTab()}
                 </div>
             </div>
+
+            {/* Summary Fullscreen Modal */}
+            <AnimatePresence>
+                {isSummaryModalOpen && (
+                    <motion.div
+                        className="summary-modal-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsSummaryModalOpen(false)}
+                    >
+                        <motion.div
+                            className="summary-modal"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="summary-modal-header">
+                                <div className="summary-modal-title">
+                                    <Sparkles size={18} />
+                                    <span>AI 总结</span>
+                                </div>
+                                <div className="summary-modal-actions">
+                                    <button
+                                        className="icon-btn-small"
+                                        onClick={copySummaryToClipboard}
+                                        title="复制总结"
+                                    >
+                                        {summaryCopyStatus === 'success' ? (
+                                            <ClipboardCheck size={16} />
+                                        ) : (
+                                            <Copy size={16} />
+                                        )}
+                                    </button>
+                                    <button
+                                        className="icon-btn-small"
+                                        onClick={() => setIsSummaryModalOpen(false)}
+                                        title="关闭"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="summary-modal-content">
+                                <ReactMarkdown remarkPlugins={[remarkBreaks]}>
+                                    {summary}
+                                </ReactMarkdown>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </>
     );
 };

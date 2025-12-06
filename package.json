@@ -27,6 +27,7 @@
     "jsonwebtoken": "^9.0.2",
     "lowdb": "^7.0.1",
     "lucide-react": "^0.344.0",
+    "multer": "^2.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",

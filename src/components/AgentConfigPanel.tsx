@@ -655,9 +655,18 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                     onChange={(e) =>
                                         setFormState((prev) => ({ ...prev, model: { ...prev.model, apiKey: e.target.value } }))
                                     }
-                                    placeholder="sk-xxx 或留空"
+                                    placeholder={
+                                        formState.model.provider === 'openai' ? 'sk-xxx（必填）' :
+                                        formState.model.provider === 'anthropic' ? 'sk-ant-xxx（必填）' :
+                                        formState.model.provider === 'azure' ? 'Azure API Key（必填）' :
+                                        'not-needed 或留空'
+                                    }
                                 />
-                                <span className="input-hint">如不需要认证可留空</span>
+                                <span className="input-hint">
+                                    {formState.model.provider === 'openai' || formState.model.provider === 'anthropic' || formState.model.provider === 'azure'
+                                        ? '使用官方 API 必须填写 API Key'
+                                        : '本地模型（Ollama）或 Parallax 等自托管服务可填 not-needed 或留空'}
+                                </span>
                             </label>
                             <label>
                                 模型名称

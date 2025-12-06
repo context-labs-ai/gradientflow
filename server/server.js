@@ -4,11 +4,37 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { randomUUID, randomBytes } from 'crypto';
+
+// Configure multer for file uploads (memory storage for passing to RAG service)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50MB max file size
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/markdown',
+        ];
+        const allowedExtensions = ['.pdf', '.docx', '.pptx', '.txt', '.md'];
+        const ext = file.originalname.toLowerCase().slice(file.originalname.lastIndexOf('.'));
+
+        if (allowedTypes.includes(file.mimetype) || allowedExtensions.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error(`Unsupported file type: ${file.mimetype}. Allowed: PDF, DOCX, PPTX, TXT, MD`));
+        }
+    },
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -42,6 +68,7 @@ db.data.typing ||= {};
 db.data.agents ||= [];
 db.data.llmConfig ||= null;
 db.data.agentConfigs ||= [];
+db.data.todos ||= [];
 
 const app = express();
 
@@ -1010,11 +1037,26 @@ ${recentMessages}
             return;
         }
 
-        // Process the streaming response - stream raw content, let frontend parse
+        // Process the streaming response with harmony channel parsing
         const reader = llmResponse.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
         let fullContent = '';
+
+        // Harmony format parsing state
+        let currentChannel = null; // 'analysis', 'final', 'commentary', or null
+        let channelContent = '';   // Content accumulated in current channel
+        let inMessage = false;     // Whether we're inside <|message|>...<|end|>
+
+        // Helper to send parsed content to frontend
+        const sendParsedChunk = (type, content) => {
+            if (content) {
+                res.write(`data: ${JSON.stringify({ type, content })}\n\n`);
+                if (typeof res.flush === 'function') {
+                    res.flush();
+                }
+            }
+        };
 
         while (true) {
             const { done, value } = await reader.read();
@@ -1040,11 +1082,69 @@ ${recentMessages}
 
                         if (delta) {
                             fullContent += delta;
-                            // Stream raw content to frontend - it will parse
-                            res.write(`data: ${JSON.stringify({ type: 'chunk', content: delta })}\n\n`);
-                            // Flush if available (for compatibility with some middleware)
-                            if (typeof res.flush === 'function') {
-                                res.flush();
+
+                            // Parse harmony tokens in the accumulated content
+                            // Check for channel switches
+                            const analysisMatch = fullContent.match(/<\|channel\|>analysis<\|message\|>/i);
+                            const finalMatch = fullContent.match(/<\|channel\|>final<\|message\|>/i);
+                            const endMatch = fullContent.match(/<\|end\|>|<\|return\|>/i);
+
+                            // Detect channel switch
+                            if (finalMatch && currentChannel !== 'final') {
+                                // Switching to final channel - clear reasoning on frontend
+                                currentChannel = 'final';
+                                channelContent = '';
+                                sendParsedChunk('channel_switch', 'final');
+
+                                // Extract content after <|channel|>final<|message|>
+                                const finalIdx = fullContent.lastIndexOf('<|channel|>final<|message|>');
+                                if (finalIdx !== -1) {
+                                    const afterFinal = fullContent.slice(finalIdx + '<|channel|>final<|message|>'.length);
+                                    // Remove any trailing end tokens for display
+                                    const cleanAfter = afterFinal.replace(/<\|end\|>|<\|return\|>/gi, '');
+                                    if (cleanAfter.trim()) {
+                                        channelContent = cleanAfter;
+                                        sendParsedChunk('final', cleanAfter);
+                                    }
+                                }
+                            } else if (analysisMatch && currentChannel !== 'analysis' && !finalMatch) {
+                                // Switching to analysis channel
+                                currentChannel = 'analysis';
+                                channelContent = '';
+                                sendParsedChunk('channel_switch', 'analysis');
+
+                                // Extract content after <|channel|>analysis<|message|>
+                                const analysisIdx = fullContent.lastIndexOf('<|channel|>analysis<|message|>');
+                                if (analysisIdx !== -1) {
+                                    const afterAnalysis = fullContent.slice(analysisIdx + '<|channel|>analysis<|message|>'.length);
+                                    // Remove end tokens and subsequent channel markers
+                                    const cleanAfter = afterAnalysis.split(/<\|end\|>|<\|start\|>|<\|channel\|>/i)[0];
+                                    if (cleanAfter.trim()) {
+                                        channelContent = cleanAfter;
+                                        sendParsedChunk('reasoning', cleanAfter);
+                                    }
+                                }
+                            } else if (currentChannel === 'final') {
+                                // Continue streaming final content
+                                const cleanDelta = delta.replace(/<\|end\|>|<\|return\|>/gi, '');
+                                if (cleanDelta) {
+                                    sendParsedChunk('final', cleanDelta);
+                                }
+                            } else if (currentChannel === 'analysis') {
+                                // Continue streaming reasoning content
+                                // Stop if we hit end/start/channel markers
+                                if (!/<\|end\|>|<\|start\|>|<\|channel\|>/i.test(delta)) {
+                                    sendParsedChunk('reasoning', delta);
+                                }
+                            } else {
+                                // No channel detected yet
+                                // Check if content looks like harmony format - if so, wait for channel detection
+                                const looksLikeHarmony = /<\|/.test(fullContent);
+                                if (!looksLikeHarmony) {
+                                    // Non-harmony model output, send as raw chunk
+                                    sendParsedChunk('chunk', delta);
+                                }
+                                // If it looks like harmony format, don't send anything yet - wait for channel detection
                             }
                         }
                     } catch (e) {
@@ -1551,6 +1651,30 @@ const callRagService = async (endpoint, data) => {
     }
 };
 
+// Helper to call Python RAG service with file upload (multipart/form-data)
+const callRagServiceWithFile = async (endpoint, fileBuffer, filename, mimeType) => {
+    try {
+        const formData = new FormData();
+        const blob = new Blob([fileBuffer], { type: mimeType });
+        formData.append('file', blob, filename);
+
+        const response = await fetch(`${RAG_SERVICE_URL}${endpoint}`, {
+            method: 'POST',
+            body: formData,
+            signal: AbortSignal.timeout(60000),  // 60s timeout for file processing
+        });
+        if (response.ok) {
+            return await response.json();
+        }
+        const errorText = await response.text();
+        console.log(`[RAG] Service returned ${response.status}: ${errorText}`);
+        return { success: false, error: `RAG service error: ${response.status}` };
+    } catch (error) {
+        console.log(`[RAG] Service unavailable: ${error.message}`);
+        return null;
+    }
+};
+
 // Initialize SHARED knowledge base storage (fallback for when RAG service is unavailable)
 db.data.knowledgeBase ||= { documents: [], chunks: [] };
 
@@ -1718,6 +1842,100 @@ app.post('/knowledge-base/upload', authMiddleware, async (req, res) => {
         chunksCreated: chunks.length,
         totalDocuments: kb.documents.length,
         totalChunks: kb.chunks.length,
+    });
+});
+
+// POST /knowledge-base/upload-file
+// Upload a file (PDF, DOCX, PPTX, TXT, MD) to the SHARED knowledge base
+app.post('/knowledge-base/upload-file', authMiddleware, upload.single('file'), async (req, res) => {
+    // Handle multer errors
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const { originalname, mimetype, buffer } = req.file;
+    const { messageId } = req.body;
+
+    console.log(`[LocalRAG] User ${req.user.name} uploading file: ${originalname} (${mimetype}, ${buffer.length} bytes)`);
+
+    // Try to upload to Python RAG service (handles PDF, DOCX, PPTX parsing)
+    const ragResult = await callRagServiceWithFile('/rag/upload-file', buffer, originalname, mimetype);
+
+    if (ragResult && ragResult.success) {
+        console.log(`[LocalRAG] File "${originalname}" processed by RAG service (${ragResult.chunks_count} chunks, ${ragResult.extracted_chars} chars)`);
+        return res.json({
+            documentId: ragResult.doc_hash,
+            filename: originalname,
+            chunksCreated: ragResult.chunks_count,
+            extractedChars: ragResult.extracted_chars,
+            source: 'rag-service',
+        });
+    }
+
+    // RAG service failed or unavailable
+    const errorMsg = ragResult?.error || 'RAG service unavailable';
+    console.log(`[LocalRAG] RAG service failed for "${originalname}": ${errorMsg}`);
+
+    // For text files, try to process locally as fallback
+    const ext = originalname.toLowerCase().slice(originalname.lastIndexOf('.'));
+    if (['.txt', '.md'].includes(ext)) {
+        try {
+            const textContent = buffer.toString('utf-8');
+            // Use the existing text upload logic
+            const docId = randomUUID();
+            const timestamp = Date.now();
+
+            if (!db.data.knowledgeBase) {
+                db.data.knowledgeBase = { documents: [], chunks: [] };
+            }
+            const kb = db.data.knowledgeBase;
+
+            kb.documents.push({
+                id: docId,
+                filename: originalname,
+                type: ext.slice(1),
+                size: textContent.length,
+                uploadedAt: timestamp,
+                uploadedBy: req.user.id,
+                messageId: messageId || null,
+            });
+
+            const chunks = chunkDocument(textContent, originalname, docId);
+            kb.chunks.push(...chunks);
+            await db.write();
+
+            console.log(`[LocalRAG] Text file "${originalname}" processed locally (${chunks.length} chunks)`);
+            return res.json({
+                documentId: docId,
+                filename: originalname,
+                chunksCreated: chunks.length,
+                source: 'local-fallback',
+            });
+        } catch (err) {
+            return res.status(500).json({ error: `Failed to process text file: ${err.message}` });
+        }
+    }
+
+    // For binary files (PDF, DOCX, PPTX), RAG service is required
+    return res.status(503).json({
+        error: `Cannot process ${ext} files: ${errorMsg}. RAG service is required for PDF, DOCX, PPTX files.`,
+        supported: ['.txt', '.md'],
+    });
+});
+
+// GET /knowledge-base/supported-formats
+// Get list of supported file formats
+app.get('/knowledge-base/supported-formats', (req, res) => {
+    res.json({
+        formats: ['.pdf', '.docx', '.pptx', '.txt', '.md'],
+        descriptions: {
+            '.pdf': 'PDF documents',
+            '.docx': 'Microsoft Word documents',
+            '.pptx': 'Microsoft PowerPoint presentations',
+            '.txt': 'Plain text files',
+            '.md': 'Markdown files',
+        },
+        maxFileSize: '50MB',
     });
 });
 
@@ -2352,6 +2570,124 @@ app.post('/mcp/execute', agentAuthMiddleware, async (req, res) => {
     }
 
     res.json({ success: true, result });
+});
+
+// ============ Todos API ============
+// Persistent todo storage with completion tracking
+
+// GET /todos - List all todos
+app.get('/todos', authMiddleware, (_req, res) => {
+    res.json({ todos: db.data.todos || [] });
+});
+
+// POST /todos - Create a new todo
+app.post('/todos', authMiddleware, async (req, res) => {
+    const { text, sourceMessageId, senderId } = req.body;
+    if (!text || typeof text !== 'string' || !text.trim()) {
+        return res.status(400).json({ error: 'Todo text is required' });
+    }
+
+    const todo = {
+        id: `todo-${randomUUID()}`,
+        text: text.trim(),
+        completed: false,
+        sourceMessageId: sourceMessageId || null,
+        senderId: senderId || req.user.id,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+    };
+
+    db.data.todos.push(todo);
+    await db.write();
+
+    res.json({ todo });
+});
+
+// PATCH /todos/:todoId - Update a todo (toggle completion, edit text)
+app.patch('/todos/:todoId', authMiddleware, async (req, res) => {
+    const { todoId } = req.params;
+    const todo = db.data.todos.find((t) => t.id === todoId);
+
+    if (!todo) {
+        return res.status(404).json({ error: 'Todo not found' });
+    }
+
+    const { completed, text } = req.body;
+
+    if (typeof completed === 'boolean') {
+        todo.completed = completed;
+    }
+    if (typeof text === 'string' && text.trim()) {
+        todo.text = text.trim();
+    }
+    todo.updatedAt = Date.now();
+
+    await db.write();
+
+    res.json({ todo });
+});
+
+// DELETE /todos/:todoId - Delete a todo
+app.delete('/todos/:todoId', authMiddleware, async (req, res) => {
+    const { todoId } = req.params;
+    const index = db.data.todos.findIndex((t) => t.id === todoId);
+
+    if (index === -1) {
+        return res.status(404).json({ error: 'Todo not found' });
+    }
+
+    const [deleted] = db.data.todos.splice(index, 1);
+    await db.write();
+
+    res.json({ deletedTodoId: deleted.id });
+});
+
+// POST /todos/sync - Sync todos from message extraction (upsert by sourceMessageId + text hash)
+app.post('/todos/sync', authMiddleware, async (req, res) => {
+    const { todos: extractedTodos } = req.body;
+    if (!Array.isArray(extractedTodos)) {
+        return res.status(400).json({ error: 'todos array is required' });
+    }
+
+    const existingTodos = db.data.todos || [];
+    const newTodos = [];
+    const syncedIds = [];
+
+    for (const ext of extractedTodos) {
+        if (!ext.text || !ext.sourceMessageId) continue;
+
+        // Check if already exists (by sourceMessageId + text)
+        const existing = existingTodos.find(
+            (t) => t.sourceMessageId === ext.sourceMessageId && t.text === ext.text.trim()
+        );
+
+        if (existing) {
+            syncedIds.push(existing.id);
+        } else {
+            const todo = {
+                id: `todo-${randomUUID()}`,
+                text: ext.text.trim(),
+                completed: false,
+                sourceMessageId: ext.sourceMessageId,
+                senderId: ext.senderId || req.user.id,
+                createdAt: ext.timestamp || Date.now(),
+                updatedAt: Date.now(),
+            };
+            db.data.todos.push(todo);
+            newTodos.push(todo);
+            syncedIds.push(todo.id);
+        }
+    }
+
+    if (newTodos.length > 0) {
+        await db.write();
+    }
+
+    res.json({
+        todos: db.data.todos,
+        newCount: newTodos.length,
+        syncedIds
+    });
 });
 
 // Health check endpoint for Railway

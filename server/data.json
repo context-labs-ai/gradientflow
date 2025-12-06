@@ -59,7 +59,38 @@
       "agentId": "agent-42c94532-4a63-44d7-a36a-6206302e5619"
     }
   ],
-  "messages": [],
+  "messages": [
+    {
+      "id": "ce0e43eb-14c1-40f6-b5a9-82b5a6db0bf8",
+      "content": "@AI助手 hi",
+      "senderId": "341e4181-8712-46eb-ae47-bf6fd992d940",
+      "timestamp": 1765008207747,
+      "reactions": [],
+      "conversationId": "global",
+      "role": "user",
+      "metadata": {
+        "source": "ui"
+      },
+      "mentions": [
+        "llm1"
+      ]
+    },
+    {
+      "id": "cb926a3d-5899-422f-ba14-895788bc7429",
+      "content": "Hi!",
+      "senderId": "llm1",
+      "timestamp": 1765008212249,
+      "replyToId": "ce0e43eb-14c1-40f6-b5a9-82b5a6db0bf8",
+      "reactions": [],
+      "conversationId": "global",
+      "role": "assistant",
+      "metadata": {
+        "agentId": "helper-agent-1",
+        "source": "agent"
+      },
+      "mentions": []
+    }
+  ],
   "typing": {},
   "agents": [
     {
@@ -338,9 +369,9 @@
     }
   ],
   "agentHeartbeats": {
-    "helper-agent-1": 1764847132338,
-    "agent-bfbd342f-5e27-493a-8194-acb711931040": 1764847132656,
-    "agent-42c94532-4a63-44d7-a36a-6206302e5619": 1764847132962,
+    "helper-agent-1": 1765008359701,
+    "agent-bfbd342f-5e27-493a-8194-acb711931040": 1765008359999,
+    "agent-42c94532-4a63-44d7-a36a-6206302e5619": 1765008357997,
     "agent-dc0d26b4-986e-44f5-9cc9-b6c08f88ba03": 1764845714406
   },
   "agentLooking": {},
@@ -915,7 +946,8 @@
   "llmConfig": {
     "endpoint": "https://7fjm4igmx7zj7f-3005.proxy.runpod.net/v1",
     "model": "",
-    "apiKey": ""
+    "apiKey": "123456789"
   },
-  "agentConfigs": []
+  "agentConfigs": [],
+  "todos": []
 }

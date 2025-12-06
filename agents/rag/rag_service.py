@@ -16,8 +16,11 @@ Dependencies:
 import os
 import json
 import hashlib
+import base64
 from typing import List, Dict, Optional
 from pathlib import Path
+
+from document_parser import parse_document, get_supported_extensions
 
 # Lazy imports
 _chroma_client = None
@@ -331,6 +334,50 @@ def clear_all() -> Dict:
         return {"success": False, "error": str(e)}
 
 
+def upload_file(
+    file_content: bytes,
+    filename: str,
+    mime_type: Optional[str] = None,
+    metadata: Optional[Dict] = None
+) -> Dict:
+    """
+    Upload a file (PDF, DOCX, PPTX, TXT) to the knowledge base.
+
+    Args:
+        file_content: File content as bytes
+        filename: Original filename
+        mime_type: Optional MIME type for detection
+        metadata: Optional additional metadata
+
+    Returns:
+        Dict with upload status, extracted text info, and chunk count
+    """
+    if not file_content:
+        return {"success": False, "error": "Empty file content"}
+
+    # Parse the document
+    text, doc_type, error = parse_document(file_content, filename, mime_type)
+
+    if error:
+        return {"success": False, "error": error, "doc_type": doc_type}
+
+    if not text or not text.strip():
+        return {"success": False, "error": "No text could be extracted from the file"}
+
+    # Upload the extracted text
+    result = upload_document(
+        content=text,
+        filename=filename,
+        doc_type=doc_type,
+        metadata=metadata
+    )
+
+    if result.get("success"):
+        result["extracted_chars"] = len(text)
+
+    return result
+
+
 # ============ HTTP API Server ============
 
 def create_flask_app():
@@ -361,6 +408,7 @@ def create_flask_app():
 
     @app.route('/rag/upload', methods=['POST'])
     def api_upload():
+        """Upload text content directly."""
         data = request.json
         result = upload_document(
             content=data.get('content', ''),
@@ -369,6 +417,60 @@ def create_flask_app():
             metadata=data.get('metadata')
         )
         return jsonify(result)
+
+    @app.route('/rag/upload-file', methods=['POST'])
+    def api_upload_file():
+        """
+        Upload a file (PDF, DOCX, PPTX, TXT, MD).
+
+        Accepts either:
+        1. multipart/form-data with 'file' field
+        2. JSON with base64-encoded 'content' and 'filename'
+        """
+        # Check for multipart file upload
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({"success": False, "error": "No file selected"})
+
+            file_content = file.read()
+            filename = file.filename
+            mime_type = file.content_type
+        else:
+            # JSON with base64 content
+            data = request.json or {}
+            if 'content' not in data:
+                return jsonify({"success": False, "error": "No file content provided"})
+
+            try:
+                file_content = base64.b64decode(data['content'])
+            except Exception as e:
+                return jsonify({"success": False, "error": f"Invalid base64 content: {e}"})
+
+            filename = data.get('filename', 'unknown')
+            mime_type = data.get('mimeType')
+
+        result = upload_file(
+            file_content=file_content,
+            filename=filename,
+            mime_type=mime_type,
+            metadata=data.get('metadata') if 'data' in dir() else None
+        )
+        return jsonify(result)
+
+    @app.route('/rag/supported-formats', methods=['GET'])
+    def api_supported_formats():
+        """Get list of supported file formats."""
+        return jsonify({
+            "formats": get_supported_extensions(),
+            "description": {
+                ".pdf": "PDF documents",
+                ".docx": "Microsoft Word documents",
+                ".pptx": "Microsoft PowerPoint presentations",
+                ".txt": "Plain text files",
+                ".md": "Markdown files"
+            }
+        })
 
     @app.route('/rag/search', methods=['POST'])
     def api_search():
