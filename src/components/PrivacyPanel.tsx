@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { X, Shield, Check, Server, Database, Search, Globe, DollarSign, Lock, Cloud } from 'lucide-react';
+import { X, Shield, Check, Server, Database, Search, Globe, Lock, Cloud } from 'lucide-react';
 import { useMessages, useAgents, useUsers } from '../context/ChatContext';
 
 interface PrivacyPanelProps {
@@ -21,9 +21,6 @@ const estimateTokens = (text: string): number => {
   return Math.ceil(chineseChars / 1.5 + otherChars / 4);
 };
 
-// GPT-4 pricing: input $0.03/1K, output $0.06/1K (using average $0.045/1K)
-const COST_PER_1K_TOKENS = 0.045;
-
 export const PrivacyPanel: React.FC<PrivacyPanelProps> = ({ isOpen, onClose }) => {
   const messages = useMessages();
   const agents = useAgents();
@@ -42,19 +39,12 @@ export const PrivacyPanel: React.FC<PrivacyPanelProps> = ({ isOpen, onClose }) =
 
     // Estimate tokens for all messages
     const totalTokens = messages.reduce((sum, m) => sum + estimateTokens(m.content), 0);
-    const agentTokens = agentMessages.reduce((sum, m) => sum + estimateTokens(m.content), 0);
-
-    // Calculate estimated cloud cost (if using cloud API like GPT-4)
-    const estimatedCloudCost = (totalTokens / 1000) * COST_PER_1K_TOKENS;
 
     return {
       totalMessages: messages.length,
       agentMessages: agentMessages.length,
       humanMessages: humanMessages.length,
       totalTokens,
-      agentTokens,
-      estimatedCloudCost,
-      actualCost: 0, // Local inference = free
     };
   }, [messages, users]);
 
@@ -244,27 +234,6 @@ export const PrivacyPanel: React.FC<PrivacyPanelProps> = ({ isOpen, onClose }) =
           </div>
         </div>
 
-        {/* Cost Savings */}
-        <div className="privacy-section">
-          <div className="privacy-section-title">
-            <DollarSign size={16} />
-            <span>成本节省</span>
-          </div>
-          <div className="privacy-cost-card">
-            <div className="privacy-cost-row">
-              <span className="privacy-cost-label">云端 API 估算 (GPT-4)</span>
-              <span className="privacy-cost-value cloud">${stats.estimatedCloudCost.toFixed(2)}</span>
-            </div>
-            <div className="privacy-cost-row highlight">
-              <span className="privacy-cost-label">您的实际成本</span>
-              <span className="privacy-cost-value local">${stats.actualCost.toFixed(2)}</span>
-            </div>
-            <div className="privacy-cost-savings">
-              <span>已节省</span>
-              <span className="savings-amount">${stats.estimatedCloudCost.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
         </div>
 
         {/* Footer Notice */}
@@ -533,14 +502,6 @@ export const PrivacyPanel: React.FC<PrivacyPanelProps> = ({ isOpen, onClose }) =
           border-bottom: none;
         }
 
-        .privacy-cost-row.highlight {
-          background: rgba(16, 185, 129, 0.05);
-          margin: 8px -16px 0;
-          padding: 12px 16px;
-          border-radius: 0 0 12px 12px;
-          border-bottom: none;
-        }
-
         .privacy-cost-label {
           font-size: 0.85rem;
           color: var(--text-secondary);
@@ -552,36 +513,6 @@ export const PrivacyPanel: React.FC<PrivacyPanelProps> = ({ isOpen, onClose }) =
           color: var(--text-primary);
         }
 
-        .privacy-cost-value.cloud {
-          color: #ef4444;
-          text-decoration: line-through;
-          opacity: 0.7;
-        }
-
-        .privacy-cost-value.local {
-          color: #10b981;
-          font-size: 1.1rem;
-        }
-
-        .privacy-cost-savings {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 12px;
-          padding-top: 12px;
-          border-top: 2px dashed rgba(16, 185, 129, 0.3);
-        }
-
-        .privacy-cost-savings span:first-child {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-        }
-
-        .savings-amount {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #10b981;
-        }
 
         .privacy-footer {
           flex-shrink: 0;

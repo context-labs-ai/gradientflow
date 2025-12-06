@@ -158,7 +158,9 @@ graph TD
 <img src="./image_demo.png" alt="GradientFlow Demo" width="800">
 
 ### 视频演示
-*(添加视频演示链接)*
+<video src="./GradientFlow_Demo.mp4" controls width="800"></video>
+
+*如果视频无法播放，请[点击此处下载](./GradientFlow_Demo.mp4)*
 
 ---
 
@@ -171,7 +173,7 @@ graph TD
 | 社交媒体发布 | ✅ | 已在 X 上发布并 @Gradient_HQ |
 | GitHub 仓库 | ✅ | 本仓库 |
 | 截图 | ✅ | 见上方 |
-| 视频演示 | 🔲 | 即将推出 |
+| 视频演示 | ✅ | 见上方 |
 | Parallax 集成 | ✅ | 核心架构 |
 
 ### GradientFlow 如何展示 Parallax 能力
