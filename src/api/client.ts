@@ -82,6 +82,7 @@ export const api = {
     },
     users: {
         list: () => request<{ users: User[] }>('/users'),
+        remove: (userId: string) => request<{ removedUserId: string; removedUserName: string }>(`/users/${userId}`, { method: 'DELETE' }),
     },
     llm: {
         getConfig: () =>

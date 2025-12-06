@@ -13,7 +13,7 @@ restartPolicyMaxRetries = 5
 # =============================================================================
 #
 # Required:
-# API_BASE=https://your-backend-url.up.railway.app  (Frontend+Backend service URL)
+# API_BASE=http://web.railway.internal:4000         (Internal URL - secure, no public exposure)
 # AGENT_API_TOKEN=your-agent-token                   (Must match backend's AGENT_API_TOKEN)
 # AGENT_LOGIN_EMAIL=root@example.com                 (User account for agents to login)
 # AGENT_LOGIN_PASSWORD=your-password                 (Password for agent login)
@@ -22,6 +22,23 @@ restartPolicyMaxRetries = 5
 # LLM_ENDPOINT=https://api.openai.com/v1            (Override default LLM endpoint)
 # LLM_API_KEY=sk-...                                 (API key for LLM)
 # LLM_MODEL=gpt-4o-mini                              (Model name)
+#
+# =============================================================================
+# Railway Internal Networking:
+# =============================================================================
+# When both services are in the SAME Railway project, use internal URLs:
+#   Format: http://<service-name>.railway.internal:<port>
+#   Example: http://web.railway.internal:4000
+#
+# Benefits:
+# - Traffic stays within Railway's network (not exposed to internet)
+# - Lower latency (no public internet hop)
+# - More secure (no need for public API tokens for internal calls)
+#
+# To find your backend service name:
+# 1. Go to Railway dashboard
+# 2. Look at the service name (e.g., "web", "backend", "groupchat")
+# 3. Use: http://<that-name>.railway.internal:4000
 #
 # Note: The agent service will connect to the backend API to:
 # 1. Login and get JWT token

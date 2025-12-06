@@ -10,11 +10,26 @@ healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
+# =============================================================================
 # Environment variables to set in Railway:
+# =============================================================================
+#
+# Required:
 # NODE_ENV=production
-# PORT=4000 (Railway sets this automatically)
-# CLIENT_ORIGIN=https://your-domain.up.railway.app
-# JWT_SECRET=your-secure-secret
-# AGENT_API_TOKEN=your-agent-token
-# RAG_SERVICE_URL=https://gradientflow-production.up.railway.app
-# VITE_API_URL=https://your-domain.up.railway.app (for frontend build)
+# PORT=4000                                          (Railway sets this automatically)
+# JWT_SECRET=your-secure-secret                      (CHANGE THIS in production!)
+# AGENT_API_TOKEN=your-agent-token                   (Must match agent service)
+# VITE_API_URL=https://your-domain.up.railway.app    (For frontend build)
+#
+# Optional:
+# CLIENT_ORIGIN=https://your-domain.up.railway.app   (CORS whitelist, comma-separated)
+#
+# =============================================================================
+# Railway Internal Networking (Recommended):
+# =============================================================================
+# If RAG service is in the same Railway project, use internal URL:
+#
+# RAG_SERVICE_URL=http://rag.railway.internal:4001   (Internal - secure, low latency)
+#
+# Otherwise use public URL:
+# RAG_SERVICE_URL=https://your-rag-domain.up.railway.app

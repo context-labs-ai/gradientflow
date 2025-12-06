@@ -8,5 +8,24 @@ healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
 
-# Note: Attach a Railway Volume at /data for persistent ChromaDB storage
-# Set CHROMA_DB_PATH=/data/chroma_db in Railway environment variables
+# =============================================================================
+# Environment variables to set in Railway:
+# =============================================================================
+#
+# Required:
+# CHROMA_DB_PATH=/data/chroma_db                    (Persistent storage path)
+#
+# =============================================================================
+# Setup Steps:
+# =============================================================================
+# 1. Create a Railway Volume and mount at /data
+# 2. Set CHROMA_DB_PATH=/data/chroma_db
+#
+# =============================================================================
+# Railway Internal Networking:
+# =============================================================================
+# This service will be accessible to other services in the same project at:
+#   http://rag.railway.internal:4001
+#
+# Backend should set:
+#   RAG_SERVICE_URL=http://rag.railway.internal:4001

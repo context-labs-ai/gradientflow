@@ -455,6 +455,47 @@ app.get('/users', authMiddleware, (_req, res) => {
     res.json({ users: db.data.users.map((u) => sanitizeUser(u)) });
 });
 
+// Remove (delete) a user - only root@example.com can do this
+const ROOT_EMAIL = 'root@example.com';
+
+app.delete('/users/:userId', authMiddleware, async (req, res) => {
+    // Check if current user is root
+    const currentUser = db.data.users.find((u) => u.id === req.user.id);
+    if (!currentUser || currentUser.email !== ROOT_EMAIL) {
+        return res.status(403).json({ error: 'Only root user can remove users' });
+    }
+
+    const { userId } = req.params;
+    const targetUserIndex = db.data.users.findIndex((u) => u.id === userId);
+
+    if (targetUserIndex === -1) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const targetUser = db.data.users[targetUserIndex];
+
+    // Cannot remove yourself
+    if (targetUser.id === currentUser.id) {
+        return res.status(400).json({ error: 'Cannot remove yourself' });
+    }
+
+    // Cannot remove the root user
+    if (targetUser.email === ROOT_EMAIL) {
+        return res.status(400).json({ error: 'Cannot remove the root user' });
+    }
+
+    // Remove user from database
+    const [removedUser] = db.data.users.splice(targetUserIndex, 1);
+
+    // Also remove the user's typing status if present
+    delete db.data.typing[userId];
+
+    await db.write();
+
+    console.log(`[Admin] User ${currentUser.email} removed user ${removedUser.name} (${removedUser.email || removedUser.id})`);
+    res.json({ removedUserId: removedUser.id, removedUserName: removedUser.name });
+});
+
 app.get('/agents', authMiddleware, (_req, res) => {
     const agents = db.data.agents.map((agent) => sanitizeAgent(agent)).filter(Boolean);
     const users = agents

@@ -24,28 +24,6 @@
       "type": "human"
     },
     {
-      "id": "321081d9-ddd7-440e-b20e-8606345842cc",
-      "email": "deleter2542@example.com",
-      "password_hash": "$2a$10$/5o13V6dpNIDSpbqAPcvUe0NQTJZjRVQBtbs2ITh.rIpBTl9wa0g6",
-      "name": "Deleter2542",
-      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Deleter2542",
-      "isLLM": false,
-      "status": "online",
-      "createdAt": 1764012317234,
-      "type": "human"
-    },
-    {
-      "id": "ee6e5522-7966-444d-a7e9-71eb786cc460",
-      "email": "deleter3576@example.com",
-      "password_hash": "$2a$10$n.G49WcAc45frkpYJ6THp.5LDq6MEJxgHFuBLvmqC7Rk0QWOp0h4.",
-      "name": "Deleter3576",
-      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Deleter3576",
-      "isLLM": false,
-      "status": "online",
-      "createdAt": 1764012372635,
-      "type": "human"
-    },
-    {
       "id": "308660b3-13b3-4098-b55b-7d9c86a3bc27",
       "email": "zengyuzhi2002@gmail.com",
       "password_hash": "$2a$10$Su7.45cVCC1Gl8JwJjPqau/OtOYbxWPw8shDehmRPLjiTuGIJnsh.",

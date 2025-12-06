@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useChat } from '../context/ChatContext';
-import { Hash, Settings, Mic, Headphones, Search, Plus, X, LogOut } from 'lucide-react';
+import { Hash, Settings, Mic, Headphones, Search, Plus, X, LogOut, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { api } from '../api/client';
 import { User } from '../types/chat';
+
+const ROOT_EMAIL = 'root@example.com';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -62,6 +64,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
             dispatch({ type: 'LOGOUT' });
         }
     };
+
+    const isRootUser = state.currentUser?.email === ROOT_EMAIL;
+
+    const handleRemoveUser = useCallback(async (userId: string, userName: string) => {
+        if (!window.confirm(`确定要移除用户 "${userName}" 吗？此操作不可撤销。`)) {
+            return;
+        }
+        try {
+            await api.users.remove(userId);
+            dispatch({ type: 'REMOVE_USER', payload: { userId } });
+        } catch (err) {
+            console.error('Failed to remove user', err);
+        }
+    }, [dispatch]);
 
     return (
         <>
@@ -189,30 +205,45 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                                             </span>
                                             <span className="member-group-count">{group.users.length}</span>
                                         </div>
-                                        {group.users.map(user => (
-                                            <motion.div
-                                                key={user.id}
-                                                className="member-item"
-                                                whileHover={{ backgroundColor: 'var(--bg-tertiary)', x: 4 }}
-                                            >
-                                                <div className="avatar-wrapper small">
-                                                    <img src={user.avatar} alt={user.name} />
-                                                    <motion.span
-                                                        layoutId={`${user.id}-status`}
-                                                        className={`status-indicator ${user.status}`}
-                                                        animate={{ scale: 1 }}
-                                                        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-                                                    />
-                                                </div>
-                                                <div className="member-info">
-                                                    <span className={clsx('member-name', user.isLLM && 'is-llm')}>
-                                                        {user.name}
-                                                        {user.isLLM && <span className="bot-tag">BOT</span>}
-                                                    </span>
-                                                    <span className="member-status-text">{user.status}</span>
-                                                </div>
-                                            </motion.div>
-                                        ))}
+                                        {group.users.map(user => {
+                                            const canRemoveUser = isRootUser && user.email !== ROOT_EMAIL && user.id !== state.currentUser?.id;
+                                            return (
+                                                <motion.div
+                                                    key={user.id}
+                                                    className="member-item"
+                                                    whileHover={{ backgroundColor: 'var(--bg-tertiary)', x: 4 }}
+                                                >
+                                                    <div className="avatar-wrapper small">
+                                                        <img src={user.avatar} alt={user.name} />
+                                                        <motion.span
+                                                            layoutId={`${user.id}-status`}
+                                                            className={`status-indicator ${user.status}`}
+                                                            animate={{ scale: 1 }}
+                                                            transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                                                        />
+                                                    </div>
+                                                    <div className="member-info">
+                                                        <span className={clsx('member-name', user.isLLM && 'is-llm')}>
+                                                            {user.name}
+                                                            {user.isLLM && <span className="bot-tag">BOT</span>}
+                                                        </span>
+                                                        <span className="member-status-text">{user.status}</span>
+                                                    </div>
+                                                    {canRemoveUser && (
+                                                        <button
+                                                            className="remove-user-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveUser(user.id, user.name);
+                                                            }}
+                                                            title="移除用户"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    )}
+                                                </motion.div>
+                                            );
+                                        })}
                                     </div>
                                 ))
                             )}
@@ -703,6 +734,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
           border-radius: 3px;
           font-weight: 700;
           letter-spacing: 0.02em;
+        }
+
+        .remove-user-btn {
+          padding: 4px;
+          border-radius: 4px;
+          color: var(--text-tertiary);
+          background: transparent;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+          margin-left: auto;
+          opacity: 0;
+        }
+
+        .member-item:hover .remove-user-btn {
+          opacity: 1;
+        }
+
+        .remove-user-btn:hover {
+          background-color: #fef2f2;
+          color: #ef4444;
         }
 
         .sidebar-footer {

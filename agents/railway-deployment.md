@@ -32,23 +32,47 @@ railway login
 
 ## 架构概览
 
+### 推荐架构：同项目内部网络
+
+将所有服务部署在 **同一个 Railway 项目** 中，使用内部网络通信：
+
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Frontend      │────▶│  Backend API    │────▶│  RAG Service    │
-│   (Vercel等)    │     │  (Railway/其他) │     │  (Railway)      │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                               │
-                               ▼
-                        ┌─────────────────┐
-                        │  Agent Service  │
-                        │  (Railway)      │
-                        └─────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  Railway Project                                                │
+│                                                                 │
+│  ┌─────────────────┐                                            │
+│  │   Frontend      │  (静态文件由 Backend 服务)                  │
+│  └────────┬────────┘                                            │
+│           │                                                     │
+│           ▼                                                     │
+│  ┌─────────────────┐     内部网络      ┌─────────────────┐      │
+│  │  Backend API    │◄─────────────────▶│  Agent Service  │      │
+│  │  (web)          │                   │  (agents)       │      │
+│  │  :4000          │                   │                 │      │
+│  └────────┬────────┘                   └─────────────────┘      │
+│           │                                                     │
+│           │ 内部网络                                             │
+│           ▼                                                     │
+│  ┌─────────────────┐                                            │
+│  │  RAG Service    │                                            │
+│  │  (rag)          │                                            │
+│  └─────────────────┘                                            │
+└─────────────────────────────────────────────────────────────────┘
+
+内部 URL 格式: http://<service-name>.railway.internal:<port>
 ```
 
-| 服务 | 说明 | 端口 |
-|------|------|------|
-| RAG Service | 基于 ChromaDB 的向量检索服务 | 动态 (Railway 分配) |
-| Agent Service | 多 Agent 管理服务 | 动态 (Railway 分配) |
+| 服务 | 说明 | 内部 URL |
+|------|------|----------|
+| Backend | Express API + 静态前端 | `http://web.railway.internal:4000` |
+| Agent Service | 多 Agent 管理服务 | `http://agents.railway.internal:8080` |
+| RAG Service | ChromaDB 向量检索 | `http://rag.railway.internal:4001` |
+
+### 内部网络优势
+
+- **安全**: 内部流量不暴露到公网
+- **低延迟**: 无公网跳转
+- **简化配置**: 无需配置公网 CORS
 
 ---
 
@@ -133,21 +157,30 @@ railway init
 
 ### 2. 设置环境变量
 
+**使用内部网络（推荐）**：如果后端服务在同一 Railway 项目中，使用内部 URL：
+
 ```bash
-railway variables --set "API_BASE=https://your-backend-url.com"
+# 内部网络 URL（更安全，更低延迟）
+railway variables --set "API_BASE=http://web.railway.internal:4000"
 railway variables --set "AGENT_API_TOKEN=your-agent-token"
 railway variables --set "AGENT_LOGIN_EMAIL=root@example.com"
 railway variables --set "AGENT_LOGIN_PASSWORD=your-password"
 ```
 
-或在 Railway Dashboard 中设置：
+**使用公网 URL**：如果后端在其他平台：
 
-| 变量 | 说明 | 示例 |
-|------|------|------|
-| `API_BASE` | 后端 API 地址 | `https://api.example.com` |
+```bash
+railway variables --set "API_BASE=https://your-backend-url.com"
+```
+
+| 变量 | 说明 | 内部网络示例 |
+|------|------|-------------|
+| `API_BASE` | 后端 API 地址 | `http://web.railway.internal:4000` |
 | `AGENT_API_TOKEN` | Agent 认证令牌 | `your-secret-token` |
 | `AGENT_LOGIN_EMAIL` | 登录邮箱 | `root@example.com` |
 | `AGENT_LOGIN_PASSWORD` | 登录密码 | `your-password` |
+
+> **注意**: 内部 URL 中的服务名（如 `web`）需要与 Railway Dashboard 中的服务名一致。
 
 ### 3. 部署
 
