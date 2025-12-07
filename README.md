@@ -20,9 +20,7 @@
 
 ### 🎬 视频演示
 
-[![Watch Demo Video](https://img.shields.io/badge/▶️_观看演示视频-点击下载-red?style=for-the-badge&logo=youtube)](./assets/GradientFlow_Demo.mp4)
-
-👉 **[点击下载演示视频](./assets/GradientFlow_Demo.mp4)** (MP4 格式)
+[![Watch Demo Video](https://img.youtube.com/vi/qLfxUgM752Q/maxresdefault.jpg?v=2)](https://www.youtube.com/watch?v=qLfxUgM752Q)
 
 **更多截图**: [RAG 知识库](#rag-知识库--ai-摘要) | [智能文档分析](#智能文档分析) | [Agent 配置](#agent-配置--mcp-工具)
 
