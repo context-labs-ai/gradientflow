@@ -93,6 +93,20 @@ graph TD
 -   **Low Latency**: Local inference ensures millisecond-level responses
 -   **Scalability**: Add more nodes to your Parallax cluster anytime
 
+### 🖥️ Our Hardware Setup
+
+This project demo runs on the following hardware:
+
+| Component | Specification |
+|-----------|---------------|
+| **GPU** | 2 × NVIDIA RTX 5080 |
+| **Model** | GPT-OSS 20B |
+| **Inference** | Parallax Local Inference |
+
+<img src="./public/set_up.jpg" alt="Development Environment" width="800">
+
+> 💡 Two RTX 5080 GPUs are sufficient to run a 20B parameter LLM smoothly, demonstrating the powerful potential of consumer-grade hardware for AI applications.
+
 ---
 
 ## ✨ Core Features
