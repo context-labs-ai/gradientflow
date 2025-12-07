@@ -18,9 +18,11 @@
 
 <img src="./assets/GradientBoard.png" alt="GradientFlow Demo" width="800">
 
-<video src="./assets/GradientFlow_Demo.mp4" controls width="800"></video>
+### 🎬 视频演示
 
-*如果视频无法播放，请[点击此处下载](./assets/GradientFlow_Demo.mp4)*
+[![Watch Demo Video](https://img.shields.io/badge/▶️_观看演示视频-点击下载-red?style=for-the-badge&logo=youtube)](./assets/GradientFlow_Demo.mp4)
+
+👉 **[点击下载演示视频](./assets/GradientFlow_Demo.mp4)** (MP4 格式)
 
 **更多截图**: [RAG 知识库](#rag-知识库--ai-摘要) | [智能文档分析](#智能文档分析) | [Agent 配置](#agent-配置--mcp-工具)
 
