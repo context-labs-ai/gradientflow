@@ -1,6 +1,6 @@
 # GradientFlow
 
-<img src="./gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
+<img src="./assets/gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
 
 > **🏆 打造你的专属 AI 实验室 | Gradient 黑客松参赛作品**
 >
@@ -8,7 +8,7 @@
 
 [English](./README_HACKATHON_EN.md) | [中文](./README.md)
 
-[![GitHub](https://img.shields.io/badge/GitHub-代码仓库-blue?logo=github)](https://github.com/yourusername/gradientflow)
+[![GitHub](https://img.shields.io/badge/GitHub-代码仓库-blue?logo=github)](https://github.com/zengyuzhi/gradientflow)
 [![Parallax](https://img.shields.io/badge/Powered%20by-Parallax-green)](https://github.com/GradientHQ/parallax)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 
@@ -16,11 +16,11 @@
 
 ## 📸 产品演示
 
-<img src="./GradientBoard.png" alt="GradientFlow Demo" width="800">
+<img src="./assets/GradientBoard.png" alt="GradientFlow Demo" width="800">
 
-<video src="./assets/GradientFlow_Demo2.mp4" controls width="800"></video>
+<video src="./assets/GradientFlow_Demo.mp4" controls width="800"></video>
 
-*如果视频无法播放，请[点击此处下载](./assets/GradientFlow_Demo2.mp4)*
+*如果视频无法播放，请[点击此处下载](./assets/GradientFlow_Demo.mp4)*
 
 **更多截图**: [RAG 知识库](#rag-知识库--ai-摘要) | [智能文档分析](#智能文档分析) | [Agent 配置](#agent-配置--mcp-工具)
 
@@ -99,18 +99,18 @@ graph TD
 
 ### 🤖 智能本地 Agent `🔌 Parallax 驱动`
 
--   **多 Agent 系统**：支持多个 Agent 同时运行（`@Assistant`, `@Writer`, `@Researcher`），全部由 Parallax 本地 LLM 驱动
+-   **多 Agent 系统**：支持多个 Agent 同时运行（`@AI助手`, `@Writer`, `@Researcher`），全部由 Parallax 本地 LLM 驱动
 -   **Agent 选择器**：下拉菜单选择在线 Agent，支持键盘导航
--   **RAG 检索增强生成** `🔌`：上传文档至本地知识库，Agent 利用 ChromaDB 检索私有数据
--   **网络搜索** `🔌`：集成 DuckDuckGo 隐私搜索，通过 Parallax 节点执行
--   **MCP 集成** `🔌`：通过 FastMCP 支持 Model Context Protocol，扩展工具能力
+-   **RAG 检索增强生成** `🔌`：上传文档至本地知识库，AI助手检索私有数据
+-   **网络搜索** `🔌`：集成隐私搜索，通过 Parallax 节点执行
+-   **MCP 集成** `🔌`：支持 Model Context Protocol，扩展工具能力
 -   **顺序工具调用**：支持多轮工具的顺序执行
 -   **最大轮次控制**：可配置 Agent 响应的最大轮次
 
 ### 💬 现代聊天体验
 
--   **智能上下文管理**：精细调优的 Context Engineering，Agent 能准确理解对话历史、引用关系和 @提及
--   **富文本支持**：Markdown、代码高亮、LaTeX 数学公式
+-   **智能上下文管理**：精细调优的 Context Engineering，AI助手能准确理解对话历史、引用关系和 @提及
+-   **富文本支持**：Markdown、代码高亮
 -   **交互式体验**：消息表情回应、引用回复、@提及
 -   **智能摘要** `🔌`：一键生成长对话的 AI 摘要
 -   **实时同步**：输入状态指示器和实时消息更新
@@ -120,7 +120,7 @@ graph TD
 
 -   **完全掌控**：您拥有代码、数据和模型的所有权
 -   **身份认证**：安全的 JWT 登录系统
--   **持久化存储**：所有聊天记录本地存储 (`lowdb`)
+-   **持久化存储**：所有聊天记录本地存储
 
 ---
 
@@ -131,35 +131,67 @@ graph TD
 -   Python 3.8+
 -   运行中的 Parallax 节点（或本地 GPU 环境）
 
-### 安装步骤
+---
 
-1.  **克隆仓库**
-    ```bash
-    git clone https://github.com/yourusername/parallax-chat.git
-    cd parallax-chat
-    ```
+### 第一步：配置 Parallax
 
-2.  **启动后端**
-    ```bash
-    npm install
-    npm run server
-    ```
+GradientFlow 的 AI 能力依赖 Parallax 提供本地 LLM 推理。请先完成 Parallax 的安装和配置：
 
-3.  **启动 AI 服务 (Parallax 层)**
-    ```bash
-    cd agents
-    pip install -r requirements.txt
-    # 连接到您的 Parallax 节点
-    python multi_agent_manager.py
-    ```
+👉 **[Parallax 官方仓库](https://github.com/GradientHQ/parallax)**
 
-4.  **启动前端**
-    ```bash
-    npm run dev
-    ```
+请按照 Parallax 仓库中的 **Installation** 和 **Quick Start** 说明完成配置，确保您的 Parallax 节点正常运行后再继续下一步。
 
-5.  **访问应用**
-    打开浏览器访问 `http://localhost:5173`
+---
+
+### 第二步：启动 GradientFlow 服务
+
+完整运行需要启动 **5 个服务**，请按以下顺序启动：
+
+**1. 克隆仓库并安装依赖**
+```bash
+git clone https://github.com/zengyuzhi/gradientflow.git
+cd gradientflow
+npm install
+```
+
+**2. 启动后端 API 服务器** (终端 1)
+```bash
+npm run server
+```
+
+**3. 启动 RAG 知识库服务** (终端 2)
+```bash
+cd agents/rag
+pip install -r requirements.txt
+python rag_service.py --port 4001
+```
+
+**4. 启动 MCP 研究服务** (终端 3，可选)
+```bash
+cd agents/mcp
+pip install -r requirements.txt
+python mcp_research_server.py --transport sse --port 3001
+```
+
+**5. 启动 Agent 服务** (终端 4)
+```bash
+cd agents
+pip install -r requirements.txt
+python agent_runner.py
+```
+
+**6. 启动前端开发服务器** (终端 5)
+```bash
+npm run dev
+```
+
+**7. 访问应用**
+
+打开浏览器访问 `http://localhost:5173` 并使用以下测试账户登录：
+- 邮箱: `root@example.com`
+- 密码: `1234567890`
+
+> **启动顺序**: 后端 → RAG 服务 → MCP 服务 (可选) → Agent 服务 → 前端
 
 ---
 
