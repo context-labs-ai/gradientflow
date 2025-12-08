@@ -1,6 +1,6 @@
 # GradientFlow
 
-<img src="./gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
+<img src="./assets/gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
 
 > **🏆 Build Your Own AI Lab | Gradient Hackathon Submission**
 >
@@ -16,7 +16,7 @@
 
 ## 📸 Product Demo
 
-<img src="./GradientBoard.png" alt="GradientFlow Demo" width="800">
+<img src="./assets/GradientBoard.png" alt="GradientFlow Demo" width="800">
 
 <video src="./assets/GradientFlow_Demo2.mp4" controls width="800"></video>
 
@@ -37,6 +37,14 @@
 ## 🎯 What is GradientFlow?
 
 **GradientFlow** is a privacy-first, AI-native local Workspace platform designed to empower teams and individuals with secure, intelligent collaboration. Powered by [**Parallax**](https://github.com/GradientHQ/parallax), it leverages distributed local compute to run powerful AI agents without data ever leaving your infrastructure.
+
+### 📖 Origin Story
+
+The idea for this app was born during a research discussion with friends. We noticed a recurring frustration: whenever we brainstormed, we had to constantly copy and paste our AI's responses into our group chat to keep everyone on the same page. It was tedious and inefficient.
+
+What's worse, the context was always fragmented. My AI didn't know what your AI just suggested. This "siloed intelligence" made collaboration—especially with international partners—extremely difficult. On top of that, we were terrified of feeding our confidential research data and unpublished ideas into public AI models.
+
+**We wanted a solution that offered the best of both worlds: the seamless shared context of a group chat, and the ironclad privacy of a local AI.** That's why we built GradientFlow.
 
 ### 💡 The Problem We Solve
 
@@ -61,7 +69,7 @@
 |-----------|--------------|-------------------|
 | **Multi-Agent Manager** | Runs multiple agents concurrently on Parallax nodes | Python service deployed on Parallax compute nodes |
 | **RAG Knowledge Base** | Local vector retrieval, data never leaves | ChromaDB + Parallax local inference |
-| **LLM Inference** | Zero token cost local models | Supports Llama 3 / Mistral / Qwen etc. |
+| **LLM Inference** | Zero token cost local models | Supports Llama 3 / GPT-oss / Qwen etc. |
 | **Tool Execution** | Web search, MCP protocol toolchain | Distributed task scheduling |
 
 ### System Architecture
