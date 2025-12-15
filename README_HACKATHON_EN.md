@@ -198,6 +198,19 @@ This project demo runs on the following hardware:
 
 ---
 
+## 🧭 Future Development Roadmap
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Multi-agent collaborative chat | Local multi-agent dialogue with sequential tool calls, @mentions, and shared context | ✅ Completed |
+| RAG knowledge base & AI summary | Local vector retrieval, private document uploads, and conversation summaries on private hardware | ✅ Completed |
+| WebSocket real-time channel | Gradual replacement for SSE to improve concurrency and state sync | 🚧 In Progress |
+| Multi-modal upload & preview | Extend upload, parsing, and visualization for PDFs/spreadsheets/images | 🚧 In Progress |
+| Plugin/tool marketplace (MCP/custom tools) | Planned one-click install, start/stop, and version management to reduce extension overhead | 🧭 Planned |
+| Privacy audit & compliance suite | Add configurable data retention policies, audit logs, and exportable compliance reports | 🧭 Planned |
+
+---
+
 ## 📄 License
 
 MIT License - See [LICENSE](./LICENSE) for details.
