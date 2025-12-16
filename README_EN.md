@@ -4,7 +4,6 @@
 
 > **🏆 Build Your Own AI Lab | Gradient Hackathon Submission**
 >
-> **Track 2: Building Applications**
 
 [English](./README_EN.md) | [中文](./README.md) | [Hackathon Writeup (EN)](./README_HACKATHON_EN.md)
 

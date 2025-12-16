@@ -3,8 +3,6 @@
 <img src="./assets/gradient_flow_logo_1764409055594.png" alt="GradientFlow Logo" width="200">
 
 > **🏆 Build Your Own AI Lab | Gradient Hackathon Submission**
->
-> **Track 2: Building Applications**
 
 [English](./README_EN.md) | [中文](./README.md) | [Hackathon Writeup (EN)](./README_HACKATHON_EN.md)
 
