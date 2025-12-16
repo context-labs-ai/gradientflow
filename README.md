@@ -6,7 +6,7 @@
 >
 > **赛道 2：应用构建 (Building Applications)**
 
-[English](./README_HACKATHON_EN.md) | [中文](./README.md)
+[English](./README_EN.md) | [中文](./README.md) | [Hackathon Writeup (EN)](./README_HACKATHON_EN.md)
 
 [![GitHub](https://img.shields.io/badge/GitHub-代码仓库-blue?logo=github)](https://github.com/zengyuzhi/gradientflow)
 [![Parallax](https://img.shields.io/badge/Powered%20by-Parallax-green)](https://github.com/GradientHQ/parallax)

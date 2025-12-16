@@ -18,9 +18,9 @@
 
 <img src="./assets/GradientBoard.png" alt="GradientFlow Demo" width="800">
 
-<video src="./assets/GradientFlow_Demo2.mp4" controls width="800"></video>
+### 🎬 Video Demo
 
-*If video doesn't play, [click here to download](./assets/GradientFlow_Demo2.mp4)*
+[![Watch Demo Video](https://img.youtube.com/vi/qLfxUgM752Q/maxresdefault.jpg?v=2)](https://www.youtube.com/watch?v=qLfxUgM752Q)
 
 **More Screenshots**: [RAG Knowledge Base](#rag-knowledge-base--ai-summary) | [Document Analysis](#intelligent-document-analysis) | [Agent Config](#agent-configuration--mcp-tools)
 
@@ -124,15 +124,15 @@ This project demo runs on the following hardware:
 -   **Multi-Agent System**: Run multiple agents simultaneously (`@Coder`, `@Writer`, `@Researcher`), all powered by Parallax local LLMs
 -   **Agent Selector**: Dropdown menu to select online agents with keyboard navigation
 -   **RAG Retrieval-Augmented Generation** `🔌`: Upload documents to local knowledge base, agents retrieve private data via ChromaDB
--   **Web Search** `🔌`: Integrated DuckDuckGo privacy search, executed through Parallax nodes
--   **MCP Integration** `🔌`: Model Context Protocol support via FastMCP for extended tool capabilities
+-   **Web Search** `🔌`: Integrated privacy search, executed through Parallax nodes
+-   **MCP Integration** `🔌`: Model Context Protocol support for extended tool capabilities
 -   **Sequential Tool Calling**: Support for multi-round sequential tool execution
 -   **Max Round Control**: Configurable maximum rounds for agent responses
 
 ### 💬 Modern Chat Experience
 
 -   **Smart Context Management**: Fine-tuned Context Engineering, agents accurately understand conversation history, reply threads, and @mentions
--   **Rich Text Support**: Markdown, code highlighting, LaTeX math formulas
+-   **Rich Text Support**: Markdown, code highlighting
 -   **Interactive Experience**: Message reactions, replies, @mentions
 -   **Smart Summaries** `🔌`: One-click AI summary of long conversation threads
 -   **Real-time Sync**: Typing indicators and live message updates
@@ -149,51 +149,94 @@ This project demo runs on the following hardware:
 ## ⚡ Quick Start
 
 ### Prerequisites
+
 -   Node.js 18+
 -   Python 3.8+
 -   A running Parallax node (or local GPU environment)
 
-### Installation
+---
 
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/yourusername/parallax-chat.git
-    cd parallax-chat
-    ```
+### Step 1: Configure Parallax
 
-2.  **Start the Backend**
-    ```bash
-    npm install
-    npm run server
-    ```
+GradientFlow’s AI capabilities rely on Parallax for local LLM inference. Please install and configure Parallax first:
 
-3.  **Start AI Services (Parallax Layer)**
-    ```bash
-    cd agents
-    pip install -r requirements.txt
-    # Connect to your Parallax node
-    python multi_agent_manager.py
-    ```
+👉 **[Parallax Official Repository](https://github.com/GradientHQ/parallax)**
 
-4.  **Start the Frontend**
-    ```bash
-    npm run dev
-    ```
+Follow the **Installation** and **Quick Start** instructions in the Parallax repository and make sure your Parallax node is running before continuing.
 
-5.  **Access the App**
-    Open `http://localhost:5173` in your browser
+---
+
+### Step 2: Start GradientFlow Services
+
+To run everything, start **5 services** in the following order:
+
+**1. Clone and install dependencies**
+
+```bash
+git clone https://github.com/zengyuzhi/gradientflow.git
+cd gradientflow
+npm install
+```
+
+**2. Start the backend API server** (Terminal 1)
+
+```bash
+npm run server
+```
+
+**3. Start the RAG knowledge base service** (Terminal 2)
+
+```bash
+cd agents/rag
+pip install -r requirements.txt
+python rag_service.py --port 4001
+```
+
+**4. Start the MCP research service** (Terminal 3, optional)
+
+```bash
+cd agents/mcp
+pip install -r requirements.txt
+python mcp_research_server.py --transport sse --port 3001
+```
+
+**5. Start the Agent service** (Terminal 4)
+
+```bash
+cd agents
+pip install -r requirements.txt
+python agent_runner.py
+```
+
+**6. Start the frontend dev server** (Terminal 5)
+
+```bash
+npm run dev
+```
+
+**7. Access the app**
+
+Open `http://localhost:5173` and login with:
+
+- Email: `root@example.com`
+- Password: `1234567890`
+
+> **Startup order**: Backend → RAG → MCP (optional) → Agents → Frontend
 
 ---
 
 ## 📷 More Screenshots
 
 ### RAG Knowledge Base + AI Summary
+
 <img src="./assets/image1.png" alt="RAG Knowledge Base" width="800">
 
 ### Intelligent Document Analysis
+
 <img src="./assets/image2.png" alt="Document Analysis" width="800">
 
 ### Agent Configuration + MCP Tools
+
 <img src="./assets/image3.png" alt="Agent Configuration" width="800">
 
 ---
@@ -220,3 +263,5 @@ MIT License - See [LICENSE](./LICENSE) for details.
 *Built with ❤️ for the Gradient Network Community.*
 
 **#BuildYourOwnAILab #Parallax #GradientNetwork**
+
+
