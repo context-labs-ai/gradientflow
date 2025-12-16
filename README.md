@@ -4,7 +4,6 @@
 
 > **🏆 打造你的专属 AI 实验室 | Gradient 黑客松参赛作品**
 >
-> **赛道 2：应用构建 (Building Applications)**
 
 [English](./README_EN.md) | [中文](./README.md) | [Hackathon Writeup (EN)](./README_HACKATHON_EN.md)
 
