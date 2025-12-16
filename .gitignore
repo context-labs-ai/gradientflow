@@ -16,6 +16,9 @@ coverage/
 
 # Environment variables
 .env
+.env.*
+*.env
+!.env.example
 
 # Editor directories
 .vscode/
@@ -36,9 +39,21 @@ Thumbs.db
 **/*.pyc
 
 venv/
-server/chroma_rag_db/chroma.sqlite3
-server/chroma_rag_db/0a6cdb3b-d3e4-412f-b085-fb28562bf5c0/data_level0.bin
-server/chroma_rag_db/0a6cdb3b-d3e4-412f-b085-fb28562bf5c0/header.bin
-server/chroma_rag_db/0a6cdb3b-d3e4-412f-b085-fb28562bf5c0/length.bin
-server/chroma_rag_db/0a6cdb3b-d3e4-412f-b085-fb28562bf5c0/link_lists.bin
-Screenshot 2025-12-06 160118.png
+.venv/
+env/
+
+# Local runtime data (do not commit)
+server/data.json
+server/chroma_rag_db/
+server/chroma_rag_db/**
+*.sqlite3
+*.db
+*.bin
+
+# Project meta / assistant docs (do not publish in OSS)
+AGENTS.md
+Agents.md
+CLAUDE.md
+Claude.md
+command.txt
+
