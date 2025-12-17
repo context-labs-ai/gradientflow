@@ -37,6 +37,7 @@ import toast from 'react-hot-toast';
 import clsx from 'clsx';
 import { useChat } from '../context/ChatContext';
 import type { Todo } from '../types/chat';
+import { useTranslation } from 'react-i18next';
 
 // Types
 type TabType = 'content' | 'tasks' | 'participants' | 'search';
@@ -94,6 +95,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     onOpenSettings,
 }) => {
     const { state } = useChat();
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<TabType>('content');
     const [contentSubTab, setContentSubTab] = useState<ContentSubTab>('documents');
     const [searchQuery, setSearchQuery] = useState('');
@@ -333,7 +335,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         if (diffDays === 0) {
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } else if (diffDays === 1) {
-            return '昨天';
+            return t('common.yesterday') || 'Yesterday';
         } else if (diffDays < 7) {
             return date.toLocaleDateString([], { weekday: 'short' });
         } else {
@@ -351,7 +353,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             setBackendTodos(prev => prev.map(t => t.id === todoId ? res.todo : t));
         } catch (err) {
             console.error('Failed to toggle todo:', err);
-            toast.error('更新失败');
+            toast.error(t('common.error') || 'Error');
         } finally {
             setTogglingTodo(null);
         }
@@ -379,10 +381,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             const res = await api.todos.create({ text });
             setBackendTodos(prev => [res.todo, ...prev]);
             setNewTodoText('');
-            toast.success('待办已添加');
+            toast.success(t('chatSidebar.addTask'));
         } catch (err) {
             console.error('Failed to create todo:', err);
-            toast.error('添加失败');
+            toast.error(t('common.error') || 'Error');
         } finally {
             setIsCreatingTodo(false);
         }
@@ -402,7 +404,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         if (!editingTodoId || savingEdit) return;
         const text = editTodoText.trim();
         if (!text) {
-            toast.error('待办内容不能为空');
+            toast.error(t('common.error') || 'Error');
             return;
         }
 
@@ -412,10 +414,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             setBackendTodos(prev => prev.map(t => t.id === editingTodoId ? res.todo : t));
             setEditingTodoId(null);
             setEditTodoText('');
-            toast.success('待办已更新');
+            toast.success(t('common.save'));
         } catch (err) {
             console.error('Failed to update todo:', err);
-            toast.error('更新失败');
+            toast.error(t('common.error') || 'Error');
         } finally {
             setSavingEdit(false);
         }
@@ -428,10 +430,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         try {
             await api.todos.delete(todoId);
             setBackendTodos(prev => prev.filter(t => t.id !== todoId));
-            toast.success('待办已删除');
+            toast.success(t('common.delete'));
         } catch (err) {
             console.error('Failed to delete todo:', err);
-            toast.error('删除失败');
+            toast.error(t('delete.failed'));
         } finally {
             setDeletingTodoId(null);
         }
@@ -444,10 +446,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         try {
             await api.knowledgeBase.delete(doc.documentId);
             setDeletedDocs((prev) => ({ ...prev, [doc.id]: true }));
-            toast.success(`已从知识库删除: ${doc.filename}`);
+            toast.success(`${t('chatSidebar.deleteDocument')}: ${doc.filename}`);
         } catch (err) {
             console.error('Failed to delete document:', err);
-            toast.error('删除失败');
+            toast.error(t('delete.failed'));
         } finally {
             setDeletingDocs((prev) => ({ ...prev, [doc.id]: false }));
         }
@@ -634,7 +636,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     onClick={() => setContentSubTab('documents')}
                 >
                     <FileText size={14} />
-                    <span>文件</span>
+                    <span>{t('chatSidebar.documents')}</span>
                     <span className="count">{documents.length}</span>
                 </button>
                 <button
@@ -642,7 +644,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     onClick={() => setContentSubTab('links')}
                 >
                     <Link2 size={14} />
-                    <span>链接</span>
+                    <span>{t('chatSidebar.links')}</span>
                     <span className="count">{links.length}</span>
                 </button>
                 <button
@@ -650,7 +652,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     onClick={() => setContentSubTab('media')}
                 >
                     <Image size={14} />
-                    <span>媒体</span>
+                    <span>{t('chatSidebar.images')}</span>
                     <span className="count">{media.length}</span>
                 </button>
             </div>
@@ -669,8 +671,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 <div className="empty-illustration">
                                     <FileText size={20} />
                                 </div>
-                                <div className="empty-title">暂无文件</div>
-                                <div className="empty-hint">分享的文件会出现在这里</div>
+                                <div className="empty-title">{t('chatSidebar.documents')}</div>
+                                <div className="empty-hint"></div>
                             </motion.div>
                         ) : (
                             documents.map((doc, i) => {
@@ -692,17 +694,17 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                         <div className="content-info">
                                             <div className="content-title">{doc.filename}</div>
                                             <div className="content-meta">
-                                                <span>{sender?.name || '未知'}</span>
+                                                <span>{sender?.name || t('sidebar.other')}</span>
                                                 <span className="dot">·</span>
                                                 <span>{formatTime(doc.timestamp)}</span>
                                                 {doc.uploadedToRag && !isDeleted && (
-                                                    <span className="rag-badge" title={`${doc.chunksCreated || 0} 个文本块`}>
+                                                    <span className="rag-badge" title={`${doc.chunksCreated || 0}`}>
                                                         <Database size={10} />
-                                                        <span>知识库</span>
+                                                        <span>{t('agent.tools.knowledgeBase')}</span>
                                                     </span>
                                                 )}
                                                 {isDeleted && (
-                                                    <span className="rag-deleted-badge">已移除</span>
+                                                    <span className="rag-deleted-badge">{t('common.delete')}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -714,7 +716,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                     handleDeleteDocument(doc);
                                                 }}
                                                 disabled={isDeleting}
-                                                title="从知识库中删除"
+                                                title={t('chatSidebar.deleteDocument')}
                                             >
                                                 {isDeleting ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
                                             </button>
@@ -737,8 +739,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 <div className="empty-illustration">
                                     <Link2 size={20} />
                                 </div>
-                                <div className="empty-title">暂无链接</div>
-                                <div className="empty-hint">分享的链接会出现在这里</div>
+                                <div className="empty-title">{t('chatSidebar.links')}</div>
+                                <div className="empty-hint"></div>
                             </motion.div>
                         ) : (
                             links.map((link, i) => {
@@ -764,7 +766,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                 <ExternalLink size={12} className="external-icon" />
                                             </div>
                                             <div className="content-meta">
-                                                <span>{sender?.name || '未知'}</span>
+                                                <span>{sender?.name || t('sidebar.other')}</span>
                                                 <span className="dot">·</span>
                                                 <span>{formatTime(link.timestamp)}</span>
                                             </div>
@@ -787,8 +789,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 <div className="empty-illustration">
                                     <Image size={20} />
                                 </div>
-                                <div className="empty-title">暂无媒体</div>
-                                <div className="empty-hint">分享的图片会出现在这里</div>
+                                <div className="empty-title">{t('chatSidebar.images')}</div>
+                                <div className="empty-hint"></div>
                             </motion.div>
                         ) : (
                             <div className="media-grid">
@@ -821,15 +823,15 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             <div className="tasks-section">
                 <div className="section-header">
                     <Settings size={16} />
-                    <span>AI 设置</span>
-                    {llmStatus === 'loading' && <span className="status-pill neutral">检测中</span>}
-                    {llmStatus === 'configured' && <span className="status-pill success">已配置</span>}
-                    {llmStatus === 'not-configured' && <span className="status-pill warning">未配置</span>}
-                    {llmStatus === 'error' && <span className="status-pill error">加载失败</span>}
+                    <span>{t('layout.settings')}</span>
+                    {llmStatus === 'loading' && <span className="status-pill neutral">{t('common.loading')}</span>}
+                    {llmStatus === 'configured' && <span className="status-pill success">{t('agent.active')}</span>}
+                    {llmStatus === 'not-configured' && <span className="status-pill warning">{t('agent.inactive')}</span>}
+                    {llmStatus === 'error' && <span className="status-pill error">{t('common.error') || 'Error'}</span>}
                 </div>
                 <div className="llm-cta">
                     <div className="llm-cta-header-row">
-                        <span className="llm-cta-title-cn">配置模型和 API Key</span>
+                        <span className="llm-cta-title-cn">{t('settings.subtitle')}</span>
                     </div>
                     <button
                         className="generate-btn compact-btn"
@@ -839,7 +841,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         }}
                     >
                         <Settings size={14} />
-                        <span>前往设置</span>
+                        <span>{t('layout.settings')}</span>
                     </button>
                 </div>
             </div>
@@ -855,7 +857,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         {isSummaryExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     </button>
                     <Sparkles size={16} />
-                    <span>AI 总结</span>
+                    <span>{t('chatSidebar.summary')}</span>
                     {summary && (
                         <button
                             className="icon-btn-small"
@@ -864,7 +866,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 e.stopPropagation();
                                 setIsSummaryModalOpen(true);
                             }}
-                            title="全屏查看"
+                            title={t('chatSidebar.expand')}
                         >
                             <Maximize2 size={14} />
                         </button>
@@ -899,19 +901,19 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 {isStreaming ? (
                                     <button className="generate-btn stop-btn" onClick={stopStreaming}>
                                         <StopCircle size={14} />
-                                        <span>停止生成</span>
+                                        <span>{t('common.cancel')}</span>
                                     </button>
                                 ) : (
                                     <button className="generate-btn" onClick={generateSummary} disabled={loadingSummary}>
                                         {loadingSummary ? (
                                             <>
                                                 <Loader2 size={14} className="spin" />
-                                                <span>生成中...</span>
+                                                <span>{t('chatSidebar.generatingSummary')}</span>
                                             </>
                                         ) : (
                                             <>
                                                 {summary ? <RotateCcw size={14} /> : <Sparkles size={14} />}
-                                                <span>{summary ? '重新生成' : '生成总结'}</span>
+                                                <span>{summary ? t('common.retry') : t('chatSidebar.generateSummary')}</span>
                                             </>
                                         )}
                                     </button>
@@ -921,10 +923,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                     <div className="reasoning-section" ref={reasoningRef}>
                                         <div className="reasoning-header">
                                             <Clock size={12} />
-                                            <span>思考中...</span>
+                                            <span>{t('common.loading')}</span>
                                         </div>
                                         <div className="reasoning-content">
-                                            {reasoning || '正在分析聊天内容...'}
+                                            {reasoning || t('common.loading')}
                                         </div>
                                     </div>
                                 )}
@@ -939,11 +941,11 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 {summary && (
                                     <div className="summary-output">
                                         <div className="summary-header">
-                                            <span>总结</span>
+                                            <span>{t('chatSidebar.summary')}</span>
                                             <button
                                                 className="icon-btn-small"
                                                 onClick={copySummaryToClipboard}
-                                                title="复制总结"
+                                                title={t('chatSidebar.copy')}
                                             >
                                                 {summaryCopyStatus === 'success' ? (
                                                     <ClipboardCheck size={14} />
@@ -969,7 +971,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             <div className="tasks-section">
                 <div className="section-header">
                     <CheckSquare size={16} />
-                    <span>待办事项</span>
+                    <span>{t('chatSidebar.tasks')}</span>
                     {pendingTaskCount > 0 && (
                         <span className="task-count">{pendingTaskCount}</span>
                     )}
@@ -977,7 +979,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         className="icon-btn-small"
                         style={{ marginLeft: 'auto' }}
                         onClick={copyTasksToClipboard}
-                        title="复制任务列表"
+                        title={t('chatSidebar.copy')}
                     >
                         {taskCopyStatus === 'success' ? (
                             <ClipboardCheck size={14} />
@@ -995,7 +997,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         ref={newTodoInputRef}
                         type="text"
                         className="todo-add-input"
-                        placeholder="添加新待办..."
+                        placeholder={t('chatSidebar.addTask')}
                         value={newTodoText}
                         onChange={(e) => setNewTodoText(e.target.value)}
                         onKeyDown={(e) => {
@@ -1010,7 +1012,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         className="todo-add-btn"
                         onClick={handleCreateTodo}
                         disabled={!newTodoText.trim() || isCreatingTodo}
-                        title="添加待办"
+                        title={t('chatSidebar.addTask')}
                     >
                         {isCreatingTodo ? <Loader2 size={16} className="spin" /> : <Plus size={16} />}
                     </button>
@@ -1019,15 +1021,15 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 {todosLoading ? (
                     <div className="empty-state">
                         <Loader2 size={20} className="spin" />
-                        <div className="empty-title">加载中...</div>
+                        <div className="empty-title">{t('common.loading')}</div>
                     </div>
                 ) : backendTodos.length === 0 ? (
                     <div className="empty-state">
                         <div className="empty-illustration">
                             <CheckSquare size={20} />
                         </div>
-                        <div className="empty-title">暂无待办事项</div>
-                        <div className="empty-hint">在上方输入框添加，或在聊天中提及任务</div>
+                        <div className="empty-title">{t('chatSidebar.tasks')}</div>
+                        <div className="empty-hint"></div>
                     </div>
                 ) : (
                     <div className="tasks-list">
@@ -1044,7 +1046,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                     <div className="task-group-avatar">
                                         {group.sender?.name?.[0]?.toUpperCase() || '?'}
                                     </div>
-                                    <span className="task-group-name">{group.sender?.name || '未知用户'}</span>
+                                    <span className="task-group-name">{group.sender?.name || t('sidebar.other')}</span>
                                 </div>
                                 {group.todos.map((todo) => (
                                     <div
@@ -1080,7 +1082,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                         className="task-action-btn save"
                                                         onClick={handleSaveEdit}
                                                         disabled={savingEdit}
-                                                        title="保存"
+                                                        title={t('common.save')}
                                                     >
                                                         {savingEdit ? <Loader2 size={14} className="spin" /> : <Check size={14} />}
                                                     </button>
@@ -1088,7 +1090,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                         className="task-action-btn cancel"
                                                         onClick={handleCancelEdit}
                                                         disabled={savingEdit}
-                                                        title="取消"
+                                                        title={t('common.cancel')}
                                                     >
                                                         <X size={14} />
                                                     </button>
@@ -1118,7 +1120,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                             e.stopPropagation();
                                                             handleStartEdit(todo);
                                                         }}
-                                                        title="编辑"
+                                                        title={t('common.edit')}
                                                     >
                                                         <Pencil size={12} />
                                                     </button>
@@ -1129,7 +1131,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                                             handleDeleteTodo(todo.id);
                                                         }}
                                                         disabled={deletingTodoId === todo.id}
-                                                        title="删除"
+                                                        title={t('common.delete')}
                                                     >
                                                         {deletingTodoId === todo.id ? (
                                                             <Loader2 size={12} className="spin" />
@@ -1158,7 +1160,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     <input
                         type="text"
                         className="search-input"
-                        placeholder="搜索消息..."
+                        placeholder={t('common.search')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -1186,10 +1188,9 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 <Search size={20} />
                             </div>
                             <div className="empty-title">
-                                {searchQuery ? '未找到相关消息' : '搜索聊天记录'}
+                                {t('chatSidebar.search')}
                             </div>
                             <div className="empty-hint">
-                                {searchQuery ? '换个关键词试试' : '输入关键词开始搜索'}
                             </div>
                         </motion.div>
                     ) : (
@@ -1220,7 +1221,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                             >
                                                 {sender?.name?.[0]?.toUpperCase() || '?'}
                                             </div>
-                                            <span className="result-name">{sender?.name || '未知用户'}</span>
+                                            <span className="result-name">{sender?.name || t('sidebar.other')}</span>
                                         </div>
                                         <span className="result-time">{formatTime(msg.timestamp)}</span>
                                     </div>
@@ -1240,7 +1241,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         <div className="sidebar-section">
             <div className="section-header">
                 <Users size={16} />
-                <span>成员</span>
+                <span>{t('chatSidebar.members')}</span>
                 <span className="count">{participants.length}</span>
             </div>
             <div className="participants-list">
@@ -1272,11 +1273,11 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                 <div className="participant-name">
                                     {user.name}
                                     <span className={clsx('role-badge', user.type === 'agent' ? 'agent' : 'human')}>
-                                        {user.type === 'agent' ? '机器人' : '成员'}
+                                        {user.type === 'agent' ? 'Bot' : t('chatSidebar.members')}
                                     </span>
                                 </div>
                                 <div className="participant-meta">
-                                    {messageCount} 条消息
+                                    {messageCount} {t('app.newMessage').replace('新', '')}
                                     {lastActive > 0 && ` · ${formatTime(lastActive)}`}
                                 </div>
                             </div>
@@ -1309,10 +1310,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         <MessageCircle size={20} />
                     </div>
                     <div className="sidebar-header-content">
-                        <h3>聊天信息</h3>
+                        <h3>{t('chatSidebar.chatInfo')}</h3>
                         <div className="sidebar-header-subtitle">
                             <span className="online-dot" />
-                            <span>{participants.length} 位成员 · {state.messages.length} 条消息</span>
+                            <span>{participants.length} {t('chatSidebar.members')} · {state.messages.length}</span>
                         </div>
                     </div>
                     <button className="close-btn" onClick={onClose}>
@@ -1326,28 +1327,28 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         onClick={() => setActiveTab('content')}
                     >
                         <FileText size={16} />
-                        <span>内容</span>
+                        <span>{t('chatSidebar.documents')}</span>
                     </button>
                     <button
                         className={clsx('tab', activeTab === 'search' && 'active')}
                         onClick={() => setActiveTab('search')}
                     >
                         <Search size={16} />
-                        <span>搜索</span>
+                        <span>{t('chatSidebar.search')}</span>
                     </button>
                     <button
                         className={clsx('tab', activeTab === 'tasks' && 'active')}
                         onClick={() => setActiveTab('tasks')}
                     >
                         <CheckSquare size={16} />
-                        <span>任务</span>
+                        <span>{t('chatSidebar.tasks')}</span>
                     </button>
                     <button
                         className={clsx('tab', activeTab === 'participants' && 'active')}
                         onClick={() => setActiveTab('participants')}
                     >
                         <Users size={16} />
-                        <span>成员</span>
+                        <span>{t('chatSidebar.members')}</span>
                     </button>
                 </div>
 
@@ -1380,13 +1381,13 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                             <div className="summary-modal-header">
                                 <div className="summary-modal-title">
                                     <Sparkles size={18} />
-                                    <span>AI 总结</span>
+                                    <span>{t('chatSidebar.summary')}</span>
                                 </div>
                                 <div className="summary-modal-actions">
                                     <button
                                         className="icon-btn-small"
                                         onClick={copySummaryToClipboard}
-                                        title="复制总结"
+                                        title={t('chatSidebar.copy')}
                                     >
                                         {summaryCopyStatus === 'success' ? (
                                             <ClipboardCheck size={16} />
@@ -1397,7 +1398,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                                     <button
                                         className="icon-btn-small"
                                         onClick={() => setIsSummaryModalOpen(false)}
-                                        title="关闭"
+                                        title={t('common.close')}
                                     >
                                         <X size={16} />
                                     </button>

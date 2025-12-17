@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import { Menu, Info, Hash, Users, PanelRightOpen, PanelRightClose, Settings, Shield } from 'lucide-react';
 import { useChat } from '../context/ChatContext';
 import { Sidebar } from './Sidebar';
@@ -16,6 +16,7 @@ interface LayoutProps {
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAgentPanelOpen, setIsAgentPanelOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
@@ -31,7 +32,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="layout-container">
       {!isOnline && (
         <div className="offline-banner">
-          您当前处于离线状态。更改可能无法保存。
+          {t('layout.offlineWarning')}
         </div>
       )}
       <Sidebar
@@ -53,7 +54,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div className="chat-header-meta">
               <Users size={14} />
-              <span>{onlineCount} 在线</span>
+              <span>{onlineCount} {t('common.online')}</span>
             </div>
           </div>
           <div className="chat-header-right">
@@ -63,22 +64,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <button
               className={`privacy-btn${isPrivacyPanelOpen ? ' active' : ''}`}
               onClick={() => setIsPrivacyPanelOpen(!isPrivacyPanelOpen)}
-              title="隐私审计"
+              title={t('layout.privacyAudit')}
             >
               <Shield size={16} />
-              <span className="privacy-btn-text">本地</span>
+              <span className="privacy-btn-text">{t('common.local')}</span>
             </button>
             <button
               className={`info-btn${isChatSidebarOpen ? ' active' : ''}`}
               onClick={() => setIsChatSidebarOpen(!isChatSidebarOpen)}
-              title="聊天信息"
+              title={t('layout.chatInfo')}
             >
               {isChatSidebarOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
             </button>
-            <button className="info-btn" onClick={() => setIsSettingsOpen(true)} title="设置">
+            <button className="info-btn" onClick={() => setIsSettingsOpen(true)} title={t('layout.settings')}>
               <Settings size={18} />
             </button>
-            <button className="info-btn" onClick={() => setIsAboutOpen(true)} title="关于">
+            <button className="info-btn" onClick={() => setIsAboutOpen(true)} title={t('layout.about')}>
               <Info size={18} />
             </button>
           </div>

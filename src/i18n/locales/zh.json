@@ -1,0 +1,288 @@
+{
+  "auth": {
+    "poweredBy": "技术支持",
+    "headline": "下一代 <1>多智能体协作</1> 空间",
+    "description": "将每一次对话转化为智能工作区。集成<b>长期记忆</b>与<b>私有知识库</b>，让 AI 成为你生活与工作的得力伙伴。",
+    "createIdentity": "创建新身份",
+    "welcomeBack": "欢迎回来",
+    "registerSubtitle": "注册以接入 Parallax 协作网络",
+    "loginSubtitle": "登录以连接您的智能体工作区",
+    "nickname": "昵称",
+    "nicknamePlaceholder": "您的称呼",
+    "email": "邮箱",
+    "password": "密码",
+    "register": "立即注册",
+    "login": "登录",
+    "haveAccount": "已有账号？",
+    "noAccount": "还没有账号？",
+    "loginNow": "直接登录",
+    "registerNow": "免费注册",
+    "validation": {
+      "fixErrors": "请先修复表单中的错误提示",
+      "emailRequired": "邮箱不能为空",
+      "emailInvalid": "请输入有效邮箱地址",
+      "passwordRequired": "密码不能为空",
+      "passwordMinLength": "至少 8 位字符",
+      "nicknameRequired": "昵称不能为空",
+      "nicknameMinLength": "至少输入 2 个字符"
+    },
+    "messages": {
+      "registerSuccess": "注册成功，正在自动登录…",
+      "loginSuccess": "登录成功，正在进入聊天室…",
+      "emailTaken": "邮箱已被注册，请直接登录或更换邮箱",
+      "invalidRegister": "注册信息不完整或密码太短",
+      "registerFailed": "注册失败：{{reason}}",
+      "invalidCredentials": "邮箱或密码不正确",
+      "loginFailed": "登录失败：{{reason}}",
+      "requestFailed": "请求失败"
+    },
+    "features": {
+      "memory": {
+        "title": "专属记忆库",
+        "desc": "RAG 驱动的私有知识引擎，让 AI 深度理解你的文档、笔记与对话历史。"
+      },
+      "privacy": {
+        "title": "端侧隐私计算",
+        "desc": "数据在本地边缘节点处理，通过 Parallax 协议实现可信的分布式推理。"
+      },
+      "intent": {
+        "title": "意图驱动协作",
+        "desc": "基于 LLM 意图识别引擎，实现 Agent 从'被动响应'到'主动协作'的范式转变。"
+      }
+    }
+  },
+  "common": {
+    "loading": "加载中...",
+    "retry": "重试",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "confirm": "确认",
+    "close": "关闭",
+    "search": "搜索",
+    "online": "在线",
+    "offline": "离线",
+    "busy": "忙碌",
+    "local": "本地"
+  },
+  "app": {
+    "loadingSession": "正在加载会话...",
+    "loadSessionFailed": "加载会话失败",
+    "noUserInSession": "会话中无用户",
+    "newMessage": "新消息"
+  },
+  "layout": {
+    "offlineWarning": "您当前处于离线状态。更改可能无法保存。",
+    "privacyAudit": "隐私审计",
+    "settings": "设置",
+    "about": "关于",
+    "chatInfo": "聊天信息"
+  },
+  "sidebar": {
+    "channels": "频道",
+    "llmAgents": "LLM Agents",
+    "members": "成员",
+    "manage": "管理",
+    "new": "新建",
+    "searchMembers": "搜索成员",
+    "noAgentConfigured": "未配置 Agent",
+    "noMembersFound": "未找到成员",
+    "other": "其他",
+    "confirmRemoveUser": "确定要移除用户",
+    "logout": "退出登录"
+  },
+  "chat": {
+    "inputPlaceholder": "输入消息...",
+    "reply": "回复",
+    "addToKnowledgeBase": "添加到知识库",
+    "shareOnly": "仅分享",
+    "sendFailed": "发送消息失败",
+    "fileAdded": "已添加文件:",
+    "textFilesOnly": "仅支持文本文件和文档",
+    "fileTooLarge": "文件大小不能超过",
+    "noTextFromHtml": "HTML 文件中未提取到有效文本内容",
+    "cannotReadFile": "无法读取文件"
+  },
+  "chatSidebar": {
+    "chatInfo": "对话信息",
+    "summary": "对话摘要",
+    "tasks": "任务",
+    "members": "成员",
+    "search": "搜索",
+    "generatingSummary": "生成摘要中...",
+    "summaryGenerated": "摘要已生成",
+    "generateSummary": "生成摘要",
+    "copy": "复制",
+    "expand": "展开",
+    "collapse": "收起",
+    "addTask": "新增任务",
+    "done": "完成",
+    "todo": "待办",
+    "documents": "文档",
+    "links": "链接",
+    "images": "图片",
+    "uploadedToKb": "已上传到知识库",
+    "deleteDocument": "删除文档"
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "配置 AI 接口地址、模型和 API Key",
+    "interfaceUrl": "接口地址",
+    "modelName": "模型名称",
+    "apiKey": "API Key",
+    "optional": "可选",
+    "conditional": "视情况而定",
+    "clearKey": "清空已存 Key",
+    "saving": "保存中...",
+    "saved": "已保存",
+    "saveConfig": "保存配置",
+    "loadFailed": "加载配置失败，请稍后重试。",
+    "sessionExpired": "未登录或会话已过期，请重新登录后再配置 AI。",
+    "endpointRequired": "Endpoint 不能为空",
+    "saveFailed": "保存配置失败，请稍后重试。",
+    "apiKeyHint": "OpenAI/Anthropic/Azure 必填 | Ollama/Parallax 等自托管服务填 not-needed 或留空",
+    "securityNote": "配置将安全存储，优先用于摘要生成服务。"
+  },
+  "agent": {
+    "config": "Agent 配置",
+    "configCenter": "Agent 配置中心",
+    "configSubtitle": "配置房间内可用的 LLM Agent，支持自定义模型、能力与运行时。",
+    "closeConfig": "关闭 Agent 配置",
+    "agentList": "Agent 列表",
+    "newAgent": "新建",
+    "noAgents": "暂无 Agent，点击「新建」创建一个。",
+    "name": "名称",
+    "description": "描述",
+    "avatarUrl": "头像 URL",
+    "status": "状态",
+    "active": "启用",
+    "inactive": "停用",
+    "enabled": "已启用",
+    "disabled": "已停用",
+    "provider": "供应商",
+    "modelEndpoint": "模型 Endpoint",
+    "modelEndpointHint": "模型服务的 API 地址（自定义或第三方服务）",
+    "modelName": "模型名称",
+    "temperature": "温度",
+    "maxTokens": "Max Tokens",
+    "systemPrompt": "系统 Prompt",
+    "apiKey": "API Key",
+    "apiKeyRequired": "使用官方 API 必须填写 API Key",
+    "apiKeyOptional": "本地模型（Ollama）或 Parallax 等自托管服务可填 not-needed 或留空",
+    "basicInfo": "基础信息",
+    "modelAndPrompt": "模型 & Prompt",
+    "capabilitiesAndTools": "能力 & 工具",
+    "capabilitiesHint": "开启能力会自动启用所需工具",
+    "generalTools": "通用工具",
+    "generalToolsHint": "可独立启用的工具，适用于所有模式",
+    "mcpExternalTools": "MCP 外部工具",
+    "mcpHint": "连接 MCP 服务器以使用外部工具（如 GitHub、数据库等）",
+    "runtimeSettings": "运行时设置",
+    "runtimeType": "Runtime 类型",
+    "proactiveCooldown": "主动响应冷却时间（秒）",
+    "proactiveCooldownHint": "Agent 主动插话/点赞的最小间隔时间",
+    "maxToolRounds": "工具调用最大轮数",
+    "maxToolRoundsHint": "Agent 每次响应最多执行多少轮工具调用（默认 3 轮）",
+    "capabilities": {
+      "title": "能力",
+      "passiveResponse": "被动回答",
+      "passiveResponseDesc": "被 @ 时回复消息",
+      "activeInterject": "主动插话",
+      "activeInterjectDesc": "主动参与对话（未 @ 时也可能回复）",
+      "emojiReaction": "表情回应",
+      "emojiReactionDesc": "对消息添加表情反应（可配合被动/主动模式使用）",
+      "conversationSummary": "对话总结",
+      "conversationSummaryDesc": "生成对话摘要",
+      "on": "已开启",
+      "off": "关闭"
+    },
+    "tools": {
+      "title": "工具",
+      "getContext": "获取上下文",
+      "getContextDesc": "获取指定消息周围的10条消息",
+      "getLongContext": "获取长上下文",
+      "getLongContextDesc": "获取完整对话历史用于深度理解",
+      "webSearch": "网络搜索",
+      "webSearchDesc": "搜索网络获取实时信息",
+      "knowledgeBase": "知识库检索",
+      "knowledgeBaseDesc": "从上传的文档中检索相关信息",
+      "enabledTools": "已启用工具："
+    },
+    "mode": {
+      "hybrid": "混合模式",
+      "hybridDesc": "同时支持被动回复和主动参与",
+      "proactive": "主动模式",
+      "proactiveDesc": "自主决定是否参与对话",
+      "passive": "被动模式",
+      "passiveDesc": "仅在被 @ 时回复",
+      "none": "无响应",
+      "noneDesc": "不会回复消息"
+    },
+    "reasoning": {
+      "title": "推理级别",
+      "fast": "快速响应",
+      "balanced": "平衡模式",
+      "deep": "深度思考",
+      "hint": "GPT-OSS Harmony 格式推理深度：Low 快速响应，High 深度分析"
+    },
+    "mcp": {
+      "serverAddress": "MCP 服务器地址",
+      "apiKeyOptional": "API Key（可选）",
+      "connect": "连接",
+      "connecting": "连接中...",
+      "refresh": "刷新",
+      "availableTools": "可用工具",
+      "enabled": "已启用",
+      "selectAll": "全选",
+      "clear": "清除",
+      "noDescription": "无描述",
+      "enabledCount": "已启用 {{count}} 个 MCP 工具",
+      "connectedNoTools": "已连接，但服务器未提供任何工具",
+      "enterAddress": "请输入 MCP 服务器地址",
+      "connectionFailed": "MCP 连接失败",
+      "connectedSuccess": "已连接 MCP 服务器 ({{transport}})，发现 {{count}} 个工具"
+    },
+    "messages": {
+      "created": "Agent 已创建",
+      "updated": "Agent 已更新",
+      "deleted": "Agent 已删除",
+      "nameRequired": "请填写 Agent 名称",
+      "saveFailed": "保存失败",
+      "deleteFailed": "删除失败",
+      "refreshFailed": "Agent 列表刷新失败"
+    },
+    "form": {
+      "saving": "保存中...",
+      "save": "保存",
+      "delete": "删除",
+      "cancel": "取消",
+      "newAgentTitle": "新建 Agent",
+      "defaultDesc": "填写基础信息即可创建自定义 Agent。"
+    }
+  },
+  "about": {
+    "hackathonProject": "黑客松项目",
+    "title": "多智能体协作空间",
+    "subtitle": "基于 Parallax 构建的下一代 LLM 群聊工作区",
+    "features": {
+      "edge": {
+        "title": "边缘协同编排",
+        "desc": "基于 Gradient Parallax 边缘计算网络，动态调度多模态 Agent 工具链"
+      },
+      "privacy": {
+        "title": "端侧隐私计算",
+        "desc": "数据在本地边缘节点处理，通过 Parallax 协议实现可信的分布式推理"
+      },
+      "intent": {
+        "title": "意图驱动协作",
+        "desc": "基于 LLM 意图识别引擎，实现 Agent 从\"被动响应\"到\"主动协作\"的范式转变"
+      }
+    },
+    "poweredBy": "技术支持"
+  },
+  "delete": {
+    "failed": "删除失败",
+    "confirmTitle": "确认删除?"
+  }
+}

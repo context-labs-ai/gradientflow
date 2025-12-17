@@ -1,0 +1,288 @@
+{
+  "auth": {
+    "poweredBy": "POWERED BY",
+    "headline": "Next-Gen <1>Multi-Agent Collaboration</1> Space",
+    "description": "Transform every conversation into an intelligent workspace. Integrate <b>long-term memory</b> and <b>private knowledge base</b> to make AI your capable partner in life and work.",
+    "createIdentity": "Create Identity",
+    "welcomeBack": "Welcome Back",
+    "registerSubtitle": "Register to connect to Parallax collaboration network",
+    "loginSubtitle": "Login to connect your agent workspace",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "register": "Register",
+    "login": "Login",
+    "haveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "loginNow": "Login",
+    "registerNow": "Register for free",
+    "validation": {
+      "fixErrors": "Please fix the errors in the form",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "At least 8 characters",
+      "nicknameRequired": "Nickname is required",
+      "nicknameMinLength": "At least 2 characters"
+    },
+    "messages": {
+      "registerSuccess": "Registration successful, logging in...",
+      "loginSuccess": "Login successful, entering chat room...",
+      "emailTaken": "Email already registered, please login or use another email",
+      "invalidRegister": "Registration info incomplete or password too short",
+      "registerFailed": "Registration failed: {{reason}}",
+      "invalidCredentials": "Invalid email or password",
+      "loginFailed": "Login failed: {{reason}}",
+      "requestFailed": "Request failed"
+    },
+    "features": {
+      "memory": {
+        "title": "Personal Memory Bank",
+        "desc": "RAG-powered private knowledge engine that deeply understands your documents, notes, and conversation history."
+      },
+      "privacy": {
+        "title": "Edge Privacy Computing",
+        "desc": "Data processed on local edge nodes, achieving trusted distributed inference through Parallax protocol."
+      },
+      "intent": {
+        "title": "Intent-Driven Collaboration",
+        "desc": "LLM intent recognition engine enabling paradigm shift from 'passive response' to 'proactive collaboration'."
+      }
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "online": "Online",
+    "offline": "Offline",
+    "busy": "Busy",
+    "local": "Local"
+  },
+  "app": {
+    "loadingSession": "Loading session...",
+    "loadSessionFailed": "Failed to load session",
+    "noUserInSession": "No user in session",
+    "newMessage": "New message"
+  },
+  "layout": {
+    "offlineWarning": "You are currently offline. Changes may not be saved.",
+    "privacyAudit": "Privacy Audit",
+    "settings": "Settings",
+    "about": "About",
+    "chatInfo": "Chat Info"
+  },
+  "sidebar": {
+    "channels": "Channels",
+    "llmAgents": "LLM Agents",
+    "members": "Members",
+    "manage": "Manage",
+    "new": "New",
+    "searchMembers": "Search members",
+    "noAgentConfigured": "No Agent configured",
+    "noMembersFound": "No members found",
+    "other": "Other",
+    "confirmRemoveUser": "Are you sure you want to remove this user?",
+    "logout": "Logout"
+  },
+  "chat": {
+    "inputPlaceholder": "Type a message...",
+    "reply": "Reply",
+    "addToKnowledgeBase": "Add to knowledge base",
+    "shareOnly": "Share only",
+    "sendFailed": "Failed to send message",
+    "fileAdded": "File added:",
+    "textFilesOnly": "Only text files and documents supported",
+    "fileTooLarge": "File size cannot exceed",
+    "noTextFromHtml": "No valid text content extracted from HTML file",
+    "cannotReadFile": "Unable to read file"
+  },
+  "chatSidebar": {
+    "chatInfo": "Chat Info",
+    "summary": "Summary",
+    "tasks": "Tasks",
+    "members": "Members",
+    "search": "Search",
+    "generatingSummary": "Generating summary...",
+    "summaryGenerated": "Summary generated",
+    "generateSummary": "Generate Summary",
+    "copy": "Copy",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "addTask": "Add task",
+    "done": "Done",
+    "todo": "To-do",
+    "documents": "Documents",
+    "links": "Links",
+    "images": "Images",
+    "uploadedToKb": "Uploaded to knowledge base",
+    "deleteDocument": "Delete document"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure AI interface address, model, and API Key",
+    "interfaceUrl": "Interface URL",
+    "modelName": "Model Name",
+    "apiKey": "API Key",
+    "optional": "Optional",
+    "conditional": "Conditional",
+    "clearKey": "Clear saved key",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "saveConfig": "Save Configuration",
+    "loadFailed": "Failed to load config, please try again.",
+    "sessionExpired": "Session expired, please login again.",
+    "endpointRequired": "Endpoint is required",
+    "saveFailed": "Failed to save config, please try again.",
+    "apiKeyHint": "OpenAI/Anthropic/Azure required | Ollama/Parallax can use 'not-needed' or leave empty",
+    "securityNote": "Config will be stored securely and used for summary generation."
+  },
+  "agent": {
+    "config": "Agent Configuration",
+    "configCenter": "Agent Config Center",
+    "configSubtitle": "Configure available LLM Agents in the room, with custom models, capabilities and runtime.",
+    "closeConfig": "Close Agent Config",
+    "agentList": "Agent List",
+    "newAgent": "New Agent",
+    "noAgents": "No Agents yet, click \"New\" to create one.",
+    "name": "Name",
+    "description": "Description",
+    "avatarUrl": "Avatar URL",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "provider": "Provider",
+    "modelEndpoint": "Model Endpoint",
+    "modelEndpointHint": "API address of the model service (custom or third-party)",
+    "modelName": "Model Name",
+    "temperature": "Temperature",
+    "maxTokens": "Max Tokens",
+    "systemPrompt": "System Prompt",
+    "apiKey": "API Key",
+    "apiKeyRequired": "Required for official API",
+    "apiKeyOptional": "Local models (Ollama) or self-hosted services can use 'not-needed' or leave empty",
+    "basicInfo": "Basic Info",
+    "modelAndPrompt": "Model & Prompt",
+    "capabilitiesAndTools": "Capabilities & Tools",
+    "capabilitiesHint": "Enabling capabilities will automatically enable required tools",
+    "generalTools": "General Tools",
+    "generalToolsHint": "Independently enabled tools, available for all modes",
+    "mcpExternalTools": "MCP External Tools",
+    "mcpHint": "Connect to MCP server to use external tools (e.g., GitHub, databases)",
+    "runtimeSettings": "Runtime Settings",
+    "runtimeType": "Runtime Type",
+    "proactiveCooldown": "Proactive Response Cooldown (seconds)",
+    "proactiveCooldownHint": "Minimum interval for Agent to interject or react",
+    "maxToolRounds": "Max Tool Rounds",
+    "maxToolRoundsHint": "Maximum tool call rounds per response (default 3)",
+    "capabilities": {
+      "title": "Capabilities",
+      "passiveResponse": "Passive Response",
+      "passiveResponseDesc": "Reply when @mentioned",
+      "activeInterject": "Active Interject",
+      "activeInterjectDesc": "Proactively participate in conversations (may reply even when not @mentioned)",
+      "emojiReaction": "Emoji Reaction",
+      "emojiReactionDesc": "Add emoji reactions to messages (can be combined with passive/active mode)",
+      "conversationSummary": "Conversation Summary",
+      "conversationSummaryDesc": "Generate conversation summaries",
+      "on": "On",
+      "off": "Off"
+    },
+    "tools": {
+      "title": "Tools",
+      "getContext": "Get Context",
+      "getContextDesc": "Get 10 messages around a specific message",
+      "getLongContext": "Get Long Context",
+      "getLongContextDesc": "Get full conversation history for deep understanding",
+      "webSearch": "Web Search",
+      "webSearchDesc": "Search the web for real-time information",
+      "knowledgeBase": "Knowledge Base",
+      "knowledgeBaseDesc": "Retrieve relevant information from uploaded documents",
+      "enabledTools": "Enabled tools:"
+    },
+    "mode": {
+      "hybrid": "Hybrid Mode",
+      "hybridDesc": "Supports both passive reply and proactive participation",
+      "proactive": "Proactive Mode",
+      "proactiveDesc": "Autonomously decides whether to participate in conversation",
+      "passive": "Passive Mode",
+      "passiveDesc": "Only replies when @mentioned",
+      "none": "No Response",
+      "noneDesc": "Will not reply to messages"
+    },
+    "reasoning": {
+      "title": "Reasoning Level",
+      "fast": "Fast Response",
+      "balanced": "Balanced Mode",
+      "deep": "Deep Thinking",
+      "hint": "GPT-OSS Harmony format reasoning depth: Low for fast response, High for deep analysis"
+    },
+    "mcp": {
+      "serverAddress": "MCP Server Address",
+      "apiKeyOptional": "API Key (Optional)",
+      "connect": "Connect",
+      "connecting": "Connecting...",
+      "refresh": "Refresh",
+      "availableTools": "Available Tools",
+      "enabled": "Enabled",
+      "selectAll": "Select All",
+      "clear": "Clear",
+      "noDescription": "No description",
+      "enabledCount": "{{count}} MCP tools enabled",
+      "connectedNoTools": "Connected, but server provides no tools",
+      "enterAddress": "Please enter MCP server address",
+      "connectionFailed": "Connection failed",
+      "connectedSuccess": "Connected to MCP server ({{transport}}), found {{count}} tools"
+    },
+    "messages": {
+      "created": "Agent created",
+      "updated": "Agent updated",
+      "deleted": "Agent deleted",
+      "nameRequired": "Please enter Agent name",
+      "saveFailed": "Save failed",
+      "deleteFailed": "Delete failed",
+      "refreshFailed": "Failed to refresh agent list"
+    },
+    "form": {
+      "saving": "Saving...",
+      "save": "Save",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "newAgentTitle": "New Agent",
+      "defaultDesc": "Fill in basic info to create a custom Agent."
+    }
+  },
+  "about": {
+    "hackathonProject": "Hackathon Project",
+    "title": "Multi-Agent Collaboration Space",
+    "subtitle": "Next-gen LLM group chat workspace built on Parallax",
+    "features": {
+      "edge": {
+        "title": "Edge Orchestration",
+        "desc": "Dynamic scheduling of multi-modal Agent toolchains based on Gradient Parallax edge computing network"
+      },
+      "privacy": {
+        "title": "Edge Privacy Computing",
+        "desc": "Data processed on local edge nodes, achieving trusted distributed inference through Parallax protocol"
+      },
+      "intent": {
+        "title": "Intent-Driven Collaboration",
+        "desc": "LLM intent recognition engine enabling paradigm shift from 'passive response' to 'proactive collaboration'"
+      }
+    },
+    "poweredBy": "Powered by"
+  },
+  "delete": {
+    "failed": "Delete failed",
+    "confirmTitle": "Confirm delete?"
+  }
+}

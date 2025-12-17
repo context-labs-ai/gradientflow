@@ -2,6 +2,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { Bot, Plus, Trash2, X, Link, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { useChat } from '../context/ChatContext';
 import { Agent, AgentConfigPayload, ReasoningLevel } from '../types/chat';
@@ -96,19 +97,19 @@ const GENERAL_TOOLS_CONFIG = {
     },
 } as const;
 
-// Helper to determine agent mode
-const getAgentMode = (capabilities: Partial<AgentFormState['capabilities']> | undefined) => {
+// Helper to determine agent mode - returns mode key for translation
+const getAgentModeKey = (capabilities: Partial<AgentFormState['capabilities']> | undefined) => {
     const caps = capabilities || {};
     if (caps.answer_active && caps.answer_passive) {
-        return { mode: 'hybrid', label: '混合模式', description: '同时支持被动回复和主动参与' };
+        return 'hybrid';
     }
     if (caps.answer_active) {
-        return { mode: 'proactive', label: '主动模式', description: '自主决定是否参与对话' };
+        return 'proactive';
     }
     if (caps.answer_passive) {
-        return { mode: 'passive', label: '被动模式', description: '仅在被 @ 时回复' };
+        return 'passive';
     }
-    return { mode: 'none', label: '无响应', description: '不会回复消息' };
+    return 'none';
 };
 
 const PROVIDERS = ['openai', 'azure', 'anthropic', 'parallax', 'custom'];
@@ -208,6 +209,7 @@ interface AgentConfigPanelProps {
 const API_URL = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '' : 'http://localhost:4000');
 
 export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => {
+    const { t } = useTranslation();
     const { state, dispatch } = useChat();
     const [selectedId, setSelectedId] = useState<string>('new');
     const [formState, setFormState] = useState<AgentFormState>(() => buildFormState());
@@ -272,7 +274,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
             } catch (err: any) {
                 console.error('refresh agents failed', err);
                 if (!opts?.silent) {
-                    toast.error(err?.body?.error || err?.message || 'Agent 列表刷新失败');
+                    toast.error(err?.body?.error || err?.message || t('agent.messages.refreshFailed'));
                 }
                 throw err;
             }
@@ -351,7 +353,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
     const handleMcpConnect = async () => {
         const mcpUrl = formState.mcp.url.trim();
         if (!mcpUrl) {
-            toast.error('请输入 MCP 服务器地址');
+            toast.error(t('agent.mcp.enterAddress'));
             return;
         }
 
@@ -399,10 +401,10 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
 
             const transportLabel = mcpTransport === 'streamable-http' ? 'Streamable HTTP'
                 : mcpTransport === 'sse' ? 'SSE' : 'REST';
-            toast.success(`已连接 MCP 服务器 (${transportLabel})，发现 ${tools.length} 个工具`);
+            toast.success(t('agent.mcp.connectedSuccess', { transport: transportLabel, count: tools.length }));
         } catch (err: any) {
             console.error('MCP connect failed', err);
-            const errorMsg = err?.message || 'MCP 连接失败';
+            const errorMsg = err?.message || t('agent.mcp.connectionFailed');
             setFormState((prev) => ({
                 ...prev,
                 mcp: {
@@ -448,7 +450,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
     const handleSave = async (evt?: FormEvent) => {
         evt?.preventDefault();
         if (!formState.name.trim()) {
-            toast.error('请填写 Agent 名称');
+            toast.error(t('agent.messages.nameRequired'));
             return;
         }
         if (busy) return;
@@ -460,10 +462,10 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                 : await api.agents.create(payload);
             await refreshAgents();
             handleSelect(result.agent);
-            toast.success(formState.id ? 'Agent 已更新' : 'Agent 已创建');
+            toast.success(formState.id ? t('agent.messages.updated') : t('agent.messages.created'));
         } catch (err: any) {
             console.error('save agent failed', err);
-            toast.error(err?.body?.error || err?.message || '保存失败');
+            toast.error(err?.body?.error || err?.message || t('agent.messages.saveFailed'));
         } finally {
             setBusy(false);
         }
@@ -480,10 +482,10 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
             }
             await refreshAgents();
             handleSelect(undefined);
-            toast.success('Agent 已删除');
+            toast.success(t('agent.messages.deleted'));
         } catch (err: any) {
             console.error('delete agent failed', err);
-            toast.error(err?.body?.error || err?.message || '删除失败');
+            toast.error(err?.body?.error || err?.message || t('agent.messages.deleteFailed'));
         } finally {
             setBusy(false);
         }
@@ -496,10 +498,10 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
             <div className="agent-config-modal">
                 <header className="agent-config-header">
                     <div>
-                        <h2>Agent 配置中心</h2>
-                        <p>配置房间内可用的 LLM Agent，支持自定义模型、能力与运行时。</p>
+                        <h2>{t('agent.configCenter')}</h2>
+                        <p>{t('agent.configSubtitle')}</p>
                     </div>
-                    <button className="ghost-btn" onClick={onClose} aria-label="关闭 Agent 配置">
+                    <button className="ghost-btn" onClick={onClose} aria-label={t('agent.closeConfig')}>
                         <X size={18} />
                     </button>
                 </header>
@@ -507,16 +509,16 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                 <div className="agent-config-content">
                     <aside className="agent-config-sidebar">
                         <div className="sidebar-header">
-                            <span>Agent 列表</span>
+                            <span>{t('agent.agentList')}</span>
                             <button className="secondary-btn" onClick={() => handleSelect(undefined)}>
                                 <Plus size={14} />
-                                新建
+                                {t('agent.newAgent')}
                             </button>
                         </div>
                         {orderedAgents.length === 0 ? (
                             <div className="empty-block">
                                 <Bot size={28} />
-                                <p>暂无 Agent，点击「新建」创建一个。</p>
+                                <p>{t('agent.noAgents')}</p>
                             </div>
                         ) : (
                             <div className="agent-items">
@@ -543,8 +545,8 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                             </div>
                                             <div className="agent-mode-row">
                                                 <small>{agent.model?.name || 'gpt-4o-mini'}</small>
-                                                <span className={clsx('mode-badge', getAgentMode(agent.capabilities || {}).mode)}>
-                                                    {getAgentMode(agent.capabilities || {}).label}
+                                                <span className={clsx('mode-badge', getAgentModeKey(agent.capabilities || {}))}>
+                                                    {t(`agent.mode.${getAgentModeKey(agent.capabilities || {})}`)}
                                                 </span>
                                             </div>
                                         </div>
@@ -569,51 +571,51 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                             </div>
                             <div className="highlight-meta">
                                 <div className="highlight-row">
-                                    <strong>{formState.name || activeAgent?.name || '新建 Agent'}</strong>
+                                    <strong>{formState.name || activeAgent?.name || t('agent.form.newAgentTitle')}</strong>
                                     <span className={clsx('status-pill', formState.status)}>
-                                        {formState.status === 'active' ? '已启用' : '已停用'}
+                                        {formState.status === 'active' ? t('agent.enabled') : t('agent.disabled')}
                                     </span>
                                 </div>
-                                <p>{formState.description || activeAgent?.description || '填写基础信息即可创建自定义 Agent。'}</p>
+                                <p>{formState.description || activeAgent?.description || t('agent.form.defaultDesc')}</p>
                                 <div className="highlight-mode">
-                                    <span className={clsx('mode-indicator', getAgentMode(formState.capabilities).mode)}>
-                                        {getAgentMode(formState.capabilities).label}
+                                    <span className={clsx('mode-indicator', getAgentModeKey(formState.capabilities))}>
+                                        {t(`agent.mode.${getAgentModeKey(formState.capabilities)}`)}
                                     </span>
-                                    <span className="mode-desc">{getAgentMode(formState.capabilities).description}</span>
+                                    <span className="mode-desc">{t(`agent.mode.${getAgentModeKey(formState.capabilities)}Desc`)}</span>
                                 </div>
                             </div>
                         </div>
 
                         <section>
-                            <div className="section-title">基础信息</div>
+                            <div className="section-title">{t('agent.basicInfo')}</div>
                             <label>
-                                名称
+                                {t('agent.name')}
                                 <input value={formState.name} onChange={(e) => handleChange('name', e.target.value)} />
                             </label>
                             <label>
-                                描述
+                                {t('agent.description')}
                                 <input
                                     value={formState.description}
                                     onChange={(e) => handleChange('description', e.target.value)}
                                 />
                             </label>
                             <label>
-                                头像 URL
+                                {t('agent.avatarUrl')}
                                 <input value={formState.avatar} onChange={(e) => handleChange('avatar', e.target.value)} />
                             </label>
                             <label>
-                                状态
+                                {t('agent.status')}
                                 <select value={formState.status} onChange={(e) => handleChange('status', e.target.value as any)}>
-                                    <option value="active">启用</option>
-                                    <option value="inactive">停用</option>
+                                    <option value="active">{t('agent.active')}</option>
+                                    <option value="inactive">{t('agent.inactive')}</option>
                                 </select>
                             </label>
                         </section>
 
                         <section>
-                            <div className="section-title">模型 & Prompt</div>
+                            <div className="section-title">{t('agent.modelAndPrompt')}</div>
                             <label>
-                                供应商
+                                {t('agent.provider')}
                                 <select
                                     value={formState.model.provider}
                                     onChange={(e) => {
@@ -623,7 +625,6 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                             model: {
                                                 ...prev.model,
                                                 provider: newProvider,
-                                                // 选择 parallax 时自动设置默认模型名
                                                 name: newProvider === 'parallax' ? 'default' : prev.model.name,
                                             },
                                         }));
@@ -637,7 +638,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                 </select>
                             </label>
                             <label>
-                                模型 Endpoint
+                                {t('agent.modelEndpoint')}
                                 <input
                                     value={formState.model.endpoint}
                                     onChange={(e) =>
@@ -645,10 +646,10 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                     }
                                     placeholder={formState.model.provider === 'parallax' ? 'https://your-llm-endpoint/v1' : 'https://api.openai.com/v1'}
                                 />
-                                <span className="input-hint">模型服务的 API 地址（自定义或第三方服务）</span>
+                                <span className="input-hint">{t('agent.modelEndpointHint')}</span>
                             </label>
                             <label>
-                                API Key
+                                {t('agent.apiKey')}
                                 <input
                                     type="password"
                                     value={formState.model.apiKey}
@@ -656,20 +657,20 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                         setFormState((prev) => ({ ...prev, model: { ...prev.model, apiKey: e.target.value } }))
                                     }
                                     placeholder={
-                                        formState.model.provider === 'openai' ? 'sk-xxx（必填）' :
-                                        formState.model.provider === 'anthropic' ? 'sk-ant-xxx（必填）' :
-                                        formState.model.provider === 'azure' ? 'Azure API Key（必填）' :
-                                        'not-needed 或留空'
+                                        formState.model.provider === 'openai' ? 'sk-xxx' :
+                                        formState.model.provider === 'anthropic' ? 'sk-ant-xxx' :
+                                        formState.model.provider === 'azure' ? 'Azure API Key' :
+                                        'not-needed'
                                     }
                                 />
                                 <span className="input-hint">
                                     {formState.model.provider === 'openai' || formState.model.provider === 'anthropic' || formState.model.provider === 'azure'
-                                        ? '使用官方 API 必须填写 API Key'
-                                        : '本地模型（Ollama）或 Parallax 等自托管服务可填 not-needed 或留空'}
+                                        ? t('agent.apiKeyRequired')
+                                        : t('agent.apiKeyOptional')}
                                 </span>
                             </label>
                             <label>
-                                模型名称
+                                {t('agent.modelName')}
                                 <input
                                     value={formState.model.name}
                                     onChange={(e) =>
@@ -679,7 +680,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                             </label>
                             <div className="inline-inputs">
                                 <label>
-                                    温度
+                                    {t('agent.temperature')}
                                     <input
                                         type="number"
                                         min={0}
@@ -695,7 +696,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                     />
                                 </label>
                                 <label>
-                                    Max Tokens
+                                    {t('agent.maxTokens')}
                                     <input
                                         type="number"
                                         min={128}
@@ -711,7 +712,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                 </label>
                             </div>
                             <label>
-                                系统 Prompt
+                                {t('agent.systemPrompt')}
                                 <textarea
                                     rows={3}
                                     value={formState.systemPrompt}
@@ -720,26 +721,29 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                             </label>
                             {formState.model.provider === 'parallax' && (
                                 <label>
-                                    Reasoning Level
+                                    {t('agent.reasoning.title')}
                                     <select
                                         value={formState.reasoning}
                                         onChange={(e) => handleChange('reasoning', e.target.value as ReasoningLevel)}
                                     >
-                                        <option value="low">Low - 快速响应</option>
-                                        <option value="medium">Medium - 平衡模式</option>
-                                        <option value="high">High - 深度思考</option>
+                                        <option value="low">Low - {t('agent.reasoning.fast')}</option>
+                                        <option value="medium">Medium - {t('agent.reasoning.balanced')}</option>
+                                        <option value="high">High - {t('agent.reasoning.deep')}</option>
                                     </select>
-                                    <span className="input-hint">GPT-OSS Harmony 格式推理深度：Low 快速响应，High 深度分析</span>
+                                    <span className="input-hint">{t('agent.reasoning.hint')}</span>
                                 </label>
                             )}
                         </section>
 
                         <section>
-                            <div className="section-title">能力 & 工具</div>
-                            <p className="section-hint">开启能力会自动启用所需工具</p>
+                            <div className="section-title">{t('agent.capabilitiesAndTools')}</div>
+                            <p className="section-hint">{t('agent.capabilitiesHint')}</p>
                             <div className="capability-cards">
-                                {(Object.entries(CAPABILITY_CONFIG) as [keyof typeof CAPABILITY_CONFIG, typeof CAPABILITY_CONFIG[keyof typeof CAPABILITY_CONFIG]][]).map(([key, config]) => {
+                                {(['answer_passive', 'answer_active', 'like', 'summarize'] as const).map((key) => {
                                     const isActive = formState.capabilities[key];
+                                    const labelKey = key === 'answer_passive' ? 'passiveResponse' :
+                                                    key === 'answer_active' ? 'activeInterject' :
+                                                    key === 'like' ? 'emojiReaction' : 'conversationSummary';
                                     return (
                                         <button
                                             type="button"
@@ -748,12 +752,12 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                             onClick={() => handleCapabilityToggle(key)}
                                         >
                                             <div className="cap-header">
-                                                <span className="cap-label">{config.label}</span>
-                                                <span className={clsx('cap-toggle', isActive && 'on')}>{isActive ? '已开启' : '关闭'}</span>
+                                                <span className="cap-label">{t(`agent.capabilities.${labelKey}`)}</span>
+                                                <span className={clsx('cap-toggle', isActive && 'on')}>{isActive ? t('agent.capabilities.on') : t('agent.capabilities.off')}</span>
                                             </div>
-                                            <p className="cap-desc">{config.description}</p>
+                                            <p className="cap-desc">{t(`agent.capabilities.${labelKey}Desc`)}</p>
                                             <div className="cap-tools">
-                                                {config.requiredTools.map((tool) => (
+                                                {CAPABILITY_CONFIG[key].requiredTools.map((tool) => (
                                                     <span key={tool} className="tool-tag">{tool.replace('chat.', '')}</span>
                                                 ))}
                                             </div>
@@ -763,7 +767,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                             </div>
                             {formState.tools.length > 0 && (
                                 <div className="active-tools">
-                                    <span className="tools-label">已启用工具：</span>
+                                    <span className="tools-label">{t('agent.tools.enabledTools')}</span>
                                     {formState.tools.map((tool) => (
                                         <span key={tool} className="tool-badge">{tool}</span>
                                     ))}
@@ -772,10 +776,14 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                         </section>
 
                         <section>
-                            <div className="section-title">通用工具</div>
-                            <p className="section-hint">可独立启用的工具，适用于所有模式</p>
+                            <div className="section-title">{t('agent.generalTools')}</div>
+                            <p className="section-hint">{t('agent.generalToolsHint')}</p>
                             <div className="general-tools-row">
-                                {(Object.entries(GENERAL_TOOLS_CONFIG) as [string, typeof GENERAL_TOOLS_CONFIG[keyof typeof GENERAL_TOOLS_CONFIG]][]).map(([toolId, config]) => {
+                                {(['chat.get_context', 'chat.get_long_context', 'tools.web_search', 'tools.local_rag'] as const).map((toolId) => {
+                                    const config = GENERAL_TOOLS_CONFIG[toolId];
+                                    const labelKey = toolId === 'chat.get_context' ? 'getContext' :
+                                                    toolId === 'chat.get_long_context' ? 'getLongContext' :
+                                                    toolId === 'tools.web_search' ? 'webSearch' : 'knowledgeBase';
                                     const isEnabled = formState.tools.includes(toolId);
                                     return (
                                         <button
@@ -785,7 +793,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                             onClick={() => handleGeneralToolToggle(toolId)}
                                         >
                                             <span className="gtool-icon">{config.icon}</span>
-                                            <span className="gtool-label">{config.label}</span>
+                                            <span className="gtool-label">{t(`agent.tools.${labelKey}`)}</span>
                                             <span className={clsx('gtool-status', isEnabled && 'on')} />
                                         </button>
                                     );
@@ -796,24 +804,24 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                         <section>
                             <div className="section-title">
                                 <Link size={16} />
-                                MCP 外部工具
+                                {t('agent.mcpExternalTools')}
                             </div>
-                            <p className="section-hint">连接 MCP 服务器以使用外部工具（如 GitHub、数据库等）</p>
+                            <p className="section-hint">{t('agent.mcpHint')}</p>
 
                             <div className="mcp-connection-row">
                                 <label className="mcp-url-input">
-                                    MCP 服务器地址
+                                    {t('agent.mcp.serverAddress')}
                                     <input
                                         value={formState.mcp.url}
                                         onChange={(e) => setFormState((prev) => ({
                                             ...prev,
                                             mcp: { ...prev.mcp, url: e.target.value }
                                         }))}
-                                        placeholder="http://localhost:3000/mcp 或 wss://..."
+                                        placeholder="http://localhost:3000/mcp or wss://..."
                                     />
                                 </label>
                                 <label className="mcp-key-input">
-                                    API Key（可选）
+                                    {t('agent.mcp.apiKeyOptional')}
                                     <input
                                         type="password"
                                         value={formState.mcp.apiKey}
@@ -821,7 +829,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                             ...prev,
                                             mcp: { ...prev.mcp, apiKey: e.target.value }
                                         }))}
-                                        placeholder="Bearer token 或留空"
+                                        placeholder="Bearer token"
                                     />
                                 </label>
                                 <button
@@ -833,17 +841,17 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                     {mcpConnecting ? (
                                         <>
                                             <Loader2 size={14} className="spinning" />
-                                            连接中...
+                                            {t('agent.mcp.connecting')}
                                         </>
                                     ) : formState.mcp.connected ? (
                                         <>
                                             <RefreshCw size={14} />
-                                            刷新
+                                            {t('agent.mcp.refresh')}
                                         </>
                                     ) : (
                                         <>
                                             <Link size={14} />
-                                            连接
+                                            {t('agent.mcp.connect')}
                                         </>
                                     )}
                                 </button>
@@ -861,7 +869,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                     <div className="mcp-tools-header">
                                         <span className="mcp-tools-title">
                                             <CheckCircle size={14} className="connected-icon" />
-                                            可用工具 ({formState.mcp.availableTools.length})
+                                            {t('agent.mcp.availableTools')} ({formState.mcp.availableTools.length})
                                         </span>
                                         <div className="mcp-tools-actions">
                                             <button
@@ -869,14 +877,14 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                                 className="mcp-toggle-all"
                                                 onClick={() => handleMcpToggleAll(true)}
                                             >
-                                                全选
+                                                {t('agent.mcp.selectAll')}
                                             </button>
                                             <button
                                                 type="button"
                                                 className="mcp-toggle-all"
                                                 onClick={() => handleMcpToggleAll(false)}
                                             >
-                                                清除
+                                                {t('agent.mcp.clear')}
                                             </button>
                                         </div>
                                     </div>
@@ -897,14 +905,14 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                                             {isEnabled ? '✓' : ''}
                                                         </span>
                                                     </div>
-                                                    <p className="mcp-tool-desc">{tool.description || '无描述'}</p>
+                                                    <p className="mcp-tool-desc">{tool.description || t('agent.mcp.noDescription')}</p>
                                                 </button>
                                             );
                                         })}
                                     </div>
                                     {formState.mcp.enabledTools.length > 0 && (
                                         <div className="mcp-enabled-summary">
-                                            已启用 {formState.mcp.enabledTools.length} 个 MCP 工具
+                                            {t('agent.mcp.enabledCount', { count: formState.mcp.enabledTools.length })}
                                         </div>
                                     )}
                                 </div>
@@ -912,15 +920,15 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
 
                             {formState.mcp.connected && formState.mcp.availableTools.length === 0 && (
                                 <div className="mcp-no-tools">
-                                    <span>已连接，但服务器未提供任何工具</span>
+                                    <span>{t('agent.mcp.connectedNoTools')}</span>
                                 </div>
                             )}
                         </section>
 
                         <section>
-                            <div className="section-title">运行时设置</div>
+                            <div className="section-title">{t('agent.runtimeSettings')}</div>
                             <label>
-                                Runtime 类型
+                                {t('agent.runtimeType')}
                                 <select
                                     value={formState.runtime.type}
                                     onChange={(e) => handleChange('runtime', { ...formState.runtime, type: e.target.value })}
@@ -934,7 +942,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                             </label>
                             {formState.capabilities.answer_active && (
                                 <label>
-                                    主动响应冷却时间（秒）
+                                    {t('agent.proactiveCooldown')}
                                     <input
                                         type="number"
                                         min={5}
@@ -947,11 +955,11 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                             })
                                         }
                                     />
-                                    <span className="input-hint">Agent 主动插话/点赞的最小间隔时间</span>
+                                    <span className="input-hint">{t('agent.proactiveCooldownHint')}</span>
                                 </label>
                             )}
                             <label>
-                                工具调用最大轮数
+                                {t('agent.maxToolRounds')}
                                 <input
                                     type="number"
                                     min={1}
@@ -964,7 +972,7 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                                         })
                                     }
                                 />
-                                <span className="input-hint">Agent 每次响应最多执行多少轮工具调用（默认 3 轮）</span>
+                                <span className="input-hint">{t('agent.maxToolRoundsHint')}</span>
                             </label>
                         </section>
 
@@ -972,15 +980,15 @@ export const AgentConfigPanel = ({ isOpen, onClose }: AgentConfigPanelProps) => 
                             {formState.id && (
                                 <button type="button" className="danger-btn" disabled={busy} onClick={handleDelete}>
                                     <Trash2 size={14} />
-                                    删除
+                                    {t('agent.form.delete')}
                                 </button>
                             )}
                             <div className="spacer" />
                             <button type="button" className="ghost-btn" onClick={onClose}>
-                                取消
+                                {t('agent.form.cancel')}
                             </button>
                             <button type="submit" className="primary-btn" disabled={busy}>
-                                {busy ? '保存中...' : '保存'}
+                                {busy ? t('agent.form.saving') : t('agent.form.save')}
                             </button>
                         </div>
                     </form>

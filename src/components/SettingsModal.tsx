@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Loader2, Shield, Cpu, KeyRound, Link2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { api } from '../api/client';
+import { useTranslation } from 'react-i18next';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -9,6 +10,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+    const { t } = useTranslation();
     const [endpoint, setEndpoint] = useState('');
     const [model, setModel] = useState('');
     const [apiKey, setApiKey] = useState('');
@@ -32,12 +34,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                 setClearKey(false);
                 setError('');
             } catch (err) {
-                console.error('加载 LLM 配置失败', err);
+                console.error('Failed to load LLM config', err);
                 const anyErr = err as any;
                 if (anyErr?.status === 401) {
-                    setError('未登录或会话已过期，请重新登录后再配置 AI。');
+                    setError(t('settings.sessionExpired'));
                 } else {
-                    setError(err instanceof Error ? err.message : '加载配置失败，请稍后重试。');
+                    setError(err instanceof Error ? err.message : t('settings.loadFailed'));
                 }
             } finally {
                 setLoading(false);
@@ -48,7 +50,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
     const onSave = async () => {
         if (!endpoint.trim()) {
-            setError('Endpoint 不能为空');
+            setError(t('settings.endpointRequired'));
             setStatus('error');
             return;
         }
@@ -68,9 +70,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             setStatus('saved');
             setTimeout(() => setStatus('idle'), 2000);
         } catch (err) {
-            console.error('保存 LLM 配置失败', err);
+            console.error('Failed to save LLM config', err);
             setStatus('error');
-            setError(err instanceof Error ? err.message : '保存配置失败，请稍后重试。');
+            setError(err instanceof Error ? err.message : t('settings.saveFailed'));
         } finally {
             setSaving(false);
         }
@@ -97,10 +99,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                     >
                         <div className="settings-header">
                             <div className="header-content">
-                                <div className="settings-title">设置</div>
-                                <div className="settings-subtitle">配置 AI 接口地址、模型和 API Key</div>
+                                <div className="settings-title">{t('settings.title')}</div>
+                                <div className="settings-subtitle">{t('settings.subtitle')}</div>
                             </div>
-                            <button className="close-btn" onClick={onClose} aria-label="关闭设置">
+                            <button className="close-btn" onClick={onClose} aria-label={t('common.close')}>
                                 <X size={20} />
                             </button>
                         </div>
@@ -120,12 +122,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                             <div className="settings-section">
                                 <div className="section-header">
                                     <Sparkles size={16} className="section-icon" />
-                                    <span>AI (LLM) 配置</span>
+                                    <span>AI (LLM)</span>
                                 </div>
 
                                 <div className="form-group">
                                     <label className="input-label">
-                                        <span>接口地址</span>
+                                        <span>{t('settings.interfaceUrl')}</span>
                                     </label>
                                     <div className="input-wrapper">
                                         <div className="input-icon-left">
@@ -145,8 +147,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                 <div className="form-row">
                                     <div className="form-group flex-1">
                                         <label className="input-label">
-                                            <span>模型名称</span>
-                                            <span className="optional-tag">可选</span>
+                                            <span>{t('settings.modelName')}</span>
+                                            <span className="optional-tag">{t('settings.optional')}</span>
                                         </label>
                                         <div className="input-wrapper">
                                             <div className="input-icon-left">
@@ -166,8 +168,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
                                 <div className="form-group">
                                     <label className="input-label">
-                                        <span>API Key</span>
-                                        <span className="optional-tag">视情况而定</span>
+                                        <span>{t('settings.apiKey')}</span>
+                                        <span className="optional-tag">{t('settings.conditional')}</span>
                                     </label>
                                     <div className="input-wrapper">
                                         <div className="input-icon-left">
@@ -177,7 +179,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                             type="password"
                                             value={apiKey}
                                             onChange={(e) => setApiKey(e.target.value)}
-                                            placeholder={hasStoredKey ? '••••••••••••••••' : 'sk-xxx 或 not-needed'}
+                                            placeholder={hasStoredKey ? '••••••••••••••••' : 'sk-xxx or not-needed'}
                                             disabled={loading}
                                             className="settings-input has-icon"
                                         />
@@ -190,25 +192,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                                 onChange={(e) => setClearKey(e.target.checked)}
                                                 disabled={loading}
                                             />
-                                            <span className="checkbox-label">清空已存 Key</span>
+                                            <span className="checkbox-label">{t('settings.clearKey')}</span>
                                         </label>
-                                        <span className="hint-text">留空则保留已存 Key</span>
+                                        <span className="hint-text"></span>
                                     </div>
                                     <div className="api-key-hint">
-                                        <span>OpenAI/Anthropic/Azure 必填 | Ollama/Parallax 等自托管服务填 <code>not-needed</code> 或留空</span>
+                                        <span>{t('settings.apiKeyHint')}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="settings-footer-note">
                                 <Shield size={14} />
-                                <span>配置将安全存储，优先用于摘要生成服务。</span>
+                                <span>{t('settings.securityNote')}</span>
                             </div>
                         </div>
 
                         <div className="settings-footer">
                             <button className="btn-secondary" onClick={onClose} disabled={saving}>
-                                取消
+                                {t('common.cancel')}
                             </button>
                             <button
                                 className={`btn-primary ${status === 'saved' ? 'success' : ''}`}
@@ -218,17 +220,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
                                 {saving ? (
                                     <>
                                         <Loader2 size={16} className="spinner" />
-                                        <span>保存中...</span>
+                                        <span>{t('settings.saving')}</span>
                                     </>
                                 ) : status === 'saved' ? (
                                     <>
                                         <CheckCircle2 size={16} />
-                                        <span>已保存</span>
+                                        <span>{t('settings.saved')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Sparkles size={16} />
-                                        <span>保存配置</span>
+                                        <span>{t('settings.saveConfig')}</span>
                                     </>
                                 )}
                             </button>

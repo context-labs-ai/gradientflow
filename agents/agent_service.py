@@ -151,6 +151,50 @@ class AgentService(BaseAgentService):
                 self._use_harmony_format = True
                 print(f"[Agent] Harmony format enabled for GPT-OSS")
 
+        elif provider == "openai":
+            # OpenAI API configuration
+            api_key = runtime.get("apiKeyAlias") or ""
+            if not api_key:
+                print(f"[Agent] Warning: OpenAI provider requires API key in runtime.apiKeyAlias")
+            base_url = runtime.get("endpoint") or "https://api.openai.com/v1"
+            configure_llm(base_url=base_url, api_key=api_key)
+            print(f"[Agent] Configured OpenAI provider: {base_url}")
+            # OpenAI uses standard format, not harmony
+            self._use_harmony_format = False
+
+        elif provider == "azure":
+            # Azure OpenAI configuration
+            base_url = runtime.get("endpoint")
+            api_key = runtime.get("apiKeyAlias") or ""
+            if base_url and api_key:
+                configure_llm(base_url=base_url, api_key=api_key)
+                print(f"[Agent] Configured Azure provider: {base_url}")
+            else:
+                print(f"[Agent] Warning: Azure provider requires endpoint and API key")
+            self._use_harmony_format = False
+
+        elif provider == "anthropic":
+            # Anthropic configuration (uses OpenAI-compatible endpoint if available)
+            base_url = runtime.get("endpoint")
+            api_key = runtime.get("apiKeyAlias") or ""
+            if base_url:
+                configure_llm(base_url=base_url, api_key=api_key)
+                print(f"[Agent] Configured Anthropic provider: {base_url}")
+            else:
+                print(f"[Agent] Warning: Anthropic provider requires endpoint configuration")
+            self._use_harmony_format = False
+
+        elif provider:
+            # Generic OpenAI-compatible provider
+            base_url = runtime.get("endpoint")
+            api_key = runtime.get("apiKeyAlias") or "not-needed"
+            if base_url:
+                configure_llm(base_url=base_url, api_key=api_key)
+                print(f"[Agent] Configured {provider} provider: {base_url}")
+            else:
+                print(f"[Agent] Warning: Provider '{provider}' requires endpoint in runtime.endpoint")
+            self._use_harmony_format = False
+
     # =========================================================================
     # Harmony Format System Prompt Building
     # =========================================================================

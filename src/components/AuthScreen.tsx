@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Eye, EyeOff, Loader2, ArrowRight, Cpu, Shield, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation, Trans } from 'react-i18next';
 import { api } from '../api/client';
 import { useChat } from '../context/ChatContext';
 import { SimulatedChat } from './SimulatedChat';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 interface AuthScreenProps {
     onAuthenticated: () => Promise<void>;
@@ -18,27 +20,13 @@ type TouchedFields = {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const FEATURE_HIGHLIGHTS = [
-    {
-        icon: Cpu,
-        title: "专属记忆库",
-        desc: "RAG 驱动的私有知识引擎，让 AI 深度理解你的文档、笔记与对话历史。"
-    },
-    {
-        icon: Shield,
-        title: "端侧隐私计算",
-        desc: "数据在本地边缘节点处理，通过 Parallax 协议实现可信的分布式推理。"
-    },
-    {
-        icon: Zap,
-        title: "意图驱动协作",
-        desc: "基于 LLM 意图识别引擎，实现 Agent 从'被动响应'到'主动协作'的范式转变。"
-    }
-];
+const FEATURE_ICONS = [Cpu, Shield, Zap];
+const FEATURE_KEYS = ['memory', 'privacy', 'intent'] as const;
 
 
 
 export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }) => {
+    const { t } = useTranslation();
     const { dispatch } = useChat();
     const [mode, setMode] = useState<'login' | 'register'>('login');
     const [email, setEmail] = useState('');
@@ -68,7 +56,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
 
         if (runBlockingValidation()) {
             setLoading(false);
-            setMessage('请先修复表单中的错误提示');
+            setMessage(t('auth.validation.fixErrors'));
             setMessageTone('error');
             dispatch({ type: 'SET_AUTH_STATUS', payload: 'unauthenticated' });
             return;
@@ -78,37 +66,37 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
             if (isRegisterMode) {
                 await api.auth.register({ email: email.trim(), password, name: name.trim() || email.split('@')[0] });
                 setMessageTone('success');
-                setMessage('注册成功，正在自动登录…');
+                setMessage(t('auth.messages.registerSuccess'));
             } else {
                 await api.auth.login({ email: email.trim(), password });
                 setMessageTone('success');
-                setMessage('登录成功，正在进入聊天室…');
+                setMessage(t('auth.messages.loginSuccess'));
             }
             await onAuthenticated();
         } catch (err: any) {
             const status = err?.status as number | undefined;
             const raw = (err?.message as string) || '';
-            const reason = raw || (status ? `请求失败（${status}）` : '请求失败');
+            const reason = raw || (status ? `${t('auth.messages.requestFailed')} (${status})` : t('auth.messages.requestFailed'));
             let friendly: string;
 
             if (isRegisterMode) {
                 if (status === 409) {
-                    friendly = '邮箱已被注册，请直接登录或更换邮箱';
+                    friendly = t('auth.messages.emailTaken');
                 } else if (status === 400) {
-                    friendly = raw || '注册信息不完整或密码太短';
+                    friendly = raw || t('auth.messages.invalidRegister');
                 } else {
-                    friendly = `注册失败：${reason}`;
+                    friendly = t('auth.messages.registerFailed', { reason });
                 }
             } else {
                 if (status === 401) {
-                    friendly = '邮箱或密码不正确';
+                    friendly = t('auth.messages.invalidCredentials');
                 } else {
-                    friendly = `登录失败：${reason}`;
+                    friendly = t('auth.messages.loginFailed', { reason });
                 }
             }
 
             if (raw && !friendly.includes(raw) && status !== 409) {
-                friendly = `${friendly}（${raw}）`;
+                friendly = `${friendly} (${raw})`;
             }
 
             setMessageTone('error');
@@ -135,30 +123,30 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
 
         if (touched.email) {
             if (!email.trim()) {
-                next.email = '邮箱不能为空';
+                next.email = t('auth.validation.emailRequired');
             } else if (!EMAIL_PATTERN.test(email.trim())) {
-                next.email = '请输入有效邮箱地址';
+                next.email = t('auth.validation.emailInvalid');
             }
         }
 
         if (touched.password) {
             if (!password.trim()) {
-                next.password = '密码不能为空';
+                next.password = t('auth.validation.passwordRequired');
             } else if (password.trim().length < 8) {
-                next.password = '至少 8 位字符';
+                next.password = t('auth.validation.passwordMinLength');
             }
         }
 
         if (isRegisterMode && touched.name) {
             if (!name.trim()) {
-                next.name = '昵称不能为空';
+                next.name = t('auth.validation.nicknameRequired');
             } else if (name.trim().length < 2) {
-                next.name = '至少输入 2 个字符';
+                next.name = t('auth.validation.nicknameMinLength');
             }
         }
 
         return next;
-    }, [email, password, name, touched, isRegisterMode]);
+    }, [email, password, name, touched, isRegisterMode, t]);
 
     return (
         <div className="auth-screen">
@@ -167,6 +155,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                 <div className="orb orb-1" />
                 <div className="orb orb-2" />
                 <div className="orb orb-3" />
+            </div>
+
+            <div className="language-switcher-container">
+                <LanguageSwitcher />
             </div>
 
             <div className="auth-container">
@@ -185,7 +177,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                         whileHover={{ y: -5 }}
                     >
                         <div className="parallax-content">
-                            <span className="powered-by">技术支持</span>
+                            <span className="powered-by">{t('auth.poweredBy')}</span>
                             <div className="parallax-logo-wrapper">
                                 <img src="/parallax.png" alt="Parallax" className="parallax-logo" />
                             </div>
@@ -194,12 +186,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                     </motion.div>
 
                     <h1>
-                        下一代 <span className="text-gradient">多智能体协作</span> 空间
+                        <Trans i18nKey="auth.headline">
+                            Next-Gen <span className="text-gradient">Multi-Agent Collaboration</span> Space
+                        </Trans>
                     </h1>
-                    <p className="brand-desc">
-                        将每一次对话转化为智能工作区。
-                        集成<b>长期记忆</b>与<b>私有知识库</b>，让 AI 成为你生活与工作的得力伙伴。
-                    </p>
+                    <p className="brand-desc" dangerouslySetInnerHTML={{ __html: t('auth.description') }} />
                 </motion.div>
 
                 {/* 2. Main Content: Chat + Login Side-by-Side */}
@@ -229,11 +220,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.2 }}
                                     >
-                                        {isRegisterMode ? '创建新身份' : '欢迎回来'}
+                                        {isRegisterMode ? t('auth.createIdentity') : t('auth.welcomeBack')}
                                     </motion.h2>
                                 </AnimatePresence>
                                 <p className="auth-subtitle">
-                                    {isRegisterMode ? '注册以接入 Parallax 协作网络' : '登录以连接您的智能体工作区'}
+                                    {isRegisterMode ? t('auth.registerSubtitle') : t('auth.loginSubtitle')}
                                 </p>
                             </div>
 
@@ -246,13 +237,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                                             animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
                                             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                                         >
-                                            <label htmlFor="name">昵称</label>
+                                            <label htmlFor="name">{t('auth.nickname')}</label>
                                             <input
                                                 id="name"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
                                                 onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                                                placeholder="您的称呼"
+                                                placeholder={t('auth.nicknamePlaceholder')}
                                                 autoComplete="name"
                                                 className={fieldErrors.name ? 'error' : ''}
                                             />
@@ -262,7 +253,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                                 </AnimatePresence>
 
                                 <div className="field">
-                                    <label htmlFor="email">邮箱</label>
+                                    <label htmlFor="email">{t('auth.email')}</label>
                                     <input
                                         id="email"
                                         type="email"
@@ -277,7 +268,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                                 </div>
 
                                 <div className="field">
-                                    <label htmlFor="password">密码</label>
+                                    <label htmlFor="password">{t('auth.password')}</label>
                                     <div className="input-wrapper">
                                         <input
                                             id="password"
@@ -322,7 +313,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                                 >
                                     {loading ? <Loader2 className="animate-spin" size={20} /> : (
                                         <>
-                                            {isRegisterMode ? '立即注册' : '登录'}
+                                            {isRegisterMode ? t('auth.register') : t('auth.login')}
                                             {!loading && <ArrowRight size={18} className="ml-2" />}
                                         </>
                                     )}
@@ -330,9 +321,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                             </form>
 
                             <div className="auth-footer">
-                                {isRegisterMode ? '已有账号？' : '还没有账号？'}
+                                {isRegisterMode ? t('auth.haveAccount') : t('auth.noAccount')}
                                 <button onClick={() => handleModeChange(isRegisterMode ? 'login' : 'register')}>
-                                    {isRegisterMode ? '直接登录' : '免费注册'}
+                                    {isRegisterMode ? t('auth.loginNow') : t('auth.registerNow')}
                                 </button>
                             </div>
 
@@ -348,21 +339,24 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                 transition={{ delay: 0.8, duration: 0.8 }}
             >
                 <div className="features-grid">
-                    {FEATURE_HIGHLIGHTS.map((feature, index) => (
-                        <motion.div
-                            key={index}
-                            className="feature-item"
-                            whileHover={{ y: -5, backgroundColor: "rgba(255, 255, 255, 0.6)" }}
-                        >
-                            <div className="feature-icon">
-                                <feature.icon />
-                            </div>
-                            <div className="feature-content">
-                                <div className="feature-title">{feature.title}</div>
-                                <div className="feature-desc">{feature.desc}</div>
-                            </div>
-                        </motion.div>
-                    ))}
+                    {FEATURE_KEYS.map((key, index) => {
+                        const Icon = FEATURE_ICONS[index];
+                        return (
+                            <motion.div
+                                key={key}
+                                className="feature-item"
+                                whileHover={{ y: -5, backgroundColor: "rgba(255, 255, 255, 0.6)" }}
+                            >
+                                <div className="feature-icon">
+                                    <Icon />
+                                </div>
+                                <div className="feature-content">
+                                    <div className="feature-title">{t(`auth.features.${key}.title`)}</div>
+                                    <div className="feature-desc">{t(`auth.features.${key}.desc`)}</div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </motion.div>
 
@@ -380,6 +374,13 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated, error }
                 font-family: 'Inter', system-ui, -apple-system, sans-serif;
                 padding: 40px 20px;
                 box-sizing: border-box;
+            }
+
+            .language-switcher-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 100;
             }
 
             /* 流动背景动画 - 淡蓝紫丝绸感 */

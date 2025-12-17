@@ -9,6 +9,7 @@ import { api } from '../api/client';
 import { DEFAULT_CONVERSATION_ID } from '../types/chat';
 import { EmojiPickerComponent } from './EmojiPicker';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Extract plain text from HTML content.
@@ -47,6 +48,7 @@ const ALL_ALLOWED_EXTENSIONS = [...TEXT_EXTENSIONS, ...BINARY_EXTENSIONS];
 export const MessageInput: React.FC = () => {
     const { state, dispatch } = useChat();
     const { setTyping } = useTyping();
+    const { t } = useTranslation();
     const [content, setContent] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isFocused, setIsFocused] = useState(false);
@@ -230,7 +232,7 @@ export const MessageInput: React.FC = () => {
         const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
 
         if (!ALL_ALLOWED_EXTENSIONS.includes(ext)) {
-            toast.error('仅支持文本文件和文档 (.txt, .md, .pdf, .docx, .pptx 等)');
+            toast.error(t('chat.textFilesOnly'));
             return;
         }
 
@@ -238,7 +240,7 @@ export const MessageInput: React.FC = () => {
         const isBinary = BINARY_EXTENSIONS.includes(ext);
         const maxSize = isBinary ? 10 * 1024 * 1024 : 1024 * 1024;
         if (file.size > maxSize) {
-            toast.error(`文件大小不能超过 ${isBinary ? '10MB' : '1MB'}`);
+            toast.error(`${t('chat.fileTooLarge')} ${isBinary ? '10MB' : '1MB'}`);
             return;
         }
 
@@ -253,7 +255,7 @@ export const MessageInput: React.FC = () => {
                     file: file,
                     isBinary: true,
                 });
-                toast.success(`已添加文件: ${file.name}`);
+                toast.success(`${t('chat.fileAdded')} ${file.name}`);
             } else {
                 // For text files, read content directly
                 let content = await file.text();
@@ -265,7 +267,7 @@ export const MessageInput: React.FC = () => {
                     console.log(`[FileUpload] Extracted text from ${ext}: ${originalLength} -> ${content.length} chars`);
 
                     if (!content.trim()) {
-                        toast.error('HTML 文件中未提取到有效文本内容');
+                        toast.error(t('chat.noTextFromHtml'));
                         return;
                     }
                 }
@@ -277,11 +279,11 @@ export const MessageInput: React.FC = () => {
                     type: ext.slice(1),
                     isBinary: false,
                 });
-                toast.success(`已添加文件: ${file.name}`);
+                toast.success(`${t('chat.fileAdded')} ${file.name}`);
             }
         } catch (err) {
             console.error('Failed to read file:', err);
-            toast.error('无法读取文件');
+            toast.error(t('chat.cannotReadFile'));
         }
     };
 
@@ -361,10 +363,10 @@ export const MessageInput: React.FC = () => {
                             ? `${messageContent}\n\n${fileIndicator}`
                             : fileIndicator;
 
-                        toast.success(`文件已添加到知识库 (${uploadRes.chunksCreated} 个文本块)`);
+                        toast.success(`${t('chatSidebar.uploadedToKb')} (${uploadRes.chunksCreated})`);
                     } catch (uploadErr) {
                         console.error('Failed to upload file:', uploadErr);
-                        toast.error(uploadErr instanceof Error ? uploadErr.message : '文件上传失败');
+                        toast.error(uploadErr instanceof Error ? uploadErr.message : t('chat.sendFailed'));
                         setUploadingFile(false);
                         setSending(false);
                         return;
@@ -386,7 +388,7 @@ export const MessageInput: React.FC = () => {
                         ? `${messageContent}\n\n${fileIndicator}`
                         : fileIndicator;
 
-                    toast.success(`文件已添加为附件`);
+                    toast.success(t('chat.fileAdded'));
                 }
             }
 
@@ -404,7 +406,7 @@ export const MessageInput: React.FC = () => {
             }
         } catch (err) {
             console.error('send message failed', err);
-            toast.error('发送消息失败');
+            toast.error(t('chat.sendFailed'));
         }
 
         setContent('');
@@ -464,7 +466,7 @@ export const MessageInput: React.FC = () => {
                                     <Reply size={14} />
                                 </div>
                                 <div className="reply-info">
-                                    <span className="reply-label">回复 {state.users.find(u => u.id === state.replyingTo?.senderId)?.name}</span>
+                                    <span className="reply-label">{t('chat.reply')} {state.users.find(u => u.id === state.replyingTo?.senderId)?.name}</span>
                                     <span className="reply-message-preview">{state.replyingTo.content}</span>
                                 </div>
                             </div>
@@ -517,7 +519,7 @@ export const MessageInput: React.FC = () => {
                                 </div>
                             </div>
                             <div className="file-preview-actions">
-                                <label className="rag-toggle" title={uploadToRag ? '将添加到知识库' : '仅作为附件分享'}>
+                                <label className="rag-toggle" title={uploadToRag ? t('chat.addToKnowledgeBase') : t('chat.shareOnly')}>
                                     <input
                                         type="checkbox"
                                         checked={uploadToRag}
@@ -526,9 +528,9 @@ export const MessageInput: React.FC = () => {
                                     <span className={clsx('rag-toggle-switch', uploadToRag && 'active')}>
                                         <Database size={12} />
                                     </span>
-                                    <span className="rag-toggle-label">{uploadToRag ? '添加到知识库' : '仅分享'}</span>
+                                    <span className="rag-toggle-label">{uploadToRag ? t('chat.addToKnowledgeBase') : t('chat.shareOnly')}</span>
                                 </label>
-                                <button onClick={removeAttachedFile} className="remove-file-btn" title="移除文件">
+                                <button onClick={removeAttachedFile} className="remove-file-btn" title={t('common.delete')}>
                                     <X size={16} />
                                 </button>
                             </div>
@@ -547,7 +549,7 @@ export const MessageInput: React.FC = () => {
                     />
                     <button
                         className={clsx('icon-btn attach-btn', attachedFile && 'has-file')}
-                        title="添加文件"
+                        title={t('chat.fileAdded').replace(':', '')}
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploadingFile}
                     >
@@ -565,7 +567,7 @@ export const MessageInput: React.FC = () => {
                                 setIsFocused(false);
                                 stopTyping();
                             }}
-                            placeholder="输入消息..."
+                            placeholder={t('chat.inputPlaceholder')}
                             rows={1}
                         />
                         <button

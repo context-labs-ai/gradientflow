@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useChat } from '../context/ChatContext';
 import { Hash, Settings, Mic, Headphones, Search, Plus, X, LogOut, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +16,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPanel }) => {
+    const { t } = useTranslation();
     const { state, dispatch } = useChat();
     const [activeChannel, setActiveChannel] = useState('general');
     const [searchQuery, setSearchQuery] = useState('');
@@ -31,9 +33,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
     const displayedUsers = trimmedQuery ? filteredUsers : state.users;
     const statusOrder: Array<User['status']> = ['online', 'busy', 'offline'];
     const statusLabels: Record<User['status'], string> = {
-        online: '在线',
-        busy: '忙碌',
-        offline: '离线',
+        online: t('common.online'),
+        busy: t('common.busy'),
+        offline: t('common.offline'),
     };
     const groupedMembers = React.useMemo(() => {
         const grouped = new Map<User['status'] | 'other', User[]>();
@@ -68,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
     const isRootUser = state.currentUser?.email === ROOT_EMAIL;
 
     const handleRemoveUser = useCallback(async (userId: string, userName: string) => {
-        if (!window.confirm(`确定要移除用户 "${userName}" 吗？此操作不可撤销。`)) {
+        if (!window.confirm(`${t('sidebar.confirmRemoveUser')} "${userName}"?`)) {
             return;
         }
         try {
@@ -118,14 +120,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                         <Search size={16} className="search-icon" />
                         <input
                             type="text"
-                            placeholder="搜索成员"
+                            placeholder={t('sidebar.searchMembers')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => setSearchFocused(true)}
                             onBlur={() => setSearchFocused(false)}
                         />
                         {searchQuery && (
-                            <button className="clear-search" onClick={() => setSearchQuery('')} aria-label="清除搜索">
+                            <button className="clear-search" onClick={() => setSearchQuery('')} aria-label={t('common.search')}>
                                 <X size={12} />
                             </button>
                         )}
@@ -135,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                 <div className="sidebar-content">
                     <div className="sidebar-section">
                         <div className="section-header">
-                            <h3 className="section-title">频道</h3>
+                            <h3 className="section-title">{t('sidebar.channels')}</h3>
                             <button className="add-btn">
                                 <Plus size={14} />
                             </button>
@@ -156,15 +158,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
 
                     <div className="sidebar-section agent-section">
                         <div className="section-header">
-                            <h3 className="section-title">LLM Agents · {state.agents.length}</h3>
+                            <h3 className="section-title">{t('sidebar.llmAgents')} · {state.agents.length}</h3>
                             <button className="manage-btn" onClick={onOpenAgentPanel}>
                                 <Settings size={14} />
-                                <span>管理</span>
+                                <span>{t('sidebar.manage')}</span>
                             </button>
                         </div>
                         <div className="agent-list">
                             {state.agents.length === 0 ? (
-                                <div className="agent-empty">未配置 Agent</div>
+                                <div className="agent-empty">{t('sidebar.noAgentConfigured')}</div>
                             ) : (
                                 state.agents.map(agent => (
                                     <button key={agent.id} className="agent-card" onClick={onOpenAgentPanel}>
@@ -181,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                                         </div>
                                         <div className="agent-info">
                                             <span className="agent-name">{agent.name}</span>
-                                            <span className="agent-model">{agent.model?.name || agent.runtime?.type || '自定义运行时'}</span>
+                                            <span className="agent-model">{agent.model?.name || agent.runtime?.type || 'Custom runtime'}</span>
                                         </div>
                                     </button>
                                 ))
@@ -190,17 +192,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                     </div>
 
                     <div className="sidebar-section">
-                        <h3 className="section-title">成员 · {memberCountLabel}</h3>
+                        <h3 className="section-title">{t('sidebar.members')} · {memberCountLabel}</h3>
                         <div className="member-list">
                             {displayedUsers.length === 0 ? (
-                                <div className="member-empty">未找到成员</div>
+                                <div className="member-empty">{t('sidebar.noMembersFound')}</div>
                             ) : (
                                 groupedMembers.map(group => (
                                     <div key={group.status} className="member-group">
                                         <div className="member-group-header">
                                             <span className="member-group-title">
                                                 {group.status === 'other'
-                                                    ? '其他'
+                                                    ? t('sidebar.other')
                                                     : statusLabels[group.status as User['status']]}
                                             </span>
                                             <span className="member-group-count">{group.users.length}</span>
@@ -236,7 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                                                                 e.stopPropagation();
                                                                 handleRemoveUser(user.id, user.name);
                                                             }}
-                                                            title="移除用户"
+                                                            title={t('common.delete')}
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
@@ -269,7 +271,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onOpenAgentPa
                             <button className="icon-btn-small"><Mic size={14} /></button>
                             <button className="icon-btn-small"><Headphones size={14} /></button>
 
-                            <button className="icon-btn-small logout-btn" onClick={handleLogout} title="退出登录">
+                            <button className="icon-btn-small logout-btn" onClick={handleLogout} title={t('sidebar.logout')}>
                                 <LogOut size={14} />
                             </button>
                         </div>

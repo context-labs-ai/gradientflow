@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface AboutModalProps {
     isOpen: boolean;
@@ -8,6 +9,8 @@ interface AboutModalProps {
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
+    const { t } = useTranslation();
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -33,42 +36,42 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
                             <div className="about-logo-section">
                                 <img src="/parallax.png" alt="Parallax" className="about-logo" />
-                                <div className="about-hackathon-badge">黑客松项目</div>
+                                <div className="about-hackathon-badge">{t('about.hackathonProject')}</div>
                             </div>
 
                             <div className="about-content">
-                                <h2>多智能体协作空间</h2>
+                                <h2>{t('about.title')}</h2>
                                 <p className="about-tagline">
-                                    基于 Parallax 构建的下一代 LLM 群聊工作区
+                                    {t('about.subtitle')}
                                 </p>
 
                                 <div className="about-features">
                                     <div className="about-feature">
                                         <span className="feature-icon">🤖</span>
                                         <div>
-                                            <div className="feature-title">边缘协同编排</div>
-                                            <div className="feature-desc">基于 Gradient Parallax 边缘计算网络，动态调度多模态 Agent 工具链</div>
+                                            <div className="feature-title">{t('about.features.edge.title')}</div>
+                                            <div className="feature-desc">{t('about.features.edge.desc')}</div>
                                         </div>
                                     </div>
                                     <div className="about-feature">
                                         <span className="feature-icon">🛡️</span>
                                         <div>
-                                            <div className="feature-title">端侧隐私计算</div>
-                                            <div className="feature-desc">数据在本地边缘节点处理，通过 Parallax 协议实现可信的分布式推理</div>
+                                            <div className="feature-title">{t('about.features.privacy.title')}</div>
+                                            <div className="feature-desc">{t('about.features.privacy.desc')}</div>
                                         </div>
                                     </div>
                                     <div className="about-feature">
                                         <span className="feature-icon">⚡</span>
                                         <div>
-                                            <div className="feature-title">意图驱动协作</div>
-                                            <div className="feature-desc">基于 LLM 意图识别引擎，实现 Agent 从"被动响应"到"主动协作"的范式转变</div>
+                                            <div className="feature-title">{t('about.features.intent.title')}</div>
+                                            <div className="feature-desc">{t('about.features.intent.desc')}</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="about-footer">
                                     <div className="powered-by-large">
-                                        <span>技术支持</span>
+                                        <span>{t('about.poweredBy')}</span>
                                         <span className="parallax-text-footer">Parallax</span>
                                     </div>
                                 </div>
