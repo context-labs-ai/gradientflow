@@ -134,7 +134,7 @@ This project demo runs on the following hardware:
 -   **Rich Text Support**: Markdown, code highlighting
 -   **Interactive Experience**: Message reactions, replies, @mentions
 -   **Smart Summaries** `🔌`: One-click AI summary of long conversation threads
--   **Real-time Sync**: Typing indicators and live message updates
+-   **Real-time Sync**: Socket.IO-based real-time messaging, typing indicators, and instant message updates
 -   **LLM Settings**: Configurable LLM endpoint, model, and API key
 
 ### 🛡️ Secure & Self-Hosted
@@ -246,7 +246,7 @@ Open `http://localhost:5173` and login with:
 |---------|-------------|--------|
 | Multi-agent collaborative chat | Local multi-agent dialogue with sequential tool calls, @mentions, and shared context | ✅ Completed |
 | RAG knowledge base & AI summary | Local vector retrieval, private document uploads, and conversation summaries on private hardware | ✅ Completed |
-| WebSocket real-time channel | Gradual replacement for SSE to improve concurrency and state sync | 🚧 In Progress |
+| WebSocket real-time channel | Socket.IO real-time messaging, replacing polling for instant message sync and typing updates | ✅ Completed |
 | Multi-modal upload & preview | Extend upload, parsing, and visualization for PDFs/spreadsheets/images | 🚧 In Progress |
 | Plugin/tool marketplace (MCP/custom tools) | Planned one-click install, start/stop, and version management to reduce extension overhead | 🧭 Planned |
 | Privacy audit & compliance suite | Add configurable data retention policies, audit logs, and exportable compliance reports | 🧭 Planned |

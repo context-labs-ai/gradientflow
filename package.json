@@ -37,7 +37,9 @@
     "react-markdown": "^10.1.0",
     "react-virtuoso": "^4.14.1",
     "remark-breaks": "^4.0.0",
-    "remark-gfm": "^4.0.0"
+    "remark-gfm": "^4.0.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

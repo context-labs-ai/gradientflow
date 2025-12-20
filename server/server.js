@@ -10,6 +10,9 @@ import { JSONFile } from 'lowdb/node';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { randomUUID, randomBytes } from 'crypto';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { setupSocketIO, broadcast } from './socket.js';
 
 // Configure multer for file uploads (memory storage for passing to RAG service)
 const upload = multer({
@@ -74,6 +77,27 @@ const app = express();
 
 // In production, allow same-origin requests (frontend served by this server)
 const isProductionEnv = process.env.NODE_ENV === 'production';
+
+// Create HTTP server and Socket.IO instance
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
+            if (isProductionEnv && origin.includes('.railway.app')) return callback(null, true);
+            if (CLIENT_ORIGINS.includes(origin)) return callback(null, true);
+            return callback(new Error('Not allowed by CORS'));
+        },
+        credentials: true,
+    },
+    transports: ['websocket', 'polling'],
+});
+
+// Initialize Socket.IO with authentication
+setupSocketIO(io, db, JWT_SECRET);
+
+// Attach io to app for use in route handlers
+app.set('io', io);
 
 app.use(
     cors({
@@ -737,6 +761,10 @@ app.post('/agents/:agentId/messages', agentAuthMiddleware, async (req, res) => {
 
     db.data.messages.push(message);
     await db.write();
+
+    // Broadcast to WebSocket clients
+    broadcast.messageCreated(io, message, [sanitizeUser(agentUser)]);
+
     res.json({ message });
 });
 
@@ -785,6 +813,10 @@ app.post('/agents/:agentId/reactions', agentAuthMiddleware, async (req, res) => 
     message.updatedAt = Date.now();
 
     await db.write();
+
+    // Broadcast to WebSocket clients
+    broadcast.messageUpdated(io, normalizeMessage(message));
+
     res.json({ message: normalizeMessage(message) });
 });
 
@@ -809,6 +841,10 @@ app.post('/messages', authMiddleware, async (req, res) => {
     const message = normalizeMessage(rawMessage);
     db.data.messages.push(message);
     await db.write();
+
+    // Broadcast to WebSocket clients
+    broadcast.messageCreated(io, message, [req.user]);
+
     res.json({ message, users: [req.user] });
 });
 
@@ -837,6 +873,10 @@ app.delete('/messages/:messageId', authMiddleware, async (req, res) => {
     // 删除所有相关消息
     db.data.messages = db.data.messages.filter((m) => !deletedIds.includes(m.id));
     await db.write();
+
+    // Broadcast to WebSocket clients
+    broadcast.messageDeleted(io, deletedIds);
+
     res.json({ deletedMessageIds: deletedIds });
 });
 
@@ -897,6 +937,10 @@ app.post('/messages/:messageId/reactions', authMiddleware, async (req, res) => {
     message.updatedAt = Date.now();
 
     await db.write();
+
+    // Broadcast to WebSocket clients
+    broadcast.messageUpdated(io, normalizeMessage(message));
+
     res.json({ message: normalizeMessage(message) });
 });
 
@@ -1229,7 +1273,12 @@ app.post('/typing', authMiddleware, async (req, res) => {
         delete db.data.typing[req.user.id];
     }
     await db.write();
-    res.json({ typingUsers: Object.keys(db.data.typing) });
+
+    // Broadcast to WebSocket clients
+    const typingUsers = Object.keys(db.data.typing);
+    broadcast.typingUpdate(io, typingUsers);
+
+    res.json({ typingUsers });
 });
 
 app.get('/typing', authMiddleware, (_req, res) => {
@@ -1248,6 +1297,22 @@ const pruneAgentLooking = () => {
     });
 };
 
+// Helper to build looking agents list
+const buildLookingAgentsList = () => {
+    const lookingAgentIds = Object.keys(db.data.agentLooking || {});
+    return lookingAgentIds.map(agentId => {
+        const agent = db.data.agents.find(a => a.id === agentId);
+        if (!agent) return null;
+        const user = db.data.users.find(u => u.id === agent.userId);
+        return {
+            agentId,
+            agentName: agent.name,
+            userName: user?.name || agent.name,
+            avatar: user?.avatar || agent.avatar,
+        };
+    }).filter(Boolean);
+};
+
 // Agent sets "looking" status
 app.post('/agents/:agentId/looking', agentAuthMiddleware, async (req, res) => {
     const { agentId } = req.params;
@@ -1259,25 +1324,17 @@ app.post('/agents/:agentId/looking', agentAuthMiddleware, async (req, res) => {
         delete db.data.agentLooking[agentId];
     }
     await db.write();
+
+    // Broadcast to WebSocket clients
+    broadcast.agentsLooking(io, buildLookingAgentsList());
+
     res.json({ success: true });
 });
 
 // Get all looking agents
 app.get('/agents/looking', authMiddleware, (_req, res) => {
     pruneAgentLooking();
-    const lookingAgentIds = Object.keys(db.data.agentLooking || {});
-    const lookingAgents = lookingAgentIds.map(agentId => {
-        const agent = db.data.agents.find(a => a.id === agentId);
-        if (!agent) return null;
-        const user = db.data.users.find(u => u.id === agent.userId);
-        return {
-            agentId,
-            agentName: agent.name,
-            userName: user?.name || agent.name,
-            avatar: user?.avatar || agent.avatar,
-        };
-    }).filter(Boolean);
-    res.json({ lookingAgents });
+    res.json({ lookingAgents: buildLookingAgentsList() });
 });
 
 // Agent heartbeat tracking
@@ -2726,8 +2783,9 @@ if (isProduction) {
     });
 }
 
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
     console.log(`API server listening on http://localhost:${PORT}`);
+    console.log(`WebSocket server ready`);
     if (isProduction) {
         console.log(`Frontend served at http://localhost:${PORT}`);
     }

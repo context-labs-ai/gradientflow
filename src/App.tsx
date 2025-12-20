@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatProvider, useChat } from './context/ChatContext';
 import { TypingProvider, useTyping } from './context/TypingContext';
 import { UsersLookupProvider } from './context/UsersLookupContext';
+import { SocketProvider, useSocket } from './context/SocketContext';
+import { useSocketEvents } from './hooks/useSocketEvents';
 import { Layout } from './components/Layout';
 import { MessageList } from './components/MessageList';
 import { MessageInput } from './components/MessageInput';
@@ -89,10 +91,14 @@ const ChatApp = () => {
 const AppShell = () => {
     const { state, dispatch } = useChat();
     const { setTypingUsers } = useTyping();
+    const { isConnected: wsConnected, connect: wsConnect } = useSocket();
     const [error, setError] = useState<string | null>(null);
     const lastFetchedTimestampRef = useRef(0);
     const lastFullSyncRef = useRef(0);
     const knownUserIdsRef = useRef<Set<string>>(new Set());
+
+    // Enable WebSocket event listeners
+    useSocketEvents();
 
     const updateLastFetchedTimestamp = useCallback((messages: { timestamp: number }[]) => {
         if (!messages.length) return;
@@ -149,19 +155,25 @@ const AppShell = () => {
             });
             // Request notification permission after login
             requestNotificationPermission();
+            // Connect WebSocket after successful authentication
+            wsConnect();
         } catch (err: any) {
             console.error('Bootstrap failed', err);
             setError(err?.message || '加载会话失败');
             dispatch({ type: 'SET_AUTH_STATUS', payload: 'unauthenticated' });
         }
-    }, [dispatch, fetchAllMessages, updateLastFetchedTimestamp]);
+    }, [dispatch, fetchAllMessages, updateLastFetchedTimestamp, wsConnect]);
 
     useEffect(() => {
         bootstrap();
     }, [bootstrap]);
 
+    // Message polling - disabled when WebSocket is connected, fallback only
     useEffect(() => {
         if (state.authStatus !== 'authenticated') return;
+        // Skip frequent polling when WebSocket is connected
+        if (wsConnected) return;
+
         let cancelled = false;
         const pollMessages = async () => {
             const now = Date.now();
@@ -242,15 +254,58 @@ const AppShell = () => {
             cancelled = true;
             clearInterval(id);
         };
-    }, [dispatch, fetchAllMessages, state.authStatus, updateLastFetchedTimestamp]);
+    }, [dispatch, fetchAllMessages, state.authStatus, updateLastFetchedTimestamp, wsConnected]);
+
+    // Reduced polling when WebSocket is connected - just for consistency checks
+    useEffect(() => {
+        if (state.authStatus !== 'authenticated') return;
+        if (!wsConnected) return; // Only run when WebSocket is connected
+
+        let cancelled = false;
+        const syncConsistency = async () => {
+            try {
+                const [{ messages, users }, agentsResult] = await Promise.all([
+                    fetchAllMessages(),
+                    api.agents.list().catch(() => null),
+                ]);
+                if (!cancelled) {
+                    lastFullSyncRef.current = Date.now();
+                    if (users.length) {
+                        const newUsers = users.filter((u) => !knownUserIdsRef.current.has(u.id));
+                        if (newUsers.length) {
+                            newUsers.forEach((u) => knownUserIdsRef.current.add(u.id));
+                            dispatch({ type: 'SET_USERS', payload: newUsers });
+                        }
+                    }
+                    if (agentsResult) {
+                        dispatch({ type: 'SET_AGENTS', payload: agentsResult.agents || [] });
+                    }
+                    updateLastFetchedTimestamp(messages);
+                    dispatch({ type: 'SET_MESSAGES', payload: messages });
+                }
+            } catch (err) {
+                console.error('consistency sync failed', err);
+            }
+        };
+        // Full sync every 60 seconds when WebSocket is connected
+        const id = setInterval(syncConsistency, 60_000);
+        return () => {
+            cancelled = true;
+            clearInterval(id);
+        };
+    }, [dispatch, fetchAllMessages, state.authStatus, updateLastFetchedTimestamp, wsConnected]);
 
     useEffect(() => {
         if (!state.users.length) return;
         knownUserIdsRef.current = new Set(state.users.map((u) => u.id));
     }, [state.users]);
 
+    // Typing status polling - disabled when WebSocket is connected
     useEffect(() => {
         if (state.authStatus !== 'authenticated' || !state.currentUser) return;
+        // Skip polling when WebSocket is connected (typing updates come via WS)
+        if (wsConnected) return;
+
         let cancelled = false;
         const fetchTyping = async () => {
             try {
@@ -268,7 +323,7 @@ const AppShell = () => {
             cancelled = true;
             clearInterval(id);
         };
-    }, [setTypingUsers, state.authStatus, state.currentUser]);
+    }, [setTypingUsers, state.authStatus, state.currentUser, wsConnected]);
 
     const showAuth = state.authStatus === 'unauthenticated';
     const loading = state.authStatus === 'loading';
@@ -296,10 +351,12 @@ function App() {
         <ErrorBoundary>
             <ChatProvider>
                 <TypingProvider>
-                    <UsersLookupProvider>
-                        <AppShell />
-                        <Toaster position="top-center" />
-                    </UsersLookupProvider>
+                    <SocketProvider>
+                        <UsersLookupProvider>
+                            <AppShell />
+                            <Toaster position="top-center" />
+                        </UsersLookupProvider>
+                    </SocketProvider>
                 </TypingProvider>
             </ChatProvider>
         </ErrorBoundary>
